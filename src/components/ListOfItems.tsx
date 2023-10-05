@@ -4,11 +4,12 @@ import "../main.css";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { useState } from "react";
+import BasicButton from "./Button";
+import { Alert } from "@mui/material";
 
 interface Props {
   items: string[];
   headingTitle: string;
-  // (item: string) => void
   onSelectItem: (item: string) => void;
 }
 
@@ -28,6 +29,15 @@ export function SearchField() {
         variant="standard"
         className="searchBar"
       />
+      <BasicButton
+        color="contained"
+        onClick={() => {
+          <Alert>Such alert!</Alert>;
+          console.log("Creating another alert");
+        }}
+      >
+        Search
+      </BasicButton>
     </Box>
   );
 }

@@ -6,7 +6,7 @@ interface Props {
   children: ReactNode;
 }
 
-export default function BasicAlerts({ children }: Props) {
+export function BasicAlert({ children }: Props) {
   return (
     <Stack sx={{ width: "100%" }} spacing={1}>
       <Alert severity="info">{children}</Alert>

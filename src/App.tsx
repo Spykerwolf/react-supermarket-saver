@@ -1,5 +1,5 @@
 import { ListOfItems } from "./components/ListOfItems";
-import Alert from "./components/Alert";
+import TransitionAlerts from "./components/TransitionAlerts";
 
 function App() {
   const items = [
@@ -23,11 +23,14 @@ function App() {
   const handleSelectItem = (item: string) => {
     console.log(item);
   };
+
   return (
     <div>
-      <Alert>
-        This is a <span>mudafuga</span> alert!!
-      </Alert>
+      <TransitionAlerts
+        buttonName="Generate alert"
+        alertMessage="Fugggma"
+        buttonType="contained"
+      ></TransitionAlerts>
       <ListOfItems
         items={items}
         headingTitle="Types of Coffees"
