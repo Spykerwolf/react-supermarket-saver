@@ -1,53 +1,25 @@
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import ListItem from "@mui/material/ListItem";
+
 import "../main.css";
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
 import { useState } from "react";
-import BasicButton from "./Button";
-import { Alert } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface Props {
   items: string[];
   headingTitle: string;
-  onSelectItem: (item: string) => void;
+  onSelectItem?: (item: string) => void;
+  onDeleteItem: (item: string) => void;
 }
 
-export function SearchField() {
-  return (
-    <Box
-      component="form"
-      sx={{
-        "& > :not(style)": { m: 1, width: "25ch" },
-      }}
-      noValidate
-      autoComplete="off"
-    >
-      <TextField
-        id="standard-basic"
-        label="Search for something"
-        variant="standard"
-        className="searchBar"
-      />
-      <BasicButton
-        color="contained"
-        onClick={() => {
-          <Alert>Such alert!</Alert>;
-          console.log("Creating another alert");
-        }}
-      >
-        Search
-      </BasicButton>
-    </Box>
-  );
-}
-
-export function ListOfItems({ items, headingTitle, onSelectItem }: Props) {
+export function ListOfItems({ items, headingTitle, onDeleteItem }: Props) {
   function GenerateHeadingName() {
     return items[Math.floor(Math.random() * items.length)];
   }
 
-  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [heading, setHeading] = useState(headingTitle);
 
   return (
@@ -62,21 +34,31 @@ export function ListOfItems({ items, headingTitle, onSelectItem }: Props) {
       >
         {heading}
       </h1>
-      <SearchField />
-      <br></br>
-      <Box sx={{ width: "100%", maxWidth: 140 }} className="Items">
+      <Box sx={{ width: "100%", maxWidth: 420 }} className="Items">
         {items.length === 0 && <p>No item found</p>}
-        {items.map((item, index) => (
+        {items.map((item) => (
           <nav
-            className={selectedIndex === index ? "Items-active" : "Items"}
+            // className={selectedIndex === index ? "Items-active" : "Items"}
+            className="Items"
             key={item}
-            onClick={() => {
-              setSelectedIndex(index);
-              onSelectItem(item);
-            }}
           >
             <ListItemButton>
-              <ListItemText primary={item} />
+              <ListItem
+                disablePadding
+                secondaryAction={
+                  <IconButton
+                    onClick={() => {
+                      onDeleteItem(item);
+                    }}
+                    edge="end"
+                    aria-label="delete"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
+                <ListItemText primary={item}></ListItemText>
+              </ListItem>
             </ListItemButton>
           </nav>
         ))}

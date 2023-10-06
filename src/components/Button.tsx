@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 interface Props {
   children: ReactNode;
   color?: "text" | "contained" | "outlined";
-  onClick: () => void;
+  onClick?: () => void;
 }
 export default function BasicButton({ children, color, onClick }: Props) {
   return (
