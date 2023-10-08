@@ -17,6 +17,13 @@ export function SearchProducts() {
     { label: "Coffee", exclude: "decaf, Decaf" },
   ];
 
+  const suburbs = [
+    { label: "Orewa", id: "3034" },
+    { label: "Albany", id: "6" },
+    { label: "Silverdale", id: "3315" },
+    { label: "Glenfield", id: "38" },
+  ];
+
   // const [dropDownValue, setDropDownValue] = useState(coffeeArray);
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,6 +44,7 @@ export function SearchProducts() {
         <InputBase
           sx={{ ml: 1, flex: 1 }}
           placeholder="Search for a product"
+          value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
           }}
@@ -45,6 +53,21 @@ export function SearchProducts() {
         <IconButton type="button" sx={{ p: "10px" }}>
           <SearchIcon />
         </IconButton>
+        <Autocomplete
+          freeSolo={true}
+          disableClearable={true}
+          disablePortal
+          options={suburbs}
+          sx={{ width: 300 }}
+          renderInput={(params) => <TextField {...params} label="Suburb" />}
+          onInputChange={(event, value) => {
+            const index = suburbs.findIndex((object) => {
+              return object.label === value;
+            });
+            const suburbsExcludes = suburbs[index].id;
+            setSearchTerm(suburbsExcludes);
+          }}
+        />
       </Paper>
 
       <Paper
@@ -76,9 +99,7 @@ export function SearchProducts() {
           disablePortal
           options={coffeeArray}
           sx={{ width: 300 }}
-          renderInput={(params) => (
-            <TextField {...params} label="Exclude presets" />
-          )}
+          renderInput={(params) => <TextField {...params} label="Exclude" />}
           onInputChange={(event, value) => {
             const index = coffeeArray.findIndex((object) => {
               return object.label === value;
