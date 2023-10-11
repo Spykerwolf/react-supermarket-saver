@@ -6,6 +6,7 @@ import { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { Getprices } from "./Prices";
 
 export function SearchProducts() {
   const coffeeArray = [
@@ -72,7 +73,13 @@ export function SearchProducts() {
           }}
         />
 
-        <IconButton type="button" sx={{ p: "10px" }}>
+        <IconButton
+          type="button"
+          sx={{ p: "10px" }}
+          onClick={() => {
+            Getprices();
+          }}
+        >
           <SearchIcon />
         </IconButton>
       </Paper>
@@ -128,8 +135,8 @@ export function SearchProducts() {
             const index = suburbs.findIndex((object) => {
               return object.label === value;
             });
-            const suburbsExcludes = suburbs[index].id;
-            setSearchTerm(suburbsExcludes);
+            const setSuburb = suburbs[index].id;
+            setSearchTerm(setSuburb);
           }}
         />
         <Autocomplete
@@ -159,11 +166,11 @@ export function SearchProducts() {
             <TextField {...params} label="Departments" />
           )}
           onInputChange={(_event, value) => {
-            const index = suburbs.findIndex((object) => {
+            const index = departments.findIndex((object) => {
               return object.label === value;
             });
-            const suburbsExcludes = suburbs[index].id;
-            setSearchTerm(suburbsExcludes);
+            const setDepartment = departments[index].id;
+            setSearchTerm(setDepartment);
           }}
         />
       </Paper>

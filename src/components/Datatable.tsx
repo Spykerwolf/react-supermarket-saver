@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import InputBase from "@mui/material/InputBase";
 
 interface Data {
   name: string;
@@ -226,9 +227,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
           />
         </TableCell>
         {headCells.map((headCell) => (
@@ -450,6 +448,11 @@ export default function EnhancedTable() {
                         onClick={() =>
                           open(row.URL, "_blank", "noopener,noreferrer")
                         }
+                        onMouseDown={(e) => {
+                          if (e.button === 1) {
+                            open(row.URL, "_blank", "noopener,noreferrer");
+                          }
+                        }}
                       >
                         <ShoppingCartIcon />
                       </IconButton>
