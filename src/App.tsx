@@ -1,5 +1,5 @@
 import MainLogo from "./components/Logo";
-import { SearchProducts } from "./components/FilterProducts";
+// import { SearchProducts } from "./components/Datatable";
 import EnhancedTable from "./components/Datatable";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import NightModeToggle from "./components/NightModeToggle";
@@ -13,7 +13,6 @@ function App() {
       <CssBaseline />
       <NightModeToggle />
       <MainLogo />
-      <SearchProducts />
       <EnhancedTable />
     </ThemeProvider>
   );

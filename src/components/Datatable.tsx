@@ -1,4 +1,3 @@
-import { productsFromCountdown } from "./Countdowndata";
 import * as React from "react";
 import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -22,11 +21,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useState } from "react";
 import InputBase from "@mui/material/InputBase";
+import SearchIcon from "@mui/icons-material/Search";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import RemoveIcon from "@mui/icons-material/Remove";
 
 interface Data {
   name: string;
-  sku: string;
   price: string;
   cupsize: string;
   measure: string;
@@ -36,7 +39,6 @@ interface Data {
 
 export function createData(
   name: string,
-  // sku: string,
   price: string,
   cupsize: string,
   measure: string,
@@ -45,7 +47,6 @@ export function createData(
 ): Data {
   return {
     name,
-    // sku,
     price,
     cupsize,
     measure,
@@ -53,16 +54,6 @@ export function createData(
     URL,
   };
 }
-
-const rows: {
-  name: string;
-  // sku: string | number;
-  price: string | number;
-  cupsize: string | number;
-  measure: string | number;
-  size: string | number;
-  URL: string | number;
-}[] = [];
 
 function CapitalizeFirstLetter(name) {
   const word = name;
@@ -72,30 +63,6 @@ function CapitalizeFirstLetter(name) {
   const capitalizedWord = firstLetterCap + remainingLetters;
   return capitalizedWord;
 }
-
-productsFromCountdown.map((products) =>
-  products.products.items.forEach((product) => {
-    const productName = CapitalizeFirstLetter(product.name);
-    const productSku = product.sku;
-    const productPrice = product.price.salePrice;
-    const cupsize = product.size.cupPrice;
-    const measure = product.size.cupMeasure;
-    const size = product.size.volumeSize;
-    const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-
-    rows.push(
-      createData(
-        productName,
-        // productSku,
-        productPrice,
-        cupsize,
-        measure,
-        size,
-        URL
-      )
-    );
-  })
-);
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -154,12 +121,6 @@ const headCells: readonly HeadCell[] = [
     disablePadding: true,
     label: "Name",
   },
-  // {
-  //   id: "sku",
-  //   numeric: false,
-  //   disablePadding: false,
-  //   label: "Sku",
-  // },
   {
     id: "price",
     numeric: false,
@@ -311,12 +272,95 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function EnhancedTable() {
+  const coffeeArray = [
+    {
+      label: "Milk",
+      exclude:
+        "Uht, uht, trim, powder, lactose, lite, fat, a2, A2, lacto, Lacto",
+    },
+    { label: "Coffee", exclude: "decaf, Decaf" },
+  ];
+
+  const suburbs = [
+    { label: "Orewa", id: "3034" },
+    { label: "Albany", id: "6" },
+    { label: "Silverdale", id: "3315" },
+    { label: "Glenfield", id: "38" },
+  ];
+
+  const departments = [
+    { label: "All Departments", id: "" },
+    {
+      label: "Fridge & Deli",
+      id: "&dasFilter=Department;4;Fridge%20%26%20Deli;false;Department",
+    },
+    { label: "Frozen", id: "&dasFilter=Department;6;Frozen;false;Department" },
+    { label: "Pantry", id: "&dasFilter=Department;7;Pantry;false;Department" },
+    { label: "Drinks", id: "&dasFilter=Department;9;Drinks;false;Department" },
+    {
+      label: "Health & Body",
+      id: "&dasFilter=Department;10;Health&20%26%20Body;false;Department",
+    },
+    {
+      label: "Meat & Poultry",
+      id: "&dasFilter=Department;2;Meat&20%26%20Poultry;false;Department",
+    },
+    { label: "Bakery", id: "&dasFilter=Department;5;Bakery;false;Department" },
+    {
+      label: "Household",
+      id: "&dasFilter=Department;11;Household;false;Department",
+    },
+    {
+      label: "Baby & Child",
+      id: "&dasFilter=Department;12;Baby%20Child;false;Department",
+    },
+    { label: "Pet", id: "&dasFilter=Department;13;Pet;false;Department" },
+  ];
+
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof Data>("price");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [countdownFetch, setCountdownFetch] = useState([]);
+  const [filterSearchText, setFilterSearchText] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  console.log("Getting data");
+  const GetData = () => {
+    fetch(
+      `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setCountdownFetch(data.products.items);
+      });
+  };
+
+  const rows = [];
+
+  countdownFetch.forEach((product) => {
+    const productName = CapitalizeFirstLetter(product.name);
+    const productPrice = product.price.salePrice;
+    const productSku = product.sku;
+    const cupsize = product.size.cupPrice;
+    const measure = product.size.cupMeasure;
+    const size = product.size.volumeSize;
+    const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+
+    rows.push(
+      createData(
+        productName,
+        // productSku,
+        productPrice,
+        cupsize,
+        measure,
+        size,
+        URL
+      )
+    );
+  });
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -329,7 +373,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.name);
+      const newSelected = rows.map((n) => n);
       setSelected(newSelected);
       return;
     }
@@ -387,105 +431,223 @@ export default function EnhancedTable() {
   );
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.name);
-                const labelId = `enhanced-table-checkbox-${index}`;
+    <>
+      <Paper
+        className="filterProduct"
+        component="form"
+        sx={{
+          p: "2px 4px",
+          m: "1px 0px 0px 0px",
+          display: "flex",
+          alignItems: "center",
+          width: 500,
+        }}
+      >
+        <InputBase
+          sx={{ ml: 1, flex: 1 }}
+          placeholder="Search for a product"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+          }}
+        />
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.name)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={Math.random()}
-                    selected={isItemSelected}
-                    sx={{ cursor: "pointer" }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          "aria-labelledby": labelId,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                      key={row.sku}
-                    >
-                      {row.name}
-                    </TableCell>
-                    {/* <TableCell align="left">{row.sku}</TableCell> */}
-                    <TableCell align="left">${row.price}</TableCell>
-                    <TableCell align="left">{row.cupsize}</TableCell>
-                    <TableCell align="left">{row.measure}</TableCell>
-                    <TableCell align="left">{row.size}</TableCell>
-                    <TableCell align="left">
-                      <IconButton
-                        onClick={() =>
-                          open(row.URL, "_blank", "noopener,noreferrer")
-                        }
-                        onMouseDown={(e) => {
-                          if (e.button === 1) {
-                            open(row.URL, "_blank", "noopener,noreferrer");
-                          }
-                        }}
-                      >
-                        <ShoppingCartIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, { value: -1, label: "All" }]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+        <IconButton onClick={() => GetData()} type="button" sx={{ p: "10px" }}>
+          <SearchIcon />
+        </IconButton>
+      </Paper>
+      <Paper
+        className="filterProduct"
+        component="form"
+        sx={{
+          p: "2px 4px",
+          m: "1px 0px 0px 0px",
+          display: "flex",
+          alignItems: "center",
+          width: 500,
+        }}
+      >
+        <InputBase
+          className="filterAProduct"
+          sx={{ ml: 1, flex: 1 }}
+          placeholder="Filter a product"
+          value={filterSearchText}
+          onChange={(e) => {
+            setFilterSearchText(e.target.value);
+          }}
+        />
+
+        <IconButton
+          onClick={() => setFilterSearchText("")}
+          type="button"
+          sx={{ p: "10px" }}
+          aria-label="search"
+        >
+          <RemoveIcon />
+        </IconButton>
+      </Paper>
+      <Paper
+        className="dropdownLists"
+        component="form"
+        sx={{
+          p: "0px 4px",
+          display: "flex",
+          alignItems: "center",
+          width: 500,
+        }}
+      >
+        <Autocomplete
+          className="dropdownSuburbs"
+          freeSolo={true}
+          disableClearable={true}
+          disablePortal
+          options={suburbs}
+          sx={{ width: 166 }}
+          renderInput={(params) => <TextField {...params} label="Suburb" />}
+          onInputChange={(_event, value) => {
+            const index = suburbs.findIndex((object) => {
+              return object.label === value;
+            });
+            const setSuburb = suburbs[index].id;
+            setSearchTerm(setSuburb);
+          }}
+        />
+        <Autocomplete
+          className="dropdownExcludes"
+          freeSolo={true}
+          disableClearable={true}
+          disablePortal
+          options={coffeeArray}
+          sx={{ width: 166 }}
+          renderInput={(params) => <TextField {...params} label="Exclude" />}
+          onInputChange={(_event, value) => {
+            const index = coffeeArray.findIndex((object) => {
+              return object.label === value;
+            });
+            const coffeeArrayExcludes = coffeeArray[index].exclude;
+            setFilterSearchText(coffeeArrayExcludes);
+          }}
+        />
+        <Autocomplete
+          className="dropdownDepartments"
+          freeSolo={true}
+          disableClearable={true}
+          disablePortal
+          options={departments}
+          sx={{ width: 166 }}
+          renderInput={(params) => (
+            <TextField {...params} label="Departments" />
+          )}
+          onInputChange={(_event, value) => {
+            const index = departments.findIndex((object) => {
+              return object.label === value;
+            });
+            const setDepartment = departments[index].id;
+            setSearchTerm(setDepartment);
+          }}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
-    </Box>
+
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <EnhancedTableToolbar numSelected={selected.length} />
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={dense ? "small" : "medium"}
+            >
+              <EnhancedTableHead
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {visibleRows.map((row, index) => {
+                  const isItemSelected = isSelected(row.name);
+                  const labelId = `enhanced-table-checkbox-${index}`;
+
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row.name)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={Math.random()}
+                      selected={isItemSelected}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            "aria-labelledby": labelId,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                        key={row.sku}
+                      >
+                        {row.name}
+                      </TableCell>
+                      {/* <TableCell align="left">{row.sku}</TableCell> */}
+                      <TableCell align="left">${row.price}</TableCell>
+                      <TableCell align="left">{row.cupsize}</TableCell>
+                      <TableCell align="left">{row.measure}</TableCell>
+                      <TableCell align="left">{row.size}</TableCell>
+                      <TableCell align="left">
+                        <IconButton
+                          onClick={() =>
+                            open(row.URL, "_blank", "noopener,noreferrer")
+                          }
+                          onMouseDown={(e) => {
+                            if (e.button === 1) {
+                              open(row.URL, "_blank", "noopener,noreferrer");
+                            }
+                          }}
+                        >
+                          <ShoppingCartIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+                {emptyRows > 0 && (
+                  <TableRow
+                    style={{
+                      height: (dense ? 33 : 53) * emptyRows,
+                    }}
+                  >
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, { value: -1, label: "All" }]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+        <FormControlLabel
+          control={<Switch checked={dense} onChange={handleChangeDense} />}
+          label="Dense padding"
+        />
+      </Box>
+    </>
   );
 }
