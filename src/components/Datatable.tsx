@@ -55,7 +55,7 @@ export function createData(
   };
 }
 
-function CapitalizeFirstLetter(name) {
+function CapitalizeFirstLetter(name: string) {
   const word = name;
   const firstLetter = word.charAt(0);
   const firstLetterCap = firstLetter.toUpperCase();
@@ -272,7 +272,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 
 export default function EnhancedTable() {
-  const coffeeArray = [
+  const excludes = [
     {
       label: "Milk",
       exclude:
@@ -338,15 +338,15 @@ export default function EnhancedTable() {
       });
   };
 
-  const rows = [];
+  const rows: any = [];
 
   countdownFetch.forEach((product) => {
-    const productName = CapitalizeFirstLetter(product.name);
-    const productPrice = product.price.salePrice;
-    const productSku = product.sku;
-    const cupsize = product.size.cupPrice;
-    const measure = product.size.cupMeasure;
-    const size = product.size.volumeSize;
+    const productName = CapitalizeFirstLetter(product["name"]);
+    const productPrice = product["price"]["salePrice"];
+    const productSku = product["sku"];
+    const cupsize = product["size"]["cupPrice"];
+    const measure = product["size"]["cupMeasure"];
+    const size = product["size"]["volumeSize"];
     const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
 
     rows.push(
@@ -498,12 +498,18 @@ export default function EnhancedTable() {
       >
         <Autocomplete
           className="dropdownSuburbs"
-          freeSolo={true}
-          disableClearable={true}
+          selectOnFocus
           disablePortal
+          disableClearable
           options={suburbs}
           sx={{ width: 166 }}
-          renderInput={(params) => <TextField {...params} label="Suburb" />}
+          renderInput={({ inputProps, ...params }) => (
+            <TextField
+              {...params}
+              label="Suburb"
+              inputProps={{ ...inputProps, readOnly: true }}
+            />
+          )}
           onInputChange={(_event, value) => {
             const index = suburbs.findIndex((object) => {
               return object.label === value;
@@ -514,29 +520,37 @@ export default function EnhancedTable() {
         />
         <Autocomplete
           className="dropdownExcludes"
-          freeSolo={true}
-          disableClearable={true}
           disablePortal
-          options={coffeeArray}
+          disableClearable
+          options={excludes}
           sx={{ width: 166 }}
-          renderInput={(params) => <TextField {...params} label="Exclude" />}
+          renderInput={({ inputProps, ...params }) => (
+            <TextField
+              {...params}
+              label="Exclude"
+              inputProps={{ ...inputProps, readOnly: true }}
+            />
+          )}
           onInputChange={(_event, value) => {
-            const index = coffeeArray.findIndex((object) => {
+            const index = excludes.findIndex((object) => {
               return object.label === value;
             });
-            const coffeeArrayExcludes = coffeeArray[index].exclude;
+            const coffeeArrayExcludes = excludes[index].exclude;
             setFilterSearchText(coffeeArrayExcludes);
           }}
         />
         <Autocomplete
           className="dropdownDepartments"
-          freeSolo={true}
-          disableClearable={true}
           disablePortal
+          disableClearable
           options={departments}
           sx={{ width: 166 }}
-          renderInput={(params) => (
-            <TextField {...params} label="Departments" />
+          renderInput={({ inputProps, ...params }) => (
+            <TextField
+              {...params}
+              label="Department"
+              inputProps={{ ...inputProps, readOnly: true }}
+            />
           )}
           onInputChange={(_event, value) => {
             const index = departments.findIndex((object) => {
@@ -549,7 +563,7 @@ export default function EnhancedTable() {
       </Paper>
 
       <Box sx={{ width: "100%" }}>
-        <Paper sx={{ width: "100%", mb: 2 }}>
+        <Paper sx={{ width: "60%", mb: 2 }}>
           <EnhancedTableToolbar numSelected={selected.length} />
           <TableContainer>
             <Table
