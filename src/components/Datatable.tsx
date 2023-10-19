@@ -21,7 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
@@ -29,6 +29,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
 
 interface Data {
+  index: number;
   name: string;
   price: string;
   cupsize: string;
@@ -38,6 +39,7 @@ interface Data {
 }
 
 export function createData(
+  index: number,
   name: string,
   price: string,
   cupsize: string,
@@ -46,6 +48,7 @@ export function createData(
   URL: string
 ): Data {
   return {
+    index,
     name,
     price,
     cupsize,
@@ -317,18 +320,24 @@ export default function EnhancedTable() {
     { label: "Pet", id: "&dasFilter=Department;13;Pet;false;Department" },
   ];
 
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Data>("price");
-  const [selected, setSelected] = React.useState<readonly string[]>([]);
-  const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(true);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const rows = [];
+
+  const [order, setOrder] = useState<Order>("desc");
+  const [orderBy, setOrderBy] = useState<keyof Data>("price");
+  const [selected, setSelected] = useState<readonly string[]>([]);
+  const [page, setPage] = useState(0);
+  const [dense, setDense] = useState(true);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [countdownFetch, setCountdownFetch] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  console.log("Getting data");
+  useEffect(() => {
+    console.log("Fetch changed!");
+  }, [countdownFetch]);
+
   const GetData = () => {
+    console.log("Getting data");
     fetch(
       `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
     )
@@ -338,9 +347,7 @@ export default function EnhancedTable() {
       });
   };
 
-  const rows: any = [];
-
-  countdownFetch.forEach((product) => {
+  countdownFetch.forEach((product, countdownIndex) => {
     const productName = CapitalizeFirstLetter(product["name"]);
     const productPrice = product["price"]["salePrice"];
     const productSku = product["sku"];
@@ -351,8 +358,8 @@ export default function EnhancedTable() {
 
     rows.push(
       createData(
+        countdownIndex,
         productName,
-        // productSku,
         productPrice,
         cupsize,
         measure,
@@ -373,7 +380,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n);
+      const newSelected = rows.map((n) => n.index);
       setSelected(newSelected);
       return;
     }
@@ -411,10 +418,6 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -450,9 +453,21 @@ export default function EnhancedTable() {
           onChange={(e) => {
             setSearchTerm(e.target.value);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              GetData();
+            }
+          }}
         />
 
-        <IconButton onClick={() => GetData()} type="button" sx={{ p: "10px" }}>
+        <IconButton
+          onClick={() => {
+            GetData();
+          }}
+          type="button"
+          sx={{ p: "10px" }}
+        >
           <SearchIcon />
         </IconButton>
       </Paper>
@@ -581,13 +596,13 @@ export default function EnhancedTable() {
               />
               <TableBody>
                 {visibleRows.map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(row.index);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.name)}
+                      onClick={(event) => handleClick(event, row.index)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -609,11 +624,11 @@ export default function EnhancedTable() {
                         id={labelId}
                         scope="row"
                         padding="none"
-                        key={row.sku}
+                        key={row.index}
+                        align="left"
                       >
                         {row.name}
                       </TableCell>
-                      {/* <TableCell align="left">{row.sku}</TableCell> */}
                       <TableCell align="left">${row.price}</TableCell>
                       <TableCell align="left">{row.cupsize}</TableCell>
                       <TableCell align="left">{row.measure}</TableCell>
@@ -657,10 +672,6 @@ export default function EnhancedTable() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
       </Box>
     </>
   );
