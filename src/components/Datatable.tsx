@@ -25,13 +25,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 
 interface Data {
   index: number;
   name: string;
-  price: number;
+  price: string;
   cupsize: string;
   measure: string;
   size: string;
@@ -41,7 +39,7 @@ interface Data {
 export function createData(
   index: number,
   name: string,
-  price: number,
+  price: string,
   cupsize: string,
   measure: string,
   size: string,
@@ -326,7 +324,6 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState<keyof Data>("price");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [countdownFetch, setCountdownFetch] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState("");
@@ -367,12 +364,12 @@ export default function EnhancedTable() {
         )
       );
     } catch (error) {
-      const productName = CapitalizeFirstLetter(product["name"]);
-      const productPrice = 69;
-      const productSku = product["sku"];
-      const cupsize = 69;
-      const measure = 69;
-      const size = 69;
+      const productName = "N/A";
+      const productPrice = "N/A";
+      const productSku = "N/A";
+      const cupsize = "N/A";
+      const measure = "N/A";
+      const size = "N/A";
       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
       rows.push(
         createData(
@@ -437,9 +434,6 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -607,7 +601,7 @@ export default function EnhancedTable() {
             <Table
               sx={{ minWidth: 750 }}
               aria-labelledby="tableTitle"
-              size={dense ? "small" : "medium"}
+              size={"small"}
             >
               <EnhancedTableHead
                 numSelected={selected.length}
@@ -676,7 +670,7 @@ export default function EnhancedTable() {
                 {emptyRows > 0 && (
                   <TableRow
                     style={{
-                      height: (dense ? 33 : 53) * emptyRows,
+                      height: 33 * emptyRows,
                     }}
                   >
                     <TableCell colSpan={6} />
@@ -695,10 +689,6 @@ export default function EnhancedTable() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={handleChangeDense} />}
-          label="Dense padding"
-        />
       </Box>
     </>
   );
