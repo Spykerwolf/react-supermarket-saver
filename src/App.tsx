@@ -1,5 +1,4 @@
 import MainLogo from "./components/Logo";
-// import { SearchProducts } from "./components/Datatable";
 import EnhancedTable from "./components/Datatable";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import NightModeToggle from "./components/NightModeToggle";
@@ -10,9 +9,9 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <NightModeToggle />
       <MainLogo />
+      <CssBaseline />
       <EnhancedTable />
     </ThemeProvider>
   );

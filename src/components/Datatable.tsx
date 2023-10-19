@@ -34,6 +34,7 @@ interface Data {
   measure: string;
   size: string;
   URL: string;
+  image: string;
 }
 
 export function createData(
@@ -43,7 +44,8 @@ export function createData(
   cupsize: string,
   measure: string,
   size: string,
-  URL: string
+  URL: string,
+  image: string
 ): Data {
   return {
     index,
@@ -53,6 +55,7 @@ export function createData(
     measure,
     size,
     URL,
+    image,
   };
 }
 
@@ -352,6 +355,7 @@ export default function EnhancedTable() {
       const measure = product["size"]["cupMeasure"];
       const size = product["size"]["volumeSize"];
       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+      const image = product["images"]["big"];
       rows.push(
         createData(
           countdownIndex,
@@ -360,7 +364,8 @@ export default function EnhancedTable() {
           cupsize,
           measure,
           size,
-          URL
+          URL,
+          image
         )
       );
     } catch (error) {
@@ -371,6 +376,8 @@ export default function EnhancedTable() {
       const measure = "N/A";
       const size = "N/A";
       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+      const image = product["images"]["big"];
+
       rows.push(
         createData(
           countdownIndex,
@@ -379,7 +386,8 @@ export default function EnhancedTable() {
           cupsize,
           measure,
           size,
-          URL
+          URL,
+          image
         )
       );
     }
@@ -643,6 +651,9 @@ export default function EnhancedTable() {
                         padding="none"
                         key={row.index}
                         align="left"
+                        onMouseOver={() => {
+                          console.log(row.image);
+                        }}
                       >
                         {row.name}
                       </TableCell>

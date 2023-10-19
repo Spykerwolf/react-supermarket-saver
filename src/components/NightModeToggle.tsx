@@ -10,8 +10,8 @@ const NightModeToggle = () => {
     <Box
       sx={{
         display: "flex",
-        alignItems: "right",
-        justifyContent: "right",
+        alignItems: "left",
+        justifyContent: "left",
       }}
     >
       <IconButton onClick={toggleColorMode} color="inherit">
