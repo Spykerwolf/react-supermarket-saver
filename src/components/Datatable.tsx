@@ -15,8 +15,6 @@ import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
@@ -27,11 +25,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 
 interface Data {
   index: number;
   name: string;
-  price: string;
+  price: number;
   cupsize: string;
   measure: string;
   size: string;
@@ -41,7 +41,7 @@ interface Data {
 export function createData(
   index: number,
   name: string,
-  price: string,
+  price: number,
   cupsize: string,
   measure: string,
   size: string,
@@ -332,10 +332,7 @@ export default function EnhancedTable() {
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    console.log("Fetch changed!");
-    console.log(countdownFetch);
-  }, [countdownFetch]);
+  useEffect(() => {}, [countdownFetch]);
 
   const GetData = () => {
     console.log("Getting data");
@@ -345,33 +342,51 @@ export default function EnhancedTable() {
       .then((response) => response.json())
       .then((data) => {
         setCountdownFetch(data.products.items);
+        console.log(countdownFetch);
       });
-    console.log(countdownFetch);
   };
 
   countdownFetch.forEach((product, countdownIndex) => {
-    const productName = CapitalizeFirstLetter(product["name"]);
-    const productPrice = product["price"]["salePrice"];
-    const productSku = product["sku"];
-    const cupsize = product["size"]["cupPrice"];
-    const measure = product["size"]["cupMeasure"];
-    const size = product["size"]["volumeSize"];
-    const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-
-    rows.push(
-      createData(
-        countdownIndex,
-        productName,
-        productPrice,
-        cupsize,
-        measure,
-        size,
-        URL
-      )
-    );
+    try {
+      const productName = CapitalizeFirstLetter(product["name"]);
+      const productPrice = product["price"]["salePrice"];
+      const productSku = product["sku"];
+      const cupsize = product["size"]["cupPrice"];
+      const measure = product["size"]["cupMeasure"];
+      const size = product["size"]["volumeSize"];
+      const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+      rows.push(
+        createData(
+          countdownIndex,
+          productName,
+          productPrice,
+          cupsize,
+          measure,
+          size,
+          URL
+        )
+      );
+    } catch (error) {
+      const productName = CapitalizeFirstLetter(product["name"]);
+      const productPrice = 69;
+      const productSku = product["sku"];
+      const cupsize = 69;
+      const measure = 69;
+      const size = 69;
+      const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+      rows.push(
+        createData(
+          countdownIndex,
+          productName,
+          productPrice,
+          cupsize,
+          measure,
+          size,
+          URL
+        )
+      );
+    }
   });
-
-  console.log(rows);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -422,6 +437,9 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
+  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDense(event.target.checked);
+  };
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -434,7 +452,8 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [(order, orderBy, page, rowsPerPage, countdownFetch)]
+    [order, orderBy, page, rowsPerPage, countdownFetch]
+    // [(order, orderBy, page, rowsPerPage, countdownFetch)]
   );
 
   return (
@@ -676,6 +695,10 @@ export default function EnhancedTable() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Paper>
+        <FormControlLabel
+          control={<Switch checked={dense} onChange={handleChangeDense} />}
+          label="Dense padding"
+        />
       </Box>
     </>
   );
