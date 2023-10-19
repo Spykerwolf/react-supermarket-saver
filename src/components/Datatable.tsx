@@ -322,7 +322,7 @@ export default function EnhancedTable() {
 
   const rows = [];
 
-  const [order, setOrder] = useState<Order>("desc");
+  const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("price");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
@@ -334,6 +334,7 @@ export default function EnhancedTable() {
 
   useEffect(() => {
     console.log("Fetch changed!");
+    console.log(countdownFetch);
   }, [countdownFetch]);
 
   const GetData = () => {
@@ -345,6 +346,7 @@ export default function EnhancedTable() {
       .then((data) => {
         setCountdownFetch(data.products.items);
       });
+    console.log(countdownFetch);
   };
 
   countdownFetch.forEach((product, countdownIndex) => {
@@ -368,6 +370,8 @@ export default function EnhancedTable() {
       )
     );
   });
+
+  console.log(rows);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -430,7 +434,7 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage]
+    [(order, orderBy, page, rowsPerPage, countdownFetch)]
   );
 
   return (
