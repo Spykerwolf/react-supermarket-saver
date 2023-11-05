@@ -1,5 +1,5 @@
 import * as React from "react";
-import { alpha } from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -21,6 +21,9 @@ import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useEffect, useState } from "react";
 import InputBase from "@mui/material/InputBase";
+import Chip from "@mui/material/Chip";
+import TagFacesIcon from "@mui/icons-material/TagFaces";
+
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -30,9 +33,8 @@ interface Data {
   index: number;
   name: string;
   price: string;
-  cupsize: string;
-  measure: string;
-  size: string;
+  ratio: string;
+  productPackage: string;
   URL: string;
   image: string;
 }
@@ -41,9 +43,8 @@ export function createData(
   index: number,
   name: string,
   price: string,
-  cupsize: string,
-  measure: string,
-  size: string,
+  ratio: string,
+  productPackage: string,
   URL: string,
   image: string
 ): Data {
@@ -51,9 +52,8 @@ export function createData(
     index,
     name,
     price,
-    cupsize,
-    measure,
-    size,
+    ratio,
+    productPackage,
     URL,
     image,
   };
@@ -132,22 +132,16 @@ const headCells: readonly HeadCell[] = [
     label: "Price",
   },
   {
-    id: "cupsize",
+    id: "ratio",
     numeric: false,
     disablePadding: false,
-    label: "Cupsize",
+    label: "Ratio",
   },
   {
-    id: "measure",
+    id: "productPackage",
     numeric: false,
     disablePadding: false,
-    label: "Measure",
-  },
-  {
-    id: "size",
-    numeric: false,
-    disablePadding: false,
-    label: "Size",
+    label: "Packaging",
   },
   {
     id: "URL",
@@ -241,6 +235,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         }),
       }}
     >
+      {" "}
       {numSelected > 0 ? (
         <Typography
           sx={{ flex: "1 1 100%" }}
@@ -321,21 +316,28 @@ export default function EnhancedTable() {
     { label: "Pet", id: "&dasFilter=Department;13;Pet;false;Department" },
   ];
 
-  const rows = [];
+  let rows = [];
 
   const [order, setOrder] = useState<Order>("asc");
-  const [orderBy, setOrderBy] = useState<keyof Data>("price");
+  const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [countdownFetch, setCountdownFetch] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState("");
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [placeholderText, setPlaceholderText] = useState(
+    "Search for a product"
+  );
+  const [searchHelperText, setSearchHelperText] = useState("");
+
+  const [chipData, setChipData] = React.useState<readonly ChipData[]>([]);
 
   useEffect(() => {}, [countdownFetch]);
 
   const GetData = () => {
-    console.log("Getting data");
+    console.log("Start - Countdown");
     fetch(
       `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
     )
@@ -343,17 +345,21 @@ export default function EnhancedTable() {
       .then((data) => {
         setCountdownFetch(data.products.items);
         console.log(countdownFetch);
+        console.log("Done - Countdown");
       });
   };
 
   countdownFetch.forEach((product, countdownIndex) => {
-    try {
+    if (product["type"] === "Product") {
       const productName = CapitalizeFirstLetter(product["name"]);
       const productPrice = product["price"]["salePrice"];
       const productSku = product["sku"];
-      const cupsize = product["size"]["cupPrice"];
-      const measure = product["size"]["cupMeasure"];
-      const size = product["size"]["volumeSize"];
+      const ratio = `$${product["size"]["cupPrice"]} / ${product["size"]["cupMeasure"]}`;
+      const productPackage = `${product["size"]["volumeSize"]} ${
+        product["size"]["packageType"] != null
+          ? product["size"]["packageType"]
+          : ""
+      }`;
       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
       const image = product["images"]["big"];
       rows.push(
@@ -361,35 +367,14 @@ export default function EnhancedTable() {
           countdownIndex,
           productName,
           productPrice,
-          cupsize,
-          measure,
-          size,
+          ratio,
+          productPackage,
           URL,
           image
         )
       );
-    } catch (error) {
-      const productName = "N/A";
-      const productPrice = "N/A";
-      const productSku = "N/A";
-      const cupsize = "N/A";
-      const measure = "N/A";
-      const size = "N/A";
-      const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-      const image = product["images"]["big"];
-
-      rows.push(
-        createData(
-          countdownIndex,
-          productName,
-          productPrice,
-          cupsize,
-          measure,
-          size,
-          URL,
-          image
-        )
-      );
+    } else {
+      console.log(`Promo product? - ${product["type"]} - ${product["name"]}}`);
     }
   });
 
@@ -458,79 +443,131 @@ export default function EnhancedTable() {
     // [(order, orderBy, page, rowsPerPage, countdownFetch)]
   );
 
+  interface ChipData {
+    key: number;
+    label: string;
+  }
+
+  const ListItem = styled("li")(({ theme }) => ({
+    margin: theme.spacing(0.5),
+  }));
+
+  const handleDelete = (chipToDelete: ChipData) => () => {
+    setChipData((chips) =>
+      chips.filter((chip) => chip.key !== chipToDelete.key)
+    );
+  };
+
   return (
     <>
-      <Paper
+      <br></br>
+      <TextField
+        autoComplete="off"
+        sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
         className="filterProduct"
-        component="form"
-        sx={{
-          p: "2px 4px",
-          m: "1px 0px 0px 0px",
-          display: "flex",
-          alignItems: "center",
-          width: 500,
+        variant="outlined"
+        id="outlined-error-helper-text"
+        helperText={searchHelperText}
+        placeholder={placeholderText}
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
         }}
-      >
-        <InputBase
-          sx={{ ml: 1, flex: 1 }}
-          placeholder="Search for a product"
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (e.target.value === "") {
+              setSearchHelperText("Please search for something");
+            } else {
               e.preventDefault();
               GetData();
+              setPlaceholderText(searchTerm);
+              setSearchHelperText("");
+              setSearchTerm("");
             }
-          }}
-        />
-
-        <IconButton
-          onClick={() => {
-            GetData();
-          }}
-          type="button"
-          sx={{ p: "10px" }}
-        >
-          <SearchIcon />
-        </IconButton>
-      </Paper>
-      <Paper
-        className="filterProduct"
-        component="form"
-        sx={{
-          p: "2px 4px",
-          m: "1px 0px 0px 0px",
-          display: "flex",
-          alignItems: "center",
-          width: 500,
+          }
         }}
+      />
+      <IconButton
+        onClick={() => {
+          if (searchTerm === "") {
+            setSearchHelperText("Please search for something");
+          } else {
+            GetData();
+            setPlaceholderText(searchTerm);
+            setSearchHelperText("");
+            setSearchTerm("");
+          }
+        }}
+        type="button"
+        sx={{ p: "10px" }}
       >
-        <InputBase
-          className="filterAProduct"
-          sx={{ ml: 1, flex: 1 }}
-          placeholder="Filter a product"
-          value={filterSearchText}
-          onChange={(e) => {
-            setFilterSearchText(e.target.value);
-          }}
-        />
+        <SearchIcon />
+      </IconButton>
+      <br></br>
+      <TextField
+        value={filterSearchText}
+        autoComplete="off"
+        className="filterAProduct"
+        sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+        placeholder="Filter a product"
+        onKeyDown={(e) => {
+          if (e.key === "," && e.target.value !== "") {
+            setChipData([
+              ...chipData,
+              {
+                key: Math.random(),
+                label: filterSearchText,
+              },
+            ]);
+            setFilterSearchText("");
+            e.preventDefault;
+          }
+        }}
+        onChange={(e) => {
+          if (e.target.value !== " ") {
+            e.preventDefault;
+            e.target.value !== "," && setFilterSearchText(e.target.value);
+          }
+        }}
+      />
 
-        <IconButton
-          onClick={() => setFilterSearchText("")}
-          type="button"
-          sx={{ p: "10px" }}
-          aria-label="search"
-        >
-          <RemoveIcon />
-        </IconButton>
+      <IconButton
+        onClick={() => setFilterSearchText("")}
+        type="button"
+        sx={{
+          p: "10px",
+        }}
+        aria-label="search"
+      >
+        <RemoveIcon />
+      </IconButton>
+      <Paper
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          listStyle: "none",
+          p: 0.5,
+          m: 0,
+        }}
+        component="ul"
+        variant="string"
+      >
+        {chipData.map((data) => {
+          return (
+            <>
+              <ListItem key={data.key}>
+                <Chip label={data.label} onDelete={handleDelete(data)} />
+              </ListItem>
+            </>
+          );
+        })}
       </Paper>
       <Paper
         className="dropdownLists"
         component="form"
         sx={{
-          p: "0px 4px",
+          p: "0px 8px",
           display: "flex",
           alignItems: "center",
           width: 500,
@@ -577,6 +614,14 @@ export default function EnhancedTable() {
             });
             const coffeeArrayExcludes = excludes[index].exclude;
             setFilterSearchText(coffeeArrayExcludes);
+            setChipData([
+              ...chipData,
+              {
+                key: Math.random(),
+                label: coffeeArrayExcludes.split(","),
+              },
+            ]);
+            console.log(chipData);
           }}
         />
         <Autocomplete
@@ -601,7 +646,6 @@ export default function EnhancedTable() {
           }}
         />
       </Paper>
-
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "60%", mb: 2 }}>
           <EnhancedTableToolbar numSelected={selected.length} />
@@ -620,64 +664,74 @@ export default function EnhancedTable() {
                 rowCount={rows.length}
               />
               <TableBody>
-                {visibleRows.map((row, index) => {
-                  const isItemSelected = isSelected(row.index);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+                {visibleRows
+                  .filter((row) => {
+                    return filterSearchText.toLowerCase() === "" ||
+                      filterSearchText.toLowerCase() === " "
+                      ? row
+                      : !row.name
+                          .toLowerCase()
+                          .includes(filterSearchText.toLowerCase());
+                  })
+                  .map((row, index) => {
+                    let isItemSelected = isSelected(row.index);
+                    const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      onClick={(event) => handleClick(event, row.index)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={Math.random()}
-                      selected={isItemSelected}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            "aria-labelledby": labelId,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        padding="none"
-                        key={row.index}
-                        align="left"
-                        onMouseOver={() => {
-                          console.log(row.image);
-                        }}
+                    return (
+                      <TableRow
+                        hover
+                        onClick={(event) => handleClick(event, row.index)}
+                        role="checkbox"
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        key={Math.random()}
+                        selected={isItemSelected}
+                        sx={{ cursor: "pointer" }}
                       >
-                        {row.name}
-                      </TableCell>
-                      <TableCell align="left">${row.price}</TableCell>
-                      <TableCell align="left">{row.cupsize}</TableCell>
-                      <TableCell align="left">{row.measure}</TableCell>
-                      <TableCell align="left">{row.size}</TableCell>
-                      <TableCell align="left">
-                        <IconButton
-                          onClick={() =>
-                            open(row.URL, "_blank", "noopener,noreferrer")
-                          }
-                          onMouseDown={(e) => {
-                            if (e.button === 1) {
-                              open(row.URL, "_blank", "noopener,noreferrer");
-                            }
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            inputProps={{
+                              "aria-labelledby": labelId,
+                            }}
+                          />
+                        </TableCell>
+
+                        <TableCell
+                          component="th"
+                          id={labelId}
+                          scope="row"
+                          padding="none"
+                          key={row.index}
+                          align="left"
+                          onMouseOver={() => {
+                            setImageToDisplay(row.image);
                           }}
                         >
-                          <ShoppingCartIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                          {row.name}
+                        </TableCell>
+                        <TableCell align="left">${row.price}</TableCell>
+                        <TableCell align="left">{row.ratio}</TableCell>
+                        {/* <TableCell align="left">{row.size}</TableCell> */}
+                        <TableCell align="left">{row.productPackage}</TableCell>
+                        <TableCell align="left">
+                          <IconButton
+                            onClick={() => {
+                              open(row.URL, "_blank", "noopener,noreferrer");
+                            }}
+                            onMouseDown={(e) => {
+                              if (e.button === 1) {
+                                open(row.URL, "_blank", "noopener,noreferrer");
+                              }
+                            }}
+                          >
+                            <ShoppingCartIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 {emptyRows > 0 && (
                   <TableRow
                     style={{
