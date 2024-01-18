@@ -1,5 +1,5 @@
 import { PaletteMode } from "@mui/material";
-import { amber, grey } from "@mui/material/colors";
+import { amber, grey, orange } from "@mui/material/colors";
 
 const theme = {
   palette: {
@@ -25,8 +25,8 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           primary: grey,
           divider: grey,
           background: {
-            default: grey,
-            paper: grey,
+            default: orange,
+            paper: orange,
           },
           text: {
             primary: "#fff",

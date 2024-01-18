@@ -20,14 +20,12 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useEffect, useState } from "react";
-import InputBase from "@mui/material/InputBase";
 import Chip from "@mui/material/Chip";
-import TagFacesIcon from "@mui/icons-material/TagFaces";
-
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { Stack, Button, ButtonGroup } from "@mui/material";
 
 interface Data {
   index: number;
@@ -274,8 +272,7 @@ export default function EnhancedTable() {
   const excludes = [
     {
       label: "Milk",
-      exclude:
-        "Uht, uht, trim, powder, lactose, lite, fat, a2, A2, lacto, Lacto",
+      exclude: "Uht,uht,trim,powder,lactose,lite,fat,a2,A2,lacto,Lacto",
     },
     { label: "Coffee", exclude: "decaf, Decaf" },
   ];
@@ -322,19 +319,32 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [countdownFetch, setCountdownFetch] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState("");
-
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [testButton, setTestButton] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [placeholderText, setPlaceholderText] = useState(
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-
-  const [chipData, setChipData] = React.useState<readonly ChipData[]>([]);
-
+  const [chipData, setChipData] = React.useState([]);
+  const [dropdownMilk, setDropdownMilk] = React.useState([
+    {
+      label: "Milk",
+      exclude: "Uht,uht,trim,powder,lactose,lite,fat,a2,A2,lacto,Lacto",
+    },
+    { label: "Coffee", exclude: "decaf, Decaf" },
+  ]);
   useEffect(() => {}, [countdownFetch]);
+  useEffect(() => {
+    // chipData.length != 0 && chipData.map((e) => e.label);
+    {
+      chipData.length != 0 &&
+        console.log(chipData.map((e) => e.label).at(chipData.length - 1));
+    }
+  }, [chipData]);
 
   const GetData = () => {
     console.log("Start - Countdown");
@@ -344,7 +354,7 @@ export default function EnhancedTable() {
       .then((response) => response.json())
       .then((data) => {
         setCountdownFetch(data.products.items);
-        console.log(countdownFetch);
+        countdownFetch != "" && console.log(countdownFetch);
         console.log("Done - Countdown");
       });
   };
@@ -373,8 +383,6 @@ export default function EnhancedTable() {
           image
         )
       );
-    } else {
-      console.log(`Promo product? - ${product["type"]} - ${product["name"]}}`);
     }
   });
 
@@ -440,7 +448,6 @@ export default function EnhancedTable() {
         page * rowsPerPage + rowsPerPage
       ),
     [order, orderBy, page, rowsPerPage, countdownFetch]
-    // [(order, orderBy, page, rowsPerPage, countdownFetch)]
   );
 
   interface ChipData {
@@ -461,87 +468,97 @@ export default function EnhancedTable() {
   return (
     <>
       <br></br>
-      <TextField
-        autoComplete="off"
-        sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
-        className="filterProduct"
-        variant="outlined"
-        id="outlined-error-helper-text"
-        helperText={searchHelperText}
-        placeholder={placeholderText}
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (e.target.value === "") {
+      <ButtonGroup>
+        <TextField
+          autoComplete="off"
+          sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+          className="filterProduct"
+          variant="outlined"
+          id="outlined-error-helper-text"
+          helperText={searchHelperText}
+          placeholder={placeholderText}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (e.target.value === "") {
+                setSearchHelperText("Please search for something");
+              } else {
+                e.preventDefault();
+                GetData();
+                setPlaceholderText(searchTerm);
+                setSearchHelperText("");
+                setSearchTerm("");
+              }
+            }
+          }}
+        />
+        <Button
+          variant="contained"
+          color="warning"
+          size="small"
+          endIcon={<SearchIcon />}
+          onClick={() => {
+            if (searchTerm === "") {
               setSearchHelperText("Please search for something");
             } else {
-              e.preventDefault();
               GetData();
               setPlaceholderText(searchTerm);
               setSearchHelperText("");
               setSearchTerm("");
             }
-          }
-        }}
-      />
-      <IconButton
-        onClick={() => {
-          if (searchTerm === "") {
-            setSearchHelperText("Please search for something");
-          } else {
-            GetData();
-            setPlaceholderText(searchTerm);
-            setSearchHelperText("");
-            setSearchTerm("");
-          }
-        }}
-        type="button"
-        sx={{ p: "10px" }}
-      >
-        <SearchIcon />
-      </IconButton>
-      <br></br>
-      <TextField
-        value={filterSearchText}
-        autoComplete="off"
-        className="filterAProduct"
-        sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
-        placeholder="Filter a product"
-        onKeyDown={(e) => {
-          if (e.key === "," && e.target.value !== "") {
-            setChipData([
-              ...chipData,
-              {
-                key: Math.random(),
-                label: filterSearchText,
-              },
-            ]);
-            setFilterSearchText("");
-            e.preventDefault;
-          }
-        }}
-        onChange={(e) => {
-          if (e.target.value !== " ") {
-            e.preventDefault;
-            e.target.value !== "," && setFilterSearchText(e.target.value);
-          }
-        }}
-      />
+          }}
+          type="button"
+          sx={{ p: "10px" }}
+        >
+          Search
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup>
+        <TextField
+          value={filterSearchText}
+          autoComplete="off"
+          className="filterAProduct"
+          sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+          placeholder="Filter a product"
+          onKeyDown={(e) => {
+            if (e.key === "," && e.target.value !== "") {
+              setChipData([
+                ...chipData,
+                {
+                  key: Math.random(),
+                  label: filterSearchText,
+                },
+              ]);
+              setFilterSearchText("");
+              e.preventDefault;
+            }
+          }}
+          onChange={(e) => {
+            if (e.target.value !== " ") {
+              e.preventDefault;
+              e.target.value !== "," && setFilterSearchText(e.target.value);
+            }
+          }}
+        />
 
-      <IconButton
-        onClick={() => setFilterSearchText("")}
-        type="button"
-        sx={{
-          p: "10px",
-        }}
-        aria-label="search"
-      >
-        <RemoveIcon />
-      </IconButton>
+        <Button
+          variant="contained"
+          size="small"
+          endIcon={<RemoveIcon />}
+          onClick={() => setFilterSearchText("")}
+          type="button"
+          sx={{
+            p: "10px",
+          }}
+          aria-label="search"
+        >
+          Filter
+        </Button>
+      </ButtonGroup>
       <Paper
         sx={{
           display: "flex",
@@ -552,6 +569,7 @@ export default function EnhancedTable() {
         }}
         component="ul"
         variant="string"
+        key={Math.random()}
       >
         {chipData.map((data) => {
           return (
@@ -612,15 +630,20 @@ export default function EnhancedTable() {
             const index = excludes.findIndex((object) => {
               return object.label === value;
             });
-            const coffeeArrayExcludes = excludes[index].exclude;
-            setFilterSearchText(coffeeArrayExcludes);
-            setChipData([
-              ...chipData,
-              {
-                key: Math.random(),
-                label: coffeeArrayExcludes.split(","),
-              },
-            ]);
+            // const coffeeArrayExcludes = excludes[index].exclude.trim();
+            // setFilterSearchText(coffeeArrayExcludes);
+            let arrayString = dropdownMilk[index].exclude.split(",");
+            console.log(arrayString);
+            arrayString.forEach((e) => {
+              setChipData([
+                ...chipData,
+                {
+                  key: Math.random(),
+                  label: e,
+                },
+              ]);
+              console.log(e);
+            });
             console.log(chipData);
           }}
         />
@@ -665,13 +688,26 @@ export default function EnhancedTable() {
               />
               <TableBody>
                 {visibleRows
+                  // .filter((row) => {
+                  //   return filterSearchText.toLowerCase() === "" ||
+                  //     filterSearchText.toLowerCase() === " "
+                  //     ? row
+                  //     : !row.name.includes(chipData.map((e) => e.label));
+                  // })
+
+                  // .filter((row) => {
+                  //   return chipData.length === 0
+                  //     ? row
+                  //     : !row.name.includes(chipData.map((e) => e.label));
+                  // })
                   .filter((row) => {
-                    return filterSearchText.toLowerCase() === "" ||
-                      filterSearchText.toLowerCase() === " "
+                    return chipData.length === 0
                       ? row
-                      : !row.name
-                          .toLowerCase()
-                          .includes(filterSearchText.toLowerCase());
+                      : !row.name.includes(
+                          chipData.map((e) => e.label).at(chipData.length - 1)
+                        );
+
+                    // row.name.includes(chipData.map((e) => e.label));
                   })
                   .map((row, index) => {
                     let isItemSelected = isSelected(row.index);
@@ -705,9 +741,9 @@ export default function EnhancedTable() {
                           padding="none"
                           key={row.index}
                           align="left"
-                          onMouseOver={() => {
-                            setImageToDisplay(row.image);
-                          }}
+                          // onMouseOver={() => {
+                          //   setImageToDisplay(row.image);
+                          // }}
                         >
                           {row.name}
                         </TableCell>
