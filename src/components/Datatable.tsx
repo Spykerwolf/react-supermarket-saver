@@ -1,5 +1,5 @@
 import * as React from "react";
-import { alpha, styled } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -9,23 +9,15 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useEffect, useState } from "react";
 import Chip from "@mui/material/Chip";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { Stack, Button, ButtonGroup } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 
 interface Data {
   index: number;
@@ -33,8 +25,8 @@ interface Data {
   price: string;
   ratio: string;
   productPackage: string;
+  store: string;
   URL: string;
-  image: string;
 }
 
 export function createData(
@@ -43,8 +35,8 @@ export function createData(
   price: string,
   ratio: string,
   productPackage: string,
-  URL: string,
-  image: string
+  store: string,
+  URL: string
 ): Data {
   return {
     index,
@@ -52,16 +44,16 @@ export function createData(
     price,
     ratio,
     productPackage,
+    store,
     URL,
-    image,
   };
 }
 
 function CapitalizeFirstLetter(name: string) {
   const word = name;
-  const firstLetter = word.charAt(0);
-  const firstLetterCap = firstLetter.toUpperCase();
-  const remainingLetters = word.slice(1);
+  const firstLetter = word?.charAt(0);
+  const firstLetterCap = firstLetter?.toUpperCase();
+  const remainingLetters = word?.slice(1);
   const capitalizedWord = firstLetterCap + remainingLetters;
   return capitalizedWord;
 }
@@ -90,10 +82,6 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
 function stableSort<T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number
@@ -142,6 +130,12 @@ const headCells: readonly HeadCell[] = [
     label: "Packaging",
   },
   {
+    id: "store",
+    numeric: false,
+    disablePadding: false,
+    label: "Store",
+  },
+  {
     id: "URL",
     numeric: false,
     disablePadding: false,
@@ -162,14 +156,7 @@ interface EnhancedTableProps {
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
+  const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -178,14 +165,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
-        </TableCell>
+        <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={Math.random()}
@@ -212,134 +192,34 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-interface EnhancedTableToolbarProps {
-  numSelected: number;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {" "}
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        ></Typography>
-      )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
-  );
-}
-
 export default function EnhancedTable() {
-  const excludes = [
-    {
-      label: "Milk",
-      exclude: "Uht,uht,trim,powder,lactose,lite,fat,a2,A2,lacto,Lacto",
-    },
-    { label: "Coffee", exclude: "decaf, Decaf" },
-  ];
+  let rows: any = [];
 
-  const suburbs = [
-    { label: "Orewa", id: "3034" },
-    { label: "Albany", id: "6" },
-    { label: "Silverdale", id: "3315" },
-    { label: "Glenfield", id: "38" },
-  ];
-
-  const departments = [
-    { label: "All Departments", id: "" },
-    {
-      label: "Fridge & Deli",
-      id: "&dasFilter=Department;4;Fridge%20%26%20Deli;false;Department",
-    },
-    { label: "Frozen", id: "&dasFilter=Department;6;Frozen;false;Department" },
-    { label: "Pantry", id: "&dasFilter=Department;7;Pantry;false;Department" },
-    { label: "Drinks", id: "&dasFilter=Department;9;Drinks;false;Department" },
-    {
-      label: "Health & Body",
-      id: "&dasFilter=Department;10;Health&20%26%20Body;false;Department",
-    },
-    {
-      label: "Meat & Poultry",
-      id: "&dasFilter=Department;2;Meat&20%26%20Poultry;false;Department",
-    },
-    { label: "Bakery", id: "&dasFilter=Department;5;Bakery;false;Department" },
-    {
-      label: "Household",
-      id: "&dasFilter=Department;11;Household;false;Department",
-    },
-    {
-      label: "Baby & Child",
-      id: "&dasFilter=Department;12;Baby%20Child;false;Department",
-    },
-    { label: "Pet", id: "&dasFilter=Department;13;Pet;false;Department" },
-  ];
-
-  let rows = [];
-
+  const [newworldSecret, setnewworldSecret] = useState(
+    "Bearer eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJmMjc1NTNhMi1lMjdmLTRmMmUtYTBiYy1mMTBlMjIwZDdiYWQiLCJpc3MiOiJvbmxpbmUtY3VzdG9tZXIiLCJzZXNzaW9uSWQiOiI0MDk5OGNkOC1lN2E2LTRmMmUtODYyNi03MDBiOWZlNTgzZDEiLCJiYW5uZXIiOiJNTlciLCJmaXJzdE5hbWUiOiJhbm9ueW1vdXMiLCJlbWFpbCI6ImFub255bW91cyIsInJvbGVzIjpbIkFOT05ZTU9VUyJdLCJleHAiOjE3MDc0NDgyOTV9.gb-Kqr26Wxfb49mmvwtcDmfiSk-S7sxr1rREJoG1LDocOv2HrW9KqXjcPcNy5s8Vw7E5N-I2iiYvgkMW2J3sNHZYbDzsG9DuUhJ1PDZsrm-uW7I8XZNcjjwMkUn23Hj8hHHW4S0fitSrgZ-19vPQ3FB_KoKX8N_aVOkqPQBzmQvrTcwYfZieJgKG3HlDC3Y7jYvqVVwNjEMHJ0kS8Umbmtn2SEd44rbNp0Sm3H_T9v6zOstu9vl3K5-Cm_RO5O1TMWZXTU1xcquGi8U7cE6mQOguQSzVHlEFPtqYlzC9GmB_c75zLMz1OPKpy3s1IjwQ3fqSvZTxFwLTkgDmT5FUGw"
+  );
+  const [paknsaveSecret, setpaknsaveSecret] = useState(
+    "Bearer eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJhYWQ3NzY3Mi02MDFiLTQ1YTAtYmNkYy03MmVmYzVlZDRkN2IiLCJpc3MiOiJvbmxpbmUtY3VzdG9tZXIiLCJzZXNzaW9uSWQiOiI2MDk5OWJmNy02YzIzLTQ1Y2YtOGE1ZC04YWYzMDk2OGQyYTEiLCJiYW5uZXIiOiJQTlMiLCJmaXJzdE5hbWUiOiJhbm9ueW1vdXMiLCJlbWFpbCI6ImFub255bW91cyIsInJvbGVzIjpbIkFOT05ZTU9VUyJdLCJleHAiOjE3MDc0NDgzNTB9.tFPZKhYSqUiT3otwx4Ul6AQY4_SNkWitRO-7Rk54Z33i_uMAohmQPC5IwHzTDMSDl-iUCkOW3BmajDLI8tH7kFpPSmuEP8jaCG8vY_exL4AWAqaQ9u9zQnuGLG9KEXp2R9QseyvFXXsbTUT-L02c6ZM0x8ycLfH60Em8Y55xzIkllGVftqWPE6L11dbuJjOfIP2v_QBeeZTvwmxflvrb0B_NLkuCnRKPwkGcVbCEhuTREgRICr_bj8QDGZW40_XZYQKZdHjF6S9kRGJOmwHmNqmtqCVJWg44iHtlhdNNtNsBdEyG8Ww7d7vzkk63uCidGZsYn5JpiCeUKCAPZtODUQ"
+  );
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [countdownFetch, setCountdownFetch] = useState([]);
+  const [rowsPerPage, setRowsPerPage] = useState(-1);
+  const [countdownResults, setcountdownResults] = useState([]);
+  const [newworldResults, setnewworldResults] = useState([]);
+  const [paknsaveResults, setpaknsaveResults] = useState([]);
   const [filterSearchText, setFilterSearchText] = useState("");
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [testButton, setTestButton] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [placeholderText, setPlaceholderText] = useState(
+  const [searchPlaceholderText, setSearchPlaceholderText] = useState(
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
   const [chipData, setChipData] = React.useState([]);
-  const [dropdownMilk, setDropdownMilk] = React.useState([
-    {
-      label: "Milk",
-      exclude: "Uht,uht,trim,powder,lactose,lite,fat,a2,A2,lacto,Lacto",
-    },
-    { label: "Coffee", exclude: "decaf, Decaf" },
-  ]);
-  useEffect(() => {}, [countdownFetch]);
+  useEffect(() => {}, [countdownResults]);
+  useEffect(() => {}, [newworldResults]);
+  useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
-    // chipData.length != 0 && chipData.map((e) => e.label);
     {
       chipData.length != 0 &&
         console.log(chipData.map((e) => e.label).at(chipData.length - 1));
@@ -353,25 +233,74 @@ export default function EnhancedTable() {
     )
       .then((response) => response.json())
       .then((data) => {
-        setCountdownFetch(data.products.items);
-        countdownFetch != "" && console.log(countdownFetch);
+        console.log(data);
+        setcountdownResults(data.products.items);
+        countdownResults != "" && console.log(countdownResults);
         console.log("Done - Countdown");
+      });
+
+    console.log("Start - New World");
+    const newworldStoreId = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
+    fetch(
+      `http://localhost:8585/https://www.newworld.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${newworldStoreId}&publish=true&ps=100`,
+      {
+        method: "get",
+        headers: new Headers({
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+          Authorization: newworldSecret,
+        }),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.data.products);
+        setnewworldResults(data.data.products);
+        newworldResults != "" && console.log(newworldResults);
+        console.log("Done - New World");
+      });
+    console.log("Start - Pak n Save");
+    const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+    fetch(
+      `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
+      {
+        method: "get",
+        headers: new Headers({
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+          Authorization: paknsaveSecret,
+        }),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.data.products);
+        setpaknsaveResults(data.data.products);
+        paknsaveResults != "" && console.log(paknsaveResults);
+        console.log("Done - Pak n Save");
       });
   };
 
-  countdownFetch.forEach((product, countdownIndex) => {
+  countdownResults.forEach((product, countdownIndex) => {
     if (product["type"] === "Product") {
       const productName = CapitalizeFirstLetter(product["name"]);
-      const productPrice = product["price"]["salePrice"];
+      const store = "Countdown";
+      const productPrice = product["price"]["salePrice"].toLocaleString("en", {
+        minimumFractionDigits: 2,
+      });
       const productSku = product["sku"];
-      const ratio = `$${product["size"]["cupPrice"]} / ${product["size"]["cupMeasure"]}`;
-      const productPackage = `${product["size"]["volumeSize"]} ${
+      const ratio = `$${product["size"]["cupPrice"].toLocaleString("en", {
+        minimumFractionDigits: 2,
+      })} / ${product["size"]["cupMeasure"]?.replace("mL", "ml")}`;
+      const productPackage = `${product["size"]["volumeSize"]?.replace(
+        "mL",
+        "ml"
+      )} ${
         product["size"]["packageType"] != null
           ? product["size"]["packageType"]
           : ""
       }`;
       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-      const image = product["images"]["big"];
       rows.push(
         createData(
           countdownIndex,
@@ -379,11 +308,81 @@ export default function EnhancedTable() {
           productPrice,
           ratio,
           productPackage,
-          URL,
-          image
+          store,
+          URL
         )
       );
     }
+  });
+
+  newworldResults.forEach((product, countdownIndex) => {
+    const productName =
+      CapitalizeFirstLetter(product["brand"]) +
+      " " +
+      CapitalizeFirstLetter(product["name"]);
+    const store = "New World";
+    const productPrice = (product["price"] / 100).toFixed(2);
+    const productSku = product["productId"];
+    const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
+      2
+    )} / ${product["comparativeUnitQuantity"]}${product[
+      "comparativeUnitQuantityUoM"
+    ]
+      ?.replace("l", "L")
+      ?.replace("mL", "ml")}`;
+    const productPackage = `${product["displayName"]
+      ?.replace("l", "L")
+      ?.replace("mL", "ml")}`;
+    const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+      "-",
+      "_"
+    )}`;
+    rows.push(
+      createData(
+        countdownIndex,
+        productName,
+        productPrice,
+        ratio,
+        productPackage,
+        store,
+        URL
+      )
+    );
+  });
+
+  paknsaveResults.forEach((product, countdownIndex) => {
+    const productName =
+      CapitalizeFirstLetter(product["brand"]) +
+      " " +
+      CapitalizeFirstLetter(product["name"]);
+    const store = "Pak n Save";
+    const productPrice = (product["price"] / 100).toFixed(2);
+    const productSku = product["productId"];
+    const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
+      2
+    )} / ${product["comparativeUnitQuantity"]}${product[
+      "comparativeUnitQuantityUoM"
+    ]
+      ?.replace("l", "L")
+      ?.replace("mL", "ml")}`;
+    const productPackage = `${product["displayName"]
+      ?.replace("l", "L")
+      ?.replace("mL", "ml")}`;
+    const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+      "-",
+      "_"
+    )}`;
+    rows.push(
+      createData(
+        countdownIndex,
+        productName,
+        productPrice,
+        ratio,
+        productPackage,
+        store,
+        URL
+      )
+    );
   });
 
   const handleRequestSort = (
@@ -404,26 +403,6 @@ export default function EnhancedTable() {
     setSelected([]);
   };
 
-  const handleClick = (_event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: readonly string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelected(newSelected);
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -435,9 +414,6 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
@@ -447,7 +423,7 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage, countdownFetch]
+    [order, orderBy, page, rowsPerPage, countdownResults, newworldResults]
   );
 
   interface ChipData {
@@ -465,331 +441,231 @@ export default function EnhancedTable() {
     );
   };
 
+  const handleSearch = () => {
+    setSearchHelperText("Please search for something");
+  };
   return (
     <>
-      <br></br>
-      <ButtonGroup>
-        <TextField
-          autoComplete="off"
-          sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
-          className="filterProduct"
-          variant="outlined"
-          id="outlined-error-helper-text"
-          helperText={searchHelperText}
-          placeholder={placeholderText}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
+      <Box>
+        <ButtonGroup>
+          <TextField
+            autoComplete="off"
+            sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+            className="searchProduct"
+            variant="outlined"
+            id="outlined-error-helper-text"
+            helperText={searchHelperText}
+            placeholder={searchPlaceholderText}
+            value={searchTerm}
+            onChange={(e) => {
               if (e.target.value === "") {
+                setSearchHelperText("");
+              }
+              setSearchTerm(e.target.value);
+              setSearchHelperText("");
+              console.log(searchTerm);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if ((e.target as HTMLInputElement).value === "") {
+                  setSearchHelperText("Please search for something");
+                } else {
+                  e.preventDefault();
+                  GetData();
+                  setSearchPlaceholderText("Search for a product");
+                  setSearchHelperText("");
+                  setSearchTerm("");
+                }
+              }
+            }}
+          />
+          <Button
+            variant="contained"
+            color="warning"
+            size="small"
+            endIcon={<SearchIcon />}
+            onClick={() => {
+              if (searchTerm === "") {
                 setSearchHelperText("Please search for something");
               } else {
-                e.preventDefault();
                 GetData();
-                setPlaceholderText(searchTerm);
+                setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
                 setSearchTerm("");
               }
-            }
-          }}
-        />
-        <Button
-          variant="contained"
-          color="warning"
-          size="small"
-          endIcon={<SearchIcon />}
-          onClick={() => {
-            if (searchTerm === "") {
-              setSearchHelperText("Please search for something");
-            } else {
-              GetData();
-              setPlaceholderText(searchTerm);
-              setSearchHelperText("");
-              setSearchTerm("");
-            }
-          }}
-          type="button"
-          sx={{ p: "10px" }}
-        >
-          Search
-        </Button>
-      </ButtonGroup>
-      <ButtonGroup>
-        <TextField
-          value={filterSearchText}
-          autoComplete="off"
-          className="filterAProduct"
-          sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
-          placeholder="Filter a product"
-          onKeyDown={(e) => {
-            if (e.key === "," && e.target.value !== "") {
-              setChipData([
-                ...chipData,
-                {
-                  key: Math.random(),
-                  label: filterSearchText,
-                },
-              ]);
-              setFilterSearchText("");
-              e.preventDefault;
-            }
-          }}
-          onChange={(e) => {
-            if (e.target.value !== " ") {
-              e.preventDefault;
-              e.target.value !== "," && setFilterSearchText(e.target.value);
-            }
-          }}
-        />
+            }}
+            type="button"
+            sx={{ p: "10px" }}
+          >
+            Search
+          </Button>
+        </ButtonGroup>
+      </Box>
+      <Box>
+        <ButtonGroup>
+          <TextField
+            value={filterSearchText}
+            autoComplete="off"
+            className="filterAProduct"
+            sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+            placeholder="Filter a product"
+            onKeyDown={(e) => {
+              if (
+                e.key === "," &&
+                (e.target as HTMLInputElement).value !== ""
+              ) {
+                setChipData([
+                  ...chipData,
+                  {
+                    key: Math.random(),
+                    label: filterSearchText,
+                  },
+                ]);
+                setFilterSearchText("");
+                e.preventDefault;
+              }
+            }}
+            onChange={(e) => {
+              if (e.target.value !== " ") {
+                e.preventDefault;
+                e.target.value !== "," &&
+                  setFilterSearchText(e.target.value.toLowerCase());
+              }
+            }}
+          />
 
-        <Button
-          variant="contained"
-          size="small"
-          endIcon={<RemoveIcon />}
-          onClick={() => setFilterSearchText("")}
-          type="button"
-          sx={{
-            p: "10px",
-          }}
-          aria-label="search"
-        >
-          Filter
-        </Button>
-      </ButtonGroup>
-      <Paper
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          listStyle: "none",
-          p: 0.5,
-          m: 0,
-        }}
-        component="ul"
-        variant="string"
-        key={Math.random()}
-      >
-        {chipData.map((data) => {
-          return (
-            <>
-              <ListItem key={data.key}>
-                <Chip label={data.label} onDelete={handleDelete(data)} />
-              </ListItem>
-            </>
-          );
-        })}
-      </Paper>
-      <Paper
-        className="dropdownLists"
-        component="form"
-        sx={{
-          p: "0px 8px",
-          display: "flex",
-          alignItems: "center",
-          width: 500,
-        }}
-      >
-        <Autocomplete
-          className="dropdownSuburbs"
-          selectOnFocus
-          disablePortal
-          disableClearable
-          options={suburbs}
-          sx={{ width: 166 }}
-          renderInput={({ inputProps, ...params }) => (
-            <TextField
-              {...params}
-              label="Suburb"
-              inputProps={{ ...inputProps, readOnly: true }}
-            />
-          )}
-          onInputChange={(_event, value) => {
-            const index = suburbs.findIndex((object) => {
-              return object.label === value;
-            });
-            const setSuburb = suburbs[index].id;
-            setSearchTerm(setSuburb);
-          }}
-        />
-        <Autocomplete
-          className="dropdownExcludes"
-          disablePortal
-          disableClearable
-          options={excludes}
-          sx={{ width: 166 }}
-          renderInput={({ inputProps, ...params }) => (
-            <TextField
-              {...params}
-              label="Exclude"
-              inputProps={{ ...inputProps, readOnly: true }}
-            />
-          )}
-          onInputChange={(_event, value) => {
-            const index = excludes.findIndex((object) => {
-              return object.label === value;
-            });
-            // const coffeeArrayExcludes = excludes[index].exclude.trim();
-            // setFilterSearchText(coffeeArrayExcludes);
-            let arrayString = dropdownMilk[index].exclude.split(",");
-            console.log(arrayString);
-            arrayString.forEach((e) => {
-              setChipData([
-                ...chipData,
-                {
-                  key: Math.random(),
-                  label: e,
-                },
-              ]);
-              console.log(e);
-            });
-            console.log(chipData);
-          }}
-        />
-        <Autocomplete
-          className="dropdownDepartments"
-          disablePortal
-          disableClearable
-          options={departments}
-          sx={{ width: 166 }}
-          renderInput={({ inputProps, ...params }) => (
-            <TextField
-              {...params}
-              label="Department"
-              inputProps={{ ...inputProps, readOnly: true }}
-            />
-          )}
-          onInputChange={(_event, value) => {
-            const index = departments.findIndex((object) => {
-              return object.label === value;
-            });
-            const setDepartment = departments[index].id;
-            setSearchTerm(setDepartment);
-          }}
-        />
-      </Paper>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ width: "60%", mb: 2 }}>
-          <EnhancedTableToolbar numSelected={selected.length} />
-          <TableContainer>
-            <Table
-              sx={{ minWidth: 750 }}
-              aria-labelledby="tableTitle"
-              size={"small"}
-            >
-              <EnhancedTableHead
-                numSelected={selected.length}
-                order={order}
-                orderBy={orderBy}
-                onSelectAllClick={handleSelectAllClick}
-                onRequestSort={handleRequestSort}
-                rowCount={rows.length}
-              />
-              <TableBody>
-                {visibleRows
-                  // .filter((row) => {
-                  //   return filterSearchText.toLowerCase() === "" ||
-                  //     filterSearchText.toLowerCase() === " "
-                  //     ? row
-                  //     : !row.name.includes(chipData.map((e) => e.label));
-                  // })
+          <Button
+            variant="contained"
+            size="small"
+            endIcon={<RemoveIcon />}
+            onClick={() => setFilterSearchText("")}
+            type="button"
+            sx={{
+              p: "10px",
+            }}
+            aria-label="search"
+          >
+            Filter
+          </Button>
+        </ButtonGroup>
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              listStyle: "none",
+              p: 0.5,
+              m: 0,
+            }}
+            component="ul"
+            variant="string"
+            key={Math.random()}
+          >
+            {chipData.map((data) => {
+              return (
+                <>
+                  <ListItem key={data.key}>
+                    <Chip label={data.label} onDelete={handleDelete(data)} />
+                  </ListItem>
+                </>
+              );
+            })}
+          </Box>
+        </Box>
+      </Box>
 
-                  // .filter((row) => {
-                  //   return chipData.length === 0
-                  //     ? row
-                  //     : !row.name.includes(chipData.map((e) => e.label));
-                  // })
-                  .filter((row) => {
-                    return chipData.length === 0
-                      ? row
-                      : !row.name.includes(
+      <Box sx={{ width: "60%" }}>
+        <TableContainer>
+          <Table
+            sx={{ minWidth: 750 }}
+            aria-labelledby="tableTitle"
+            size={"small"}
+          >
+            <EnhancedTableHead
+              numSelected={selected.length}
+              order={order}
+              orderBy={orderBy}
+              onSelectAllClick={handleSelectAllClick}
+              onRequestSort={handleRequestSort}
+              rowCount={rows.length}
+            />
+            <TableBody>
+              {visibleRows
+                .filter((row) => {
+                  return chipData.length === 0
+                    ? row
+                    : !row.name
+                        .toLowerCase()
+                        .includes(
                           chipData.map((e) => e.label).at(chipData.length - 1)
                         );
+                })
+                .map((row, index) => {
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-                    // row.name.includes(chipData.map((e) => e.label));
-                  })
-                  .map((row, index) => {
-                    let isItemSelected = isSelected(row.index);
-                    const labelId = `enhanced-table-checkbox-${index}`;
+                  return (
+                    <TableRow
+                      hover
+                      tabIndex={-1}
+                      key={Math.random()}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell padding="none"></TableCell>
 
-                    return (
-                      <TableRow
-                        hover
-                        onClick={(event) => handleClick(event, row.index)}
-                        role="checkbox"
-                        aria-checked={isItemSelected}
-                        tabIndex={-1}
-                        key={Math.random()}
-                        selected={isItemSelected}
-                        sx={{ cursor: "pointer" }}
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                        key={row.index}
+                        align="left"
                       >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            color="primary"
-                            checked={isItemSelected}
-                            inputProps={{
-                              "aria-labelledby": labelId,
-                            }}
-                          />
-                        </TableCell>
+                        {row.name}
+                      </TableCell>
+                      <TableCell align="left">${row.price}</TableCell>
+                      <TableCell align="left">{row.ratio}</TableCell>
+                      <TableCell align="left">{row.productPackage}</TableCell>
+                      <TableCell align="left">{row.store}</TableCell>
 
-                        <TableCell
-                          component="th"
-                          id={labelId}
-                          scope="row"
-                          padding="none"
-                          key={row.index}
-                          align="left"
-                          // onMouseOver={() => {
-                          //   setImageToDisplay(row.image);
-                          // }}
-                        >
-                          {row.name}
-                        </TableCell>
-                        <TableCell align="left">${row.price}</TableCell>
-                        <TableCell align="left">{row.ratio}</TableCell>
-                        {/* <TableCell align="left">{row.size}</TableCell> */}
-                        <TableCell align="left">{row.productPackage}</TableCell>
-                        <TableCell align="left">
-                          <IconButton
-                            onClick={() => {
+                      <TableCell align="left">
+                        <IconButton
+                          onClick={() => {
+                            open(row.URL, "_blank", "noopener,noreferrer");
+                          }}
+                          onMouseDown={(e) => {
+                            if (e.button === 1) {
                               open(row.URL, "_blank", "noopener,noreferrer");
-                            }}
-                            onMouseDown={(e) => {
-                              if (e.button === 1) {
-                                open(row.URL, "_blank", "noopener,noreferrer");
-                              }
-                            }}
-                          >
-                            <ShoppingCartIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                {emptyRows > 0 && (
-                  <TableRow
-                    style={{
-                      height: 33 * emptyRows,
-                    }}
-                  >
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, { value: -1, label: "All" }]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Paper>
+                            }
+                          }}
+                        >
+                          <ShoppingCartIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              {emptyRows > 0 && (
+                <TableRow
+                  style={{
+                    height: 33 * emptyRows,
+                  }}
+                >
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, { value: -1, label: "All" }]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </Box>
     </>
   );
