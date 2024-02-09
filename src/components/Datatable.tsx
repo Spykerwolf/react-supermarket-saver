@@ -150,8 +150,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   let rows: any = [];
 
-  const [newworldSecret, setnewworldSecret] = useState(newworldSecretToken);
-  const [paknsaveSecret, setpaknsaveSecret] = useState(paknsaveSecretToken);
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
@@ -167,8 +165,6 @@ export default function EnhancedTable() {
   );
   const [searchHelperText, setSearchHelperText] = useState("");
   const [chipData, setChipData] = React.useState([]);
-  const [newworldTokenMsg, setnewworldTokenMsg] = useState("New world token");
-  const [paknsaveTokenMsg, setpaknsaveTokenMsg] = useState("Pak n save token");
 
   useEffect(() => {}, [countdownResults]);
   useEffect(() => {}, [newworldResults]);
@@ -203,7 +199,7 @@ export default function EnhancedTable() {
         headers: new Headers({
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-          Authorization: newworldSecret,
+          Authorization: newworldSecretToken,
         }),
       }
     );
@@ -224,7 +220,7 @@ export default function EnhancedTable() {
         headers: new Headers({
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-          Authorization: paknsaveSecret,
+          Authorization: paknsaveSecretToken,
         }),
       }
     );
@@ -401,11 +397,6 @@ export default function EnhancedTable() {
 
   return (
     <>
-      <Box sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}>
-        {newworldTokenMsg}
-        <br></br>
-        {paknsaveTokenMsg}
-      </Box>
       <Box>
         <ButtonGroup>
           <TextField
