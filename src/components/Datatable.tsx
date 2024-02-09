@@ -18,6 +18,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
+import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
+import { getComparator, stableSort } from "./functions/sortTable";
+import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
 
 interface Data {
   index: number;
@@ -47,54 +50,6 @@ export function createData(
     store,
     URL,
   };
-}
-
-function CapitalizeFirstLetter(name: string) {
-  const word = name;
-  const firstLetter = word?.charAt(0);
-  const firstLetterCap = firstLetter?.toUpperCase();
-  const remainingLetters = word?.slice(1);
-  const capitalizedWord = firstLetterCap + remainingLetters;
-  return capitalizedWord;
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-type Order = "asc" | "desc";
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string }
-) => number {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
 }
 
 interface HeadCell {
@@ -195,12 +150,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   let rows: any = [];
 
-  const [newworldSecret, setnewworldSecret] = useState(
-    "Bearer eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJmMjc1NTNhMi1lMjdmLTRmMmUtYTBiYy1mMTBlMjIwZDdiYWQiLCJpc3MiOiJvbmxpbmUtY3VzdG9tZXIiLCJzZXNzaW9uSWQiOiI0MDk5OGNkOC1lN2E2LTRmMmUtODYyNi03MDBiOWZlNTgzZDEiLCJiYW5uZXIiOiJNTlciLCJmaXJzdE5hbWUiOiJhbm9ueW1vdXMiLCJlbWFpbCI6ImFub255bW91cyIsInJvbGVzIjpbIkFOT05ZTU9VUyJdLCJleHAiOjE3MDc0NDgyOTV9.gb-Kqr26Wxfb49mmvwtcDmfiSk-S7sxr1rREJoG1LDocOv2HrW9KqXjcPcNy5s8Vw7E5N-I2iiYvgkMW2J3sNHZYbDzsG9DuUhJ1PDZsrm-uW7I8XZNcjjwMkUn23Hj8hHHW4S0fitSrgZ-19vPQ3FB_KoKX8N_aVOkqPQBzmQvrTcwYfZieJgKG3HlDC3Y7jYvqVVwNjEMHJ0kS8Umbmtn2SEd44rbNp0Sm3H_T9v6zOstu9vl3K5-Cm_RO5O1TMWZXTU1xcquGi8U7cE6mQOguQSzVHlEFPtqYlzC9GmB_c75zLMz1OPKpy3s1IjwQ3fqSvZTxFwLTkgDmT5FUGw"
-  );
-  const [paknsaveSecret, setpaknsaveSecret] = useState(
-    "Bearer eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiJhYWQ3NzY3Mi02MDFiLTQ1YTAtYmNkYy03MmVmYzVlZDRkN2IiLCJpc3MiOiJvbmxpbmUtY3VzdG9tZXIiLCJzZXNzaW9uSWQiOiI2MDk5OWJmNy02YzIzLTQ1Y2YtOGE1ZC04YWYzMDk2OGQyYTEiLCJiYW5uZXIiOiJQTlMiLCJmaXJzdE5hbWUiOiJhbm9ueW1vdXMiLCJlbWFpbCI6ImFub255bW91cyIsInJvbGVzIjpbIkFOT05ZTU9VUyJdLCJleHAiOjE3MDc0NDgzNTB9.tFPZKhYSqUiT3otwx4Ul6AQY4_SNkWitRO-7Rk54Z33i_uMAohmQPC5IwHzTDMSDl-iUCkOW3BmajDLI8tH7kFpPSmuEP8jaCG8vY_exL4AWAqaQ9u9zQnuGLG9KEXp2R9QseyvFXXsbTUT-L02c6ZM0x8ycLfH60Em8Y55xzIkllGVftqWPE6L11dbuJjOfIP2v_QBeeZTvwmxflvrb0B_NLkuCnRKPwkGcVbCEhuTREgRICr_bj8QDGZW40_XZYQKZdHjF6S9kRGJOmwHmNqmtqCVJWg44iHtlhdNNtNsBdEyG8Ww7d7vzkk63uCidGZsYn5JpiCeUKCAPZtODUQ"
-  );
+  const [newworldSecret, setnewworldSecret] = useState(newworldSecretToken);
+  const [paknsaveSecret, setpaknsaveSecret] = useState(paknsaveSecretToken);
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
@@ -216,6 +167,9 @@ export default function EnhancedTable() {
   );
   const [searchHelperText, setSearchHelperText] = useState("");
   const [chipData, setChipData] = React.useState([]);
+  const [newworldTokenMsg, setnewworldTokenMsg] = useState("New world token");
+  const [paknsaveTokenMsg, setpaknsaveTokenMsg] = useState("Pak n save token");
+
   useEffect(() => {}, [countdownResults]);
   useEffect(() => {}, [newworldResults]);
   useEffect(() => {}, [paknsaveResults]);
@@ -228,9 +182,10 @@ export default function EnhancedTable() {
 
   const GetData = () => {
     console.log("Start - Countdown");
-    fetch(
+    const fetchCountDownData = fetch(
       `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
-    )
+    );
+    fetchCountDownData
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -241,7 +196,7 @@ export default function EnhancedTable() {
 
     console.log("Start - New World");
     const newworldStoreId = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
-    fetch(
+    const fetchNewWorldData = fetch(
       `http://localhost:8585/https://www.newworld.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${newworldStoreId}&publish=true&ps=100`,
       {
         method: "get",
@@ -251,7 +206,8 @@ export default function EnhancedTable() {
           Authorization: newworldSecret,
         }),
       }
-    )
+    );
+    fetchNewWorldData
       .then((response) => response.json())
       .then((data) => {
         console.log(data.data.products);
@@ -261,7 +217,7 @@ export default function EnhancedTable() {
       });
     console.log("Start - Pak n Save");
     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-    fetch(
+    const fetchPaknSaveData = fetch(
       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
       {
         method: "get",
@@ -271,7 +227,8 @@ export default function EnhancedTable() {
           Authorization: paknsaveSecret,
         }),
       }
-    )
+    );
+    fetchPaknSaveData
       .then((response) => response.json())
       .then((data) => {
         console.log(data.data.products);
@@ -323,6 +280,7 @@ export default function EnhancedTable() {
     const store = "New World";
     const productPrice = (product["price"] / 100).toFixed(2);
     const productSku = product["productId"];
+
     const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
       2
     )} / ${product["comparativeUnitQuantity"]}${product[
@@ -441,11 +399,13 @@ export default function EnhancedTable() {
     );
   };
 
-  const handleSearch = () => {
-    setSearchHelperText("Please search for something");
-  };
   return (
     <>
+      <Box sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}>
+        {newworldTokenMsg}
+        <br></br>
+        {paknsaveTokenMsg}
+      </Box>
       <Box>
         <ButtonGroup>
           <TextField
