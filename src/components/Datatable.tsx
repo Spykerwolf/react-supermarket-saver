@@ -98,12 +98,15 @@ const headCells: readonly HeadCell[] = [
   },
 ];
 
+type Order = "asc" | "desc";
+
 interface EnhancedTableProps {
   numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof Data
   ) => void;
+
   order: Order;
   orderBy: string;
   rowCount: number;
@@ -224,7 +227,7 @@ export default function EnhancedTable() {
 
   countdownResults.forEach((product, countdownIndex) => {
     if (product["type"] === "Product") {
-      const productName = product["name"];
+      const productName: string = product["name"];
       if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
         const store = "Countdown";
         const productPrice = product["price"]["salePrice"].toLocaleString(
@@ -234,9 +237,18 @@ export default function EnhancedTable() {
           }
         );
         const productSku = product["sku"];
-        const ratio = `$${product["size"]["cupPrice"].toLocaleString("en", {
-          minimumFractionDigits: 2,
-        })} / ${product["size"]["cupMeasure"]?.replace("mL", "ml")}`;
+        const productCupPrice = product["size"]["cupPrice"].toLocaleString(
+          "en",
+          {
+            minimumFractionDigits: 2,
+          }
+        );
+        const productCupMeasure = product["size"]["cupMeasure"]
+          ? product["size"]["cupMeasure"].replace("mL", "ml")
+          : "";
+        const ratio = productCupMeasure
+          ? `$${productCupPrice} / ${productCupMeasure}`
+          : "*";
         const productPackage = `${product["size"]["volumeSize"]?.replace(
           "mL",
           "ml"
@@ -262,19 +274,31 @@ export default function EnhancedTable() {
   });
 
   newworldResults.forEach((product, countdownIndex) => {
-    const productName = `${product["brand"]} ${product["name"]}`;
+    const productName = product["brand"]
+      ? `${product["brand"]} ${product["name"]}`
+      : product["name"];
     if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
       const store = "New World";
       const productPrice = (product["price"] / 100).toFixed(2);
       const productSku = product["productId"];
 
-      const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
-        2
-      )} / ${product["comparativeUnitQuantity"]}${product[
-        "comparativeUnitQuantityUoM"
-      ]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
+      const productCupPrice = product["comparativePricePerUnit"]
+        ? product["comparativePricePerUnit"]
+        : "";
+      const productCupUnit = product["comparativeUnitQuantity"]
+        ? product["comparativeUnitQuantity"]
+        : "";
+      const productCupMeasure = product["comparativeUnitQuantityUoM"]
+        ? product["comparativeUnitQuantityUoM"]
+        : "";
+      const ratio = productCupMeasure
+        ? `$${(productCupPrice / 100).toFixed(
+            2
+          )} / ${productCupUnit} ${productCupMeasure
+            ?.replace("l", "L")
+            ?.replace("mL", "ml")}`
+        : "*";
+
       const productPackage = `${product["displayName"]
         ?.replace("l", "L")
         ?.replace("mL", "ml")}`;
@@ -297,18 +321,30 @@ export default function EnhancedTable() {
   });
 
   paknsaveResults.forEach((product, countdownIndex) => {
-    const productName = `${product["brand"]} ${product["name"]}`;
+    const productName = product["brand"]
+      ? `${product["brand"]} ${product["name"]}`
+      : product["name"];
     if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
       const store = "Pak n Save";
       const productPrice = (product["price"] / 100).toFixed(2);
       const productSku = product["productId"];
-      const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
-        2
-      )} / ${product["comparativeUnitQuantity"]}${product[
-        "comparativeUnitQuantityUoM"
-      ]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
+      const productCupPrice = product["comparativePricePerUnit"]
+        ? product["comparativePricePerUnit"]
+        : "";
+      const productCupUnit = product["comparativeUnitQuantity"]
+        ? product["comparativeUnitQuantity"]
+        : "";
+      const productCupMeasure = product["comparativeUnitQuantityUoM"]
+        ? product["comparativeUnitQuantityUoM"]
+        : "";
+      const ratio = productCupMeasure
+        ? `$${(productCupPrice / 100).toFixed(
+            2
+          )} / ${productCupUnit} ${productCupMeasure
+            ?.replace("l", "L")
+            ?.replace("mL", "ml")}`
+        : "*";
+
       const productPackage = `${product["displayName"]
         ?.replace("l", "L")
         ?.replace("mL", "ml")}`;
@@ -368,7 +404,15 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage, countdownResults, newworldResults]
+    [
+      order,
+      orderBy,
+      page,
+      rowsPerPage,
+      countdownResults,
+      newworldResults,
+      paknsaveResults,
+    ]
   );
 
   interface ChipData {
@@ -404,7 +448,7 @@ export default function EnhancedTable() {
                 setSearchHelperText("");
               }
               setSearchTerm(e.target.value);
-              // setSearchHelperText("");
+              setSearchHelperText("");
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -416,7 +460,6 @@ export default function EnhancedTable() {
                   searchTerm != "" && GetData();
                   setSearchPlaceholderText("Search for a product");
                   setSearchHelperText("");
-                  // setSearchTerm("");
                 }
               }
             }}
@@ -433,7 +476,6 @@ export default function EnhancedTable() {
                 GetData();
                 setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
-                // setSearchTerm("");
               }
             }}
             type="button"
@@ -527,7 +569,6 @@ export default function EnhancedTable() {
               numSelected={selected.length}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
