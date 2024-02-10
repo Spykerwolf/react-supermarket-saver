@@ -176,20 +176,15 @@ export default function EnhancedTable() {
   }, [chipData]);
 
   const GetData = () => {
-    console.log("Start - Countdown");
     const fetchCountDownData = fetch(
       `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
     );
     fetchCountDownData
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setcountdownResults(data.products.items);
-        countdownResults != "" && console.log(countdownResults);
-        console.log("Done - Countdown");
       });
 
-    console.log("Start - New World");
     const newworldStoreId = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
     const fetchNewWorldData = fetch(
       `http://localhost:8585/https://www.newworld.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${newworldStoreId}&publish=true&ps=100`,
@@ -202,15 +197,12 @@ export default function EnhancedTable() {
         }),
       }
     );
+
     fetchNewWorldData
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.data.products);
         setnewworldResults(data.data.products);
-        newworldResults != "" && console.log(newworldResults);
-        console.log("Done - New World");
       });
-    console.log("Start - Pak n Save");
     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
     const fetchPaknSaveData = fetch(
       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
@@ -226,37 +218,74 @@ export default function EnhancedTable() {
     fetchPaknSaveData
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.data.products);
         setpaknsaveResults(data.data.products);
-        paknsaveResults != "" && console.log(paknsaveResults);
-        console.log("Done - Pak n Save");
       });
   };
 
   countdownResults.forEach((product, countdownIndex) => {
     if (product["type"] === "Product") {
-      const productName = CapitalizeFirstLetter(product["name"]);
-      const store = "Countdown";
-      const productPrice = product["price"]["salePrice"].toLocaleString("en", {
-        minimumFractionDigits: 2,
-      });
-      const productSku = product["sku"];
-      const ratio = `$${product["size"]["cupPrice"].toLocaleString("en", {
-        minimumFractionDigits: 2,
-      })} / ${product["size"]["cupMeasure"]?.replace("mL", "ml")}`;
-      const productPackage = `${product["size"]["volumeSize"]?.replace(
-        "mL",
-        "ml"
-      )} ${
-        product["size"]["packageType"] != null
-          ? product["size"]["packageType"]
-          : ""
-      }`;
-      const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+      const productName = product["name"];
+      if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+        const store = "Countdown";
+        const productPrice = product["price"]["salePrice"].toLocaleString(
+          "en",
+          {
+            minimumFractionDigits: 2,
+          }
+        );
+        const productSku = product["sku"];
+        const ratio = `$${product["size"]["cupPrice"].toLocaleString("en", {
+          minimumFractionDigits: 2,
+        })} / ${product["size"]["cupMeasure"]?.replace("mL", "ml")}`;
+        const productPackage = `${product["size"]["volumeSize"]?.replace(
+          "mL",
+          "ml"
+        )} ${
+          product["size"]["packageType"] != null
+            ? product["size"]["packageType"]
+            : ""
+        }`;
+        const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+        rows.push(
+          createData(
+            countdownIndex,
+            CapitalizeFirstLetter(productName),
+            productPrice,
+            ratio,
+            productPackage,
+            store,
+            URL
+          )
+        );
+      }
+    }
+  });
+
+  newworldResults.forEach((product, countdownIndex) => {
+    const productName = `${product["brand"]} ${product["name"]}`;
+    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      const store = "New World";
+      const productPrice = (product["price"] / 100).toFixed(2);
+      const productSku = product["productId"];
+
+      const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
+        2
+      )} / ${product["comparativeUnitQuantity"]}${product[
+        "comparativeUnitQuantityUoM"
+      ]
+        ?.replace("l", "L")
+        ?.replace("mL", "ml")}`;
+      const productPackage = `${product["displayName"]
+        ?.replace("l", "L")
+        ?.replace("mL", "ml")}`;
+      const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+        "-",
+        "_"
+      )}`;
       rows.push(
         createData(
           countdownIndex,
-          productName,
+          CapitalizeFirstLetter(productName),
           productPrice,
           ratio,
           productPackage,
@@ -267,75 +296,38 @@ export default function EnhancedTable() {
     }
   });
 
-  newworldResults.forEach((product, countdownIndex) => {
-    const productName =
-      CapitalizeFirstLetter(product["brand"]) +
-      " " +
-      CapitalizeFirstLetter(product["name"]);
-    const store = "New World";
-    const productPrice = (product["price"] / 100).toFixed(2);
-    const productSku = product["productId"];
-
-    const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
-      2
-    )} / ${product["comparativeUnitQuantity"]}${product[
-      "comparativeUnitQuantityUoM"
-    ]
-      ?.replace("l", "L")
-      ?.replace("mL", "ml")}`;
-    const productPackage = `${product["displayName"]
-      ?.replace("l", "L")
-      ?.replace("mL", "ml")}`;
-    const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
-      "-",
-      "_"
-    )}`;
-    rows.push(
-      createData(
-        countdownIndex,
-        productName,
-        productPrice,
-        ratio,
-        productPackage,
-        store,
-        URL
-      )
-    );
-  });
-
   paknsaveResults.forEach((product, countdownIndex) => {
-    const productName =
-      CapitalizeFirstLetter(product["brand"]) +
-      " " +
-      CapitalizeFirstLetter(product["name"]);
-    const store = "Pak n Save";
-    const productPrice = (product["price"] / 100).toFixed(2);
-    const productSku = product["productId"];
-    const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
-      2
-    )} / ${product["comparativeUnitQuantity"]}${product[
-      "comparativeUnitQuantityUoM"
-    ]
-      ?.replace("l", "L")
-      ?.replace("mL", "ml")}`;
-    const productPackage = `${product["displayName"]
-      ?.replace("l", "L")
-      ?.replace("mL", "ml")}`;
-    const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-      "-",
-      "_"
-    )}`;
-    rows.push(
-      createData(
-        countdownIndex,
-        productName,
-        productPrice,
-        ratio,
-        productPackage,
-        store,
-        URL
-      )
-    );
+    const productName = `${product["brand"]} ${product["name"]}`;
+    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      const store = "Pak n Save";
+      const productPrice = (product["price"] / 100).toFixed(2);
+      const productSku = product["productId"];
+      const ratio = `$${(product["comparativePricePerUnit"] / 100).toFixed(
+        2
+      )} / ${product["comparativeUnitQuantity"]}${product[
+        "comparativeUnitQuantityUoM"
+      ]
+        ?.replace("l", "L")
+        ?.replace("mL", "ml")}`;
+      const productPackage = `${product["displayName"]
+        ?.replace("l", "L")
+        ?.replace("mL", "ml")}`;
+      const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+        "-",
+        "_"
+      )}`;
+      rows.push(
+        createData(
+          countdownIndex,
+          CapitalizeFirstLetter(productName),
+          productPrice,
+          ratio,
+          productPackage,
+          store,
+          URL
+        )
+      );
+    }
   });
 
   const handleRequestSort = (
@@ -412,8 +404,7 @@ export default function EnhancedTable() {
                 setSearchHelperText("");
               }
               setSearchTerm(e.target.value);
-              setSearchHelperText("");
-              console.log(searchTerm);
+              // setSearchHelperText("");
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -422,10 +413,10 @@ export default function EnhancedTable() {
                   setSearchHelperText("Please search for something");
                 } else {
                   e.preventDefault();
-                  GetData();
+                  searchTerm != "" && GetData();
                   setSearchPlaceholderText("Search for a product");
                   setSearchHelperText("");
-                  setSearchTerm("");
+                  // setSearchTerm("");
                 }
               }
             }}
@@ -442,7 +433,7 @@ export default function EnhancedTable() {
                 GetData();
                 setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
-                setSearchTerm("");
+                // setSearchTerm("");
               }
             }}
             type="button"
