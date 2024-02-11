@@ -435,8 +435,19 @@ export default function EnhancedTable() {
       <Box>
         <ButtonGroup>
           <TextField
+            inputProps={{
+              style: {
+                padding: 10,
+              },
+            }}
+            multiline={false}
             autoComplete="off"
-            sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
+            sx={{
+              ml: 1,
+              mb: 0.5,
+              width: "485px",
+              flex: 1,
+            }}
             className="searchProduct"
             variant="outlined"
             id="outlined-error-helper-text"
@@ -479,7 +490,9 @@ export default function EnhancedTable() {
               }
             }}
             type="button"
-            sx={{ p: "10px" }}
+            sx={{
+              marginBottom: "5px",
+            }}
           >
             Search
           </Button>
@@ -488,6 +501,11 @@ export default function EnhancedTable() {
       <Box>
         <ButtonGroup>
           <TextField
+            inputProps={{
+              style: {
+                padding: 10,
+              },
+            }}
             value={filterSearchText}
             autoComplete="off"
             className="filterAProduct"
@@ -525,7 +543,8 @@ export default function EnhancedTable() {
             onClick={() => setFilterSearchText("")}
             type="button"
             sx={{
-              p: "10px",
+              marginBottom: "5px",
+              paddingRight: "20px",
             }}
             aria-label="search"
           >
