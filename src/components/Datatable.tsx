@@ -152,6 +152,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   let rows: any = [];
 
+  let sortedName: any = [];
+  let sortedPrice: any = [];
+  let sortedRatio: any = [];
+
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
@@ -366,6 +370,7 @@ export default function EnhancedTable() {
     }
   });
 
+  // console.log(rows.at(0).name);
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof Data
@@ -643,6 +648,9 @@ export default function EnhancedTable() {
                           <ShoppingCartIcon />
                         </IconButton>
                       </TableCell>
+                      {sortedName.push(row.name)}
+                      {sortedPrice.push(row.price)}
+                      {sortedRatio.push(row.ratio)}
                     </TableRow>
                   );
                 })}
@@ -668,6 +676,8 @@ export default function EnhancedTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
+
+      {console.log(`${sortedName[0]} - ${sortedPrice[0]} - ${sortedRatio[0]}`)}
     </>
   );
 }
