@@ -162,8 +162,12 @@ export default function EnhancedTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownResults, setcountdownResults] = useState([]);
+  const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
+  const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
+  const [newworldProductIDs, setNewworldProductIDs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState([]);
+  const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -182,86 +186,130 @@ export default function EnhancedTable() {
     }
   }, [chipData]);
 
-  const GetData = () => {
-    const fetchCountDownData = fetch(
-      `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
-    );
-    fetchCountDownData
-      .then((response) => response.json())
-      .then((data) => {
-        setcountdownResults(data.products.items);
-      });
+  async function GetData() {
+    // Get search query SKUs
 
-    const newworldStoreId = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
-    const fetchNewWorldData = fetch(
-      `http://localhost:8585/https://www.newworld.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${newworldStoreId}&publish=true&ps=100`,
+    const newworldStoreId: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
+
+    const getUser: Response = await fetch(
+      "https://www.newworld.co.nz/CommonApi/Account/GetCurrentUser"
+    );
+
+    const getUserJSON = await getUser.json();
+    console.log("getUserJSON.expires_time");
+
+    console.log(getUser.json());
+
+    const fetchNewWorldSkus: Response = await fetch(
+      `http://localhost:8585/https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
       {
-        method: "get",
+        method: "post",
         headers: new Headers({
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
           Authorization: newworldSecretToken,
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+          algoliaQuery: {
+            attributesToHighlight: [],
+            attributesToRetrieve: ["productID", "Type", "sponsored"],
+            facetFilters: [["tobacco:false"]],
+            facets: [
+              "brand",
+              "category2NI",
+              "onPromotion",
+              "productFacets",
+              "tobacco",
+            ],
+            filters: `stores:${newworldStoreId}`,
+            highlightPostTag: "__/ais-highlight__",
+            highlightPreTag: "__ais-highlight__",
+            hitsPerPage: 50,
+            maxValuesPerFacet: 100,
+            page: 0,
+            query: searchTerm,
+          },
+          adDomain: "SEARCH_PAGE",
+          disableAds: false,
+          publishImpressionEvent: true,
         }),
       }
     );
 
-    fetchNewWorldData
-      .then((response) => response.json())
-      .then((data) => {
-        setnewworldResults(data.data.products);
+    !fetchNewWorldSkus.ok && setNewworldAPIStatus("API key needs refreshing");
+    const newworldResponse = await fetchNewWorldSkus.json();
+    setNewworldProductIDs(newworldResponse.hits);
+
+    let productIdTogether: string[] = [];
+    newworldProductIDs !== undefined &&
+      newworldProductIDs.forEach((product) => {
+        productIdTogether.push(product["productID"]);
       });
-    const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-    const fetchPaknSaveData = fetch(
-      `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
+
+    // Send skus to get products
+
+    const combineNewworldSKUsWithProducts: Response = await fetch(
+      `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
       {
-        method: "get",
+        method: "post",
         headers: new Headers({
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-          Authorization: paknsaveSecretToken,
+          Authorization: newworldSecretToken,
+          "Content-Type": "application/json",
         }),
+        body: JSON.stringify({ productIds: productIdTogether }),
       }
     );
-    fetchPaknSaveData
-      .then((response) => response.json())
-      .then((data) => {
-        setpaknsaveResults(data.data.products);
-      });
-  };
+    const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
+    newworldSKUsJSON;
+    console.log(newworldSKUsJSON.products);
+    setnewworldResults(newworldSKUsJSON.products);
+  }
 
-  countdownResults.forEach((product, countdownIndex) => {
-    if (product["type"] === "Product") {
-      const productName: string = product["name"];
+  newworldResults !== undefined &&
+    newworldResults.forEach((product, countdownIndex) => {
+      console.log(product);
+      const productName = product["brand"]
+        ? `${product["brand"]} ${product["name"]}`
+        : product["name"];
       if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-        const store = "Countdown";
-        const productPrice = product["price"]["salePrice"].toLocaleString(
-          "en",
-          {
-            minimumFractionDigits: 2,
-          }
-        );
-        const productSku = product["sku"];
-        const productCupPrice = product["size"]["cupPrice"].toLocaleString(
-          "en",
-          {
-            minimumFractionDigits: 2,
-          }
-        );
-        const productCupMeasure = product["size"]["cupMeasure"]
-          ? product["size"]["cupMeasure"].replace("mL", "ml")
+        console.log(productName);
+        const store = "New World";
+        const productPrice = (product["singlePrice"]["price"] / 100).toFixed(2);
+        const productSku = product["productId"];
+
+        const productCupPrice = product["singlePrice"]["comparativePrice"][
+          "pricePerUnit"
+        ]
+          ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
+          : "";
+        const productCupUnit = product["singlePrice"]["comparativePrice"][
+          "unitQuantity"
+        ]
+          ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
+          : "";
+        const productCupMeasure = product["singlePrice"]["comparativePrice"][
+          "unitQuantityUom"
+        ]
+          ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
           : "";
         const ratio = productCupMeasure
-          ? `$${productCupPrice} / ${productCupMeasure}`
+          ? `$${(productCupPrice / 100).toFixed(
+              2
+            )} / ${productCupUnit} ${productCupMeasure
+              ?.replace("l", "L")
+              ?.replace("mL", "ml")}`
           : "*";
-        const productPackage = `${product["size"]["volumeSize"]?.replace(
-          "mL",
-          "ml"
-        )} ${
-          product["size"]["packageType"] != null
-            ? product["size"]["packageType"]
-            : ""
-        }`;
-        const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+
+        const productPackage = `${product["displayName"]
+          ?.replace("l", "L")
+          ?.replace("mL", "ml")}`;
+        const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+          "-",
+          "_"
+        )}`;
         rows.push(
           createData(
             countdownIndex,
@@ -274,103 +322,126 @@ export default function EnhancedTable() {
           )
         );
       }
-    }
-  });
+      console.log(rows);
+    });
 
-  newworldResults.forEach((product, countdownIndex) => {
-    const productName = product["brand"]
-      ? `${product["brand"]} ${product["name"]}`
-      : product["name"];
-    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      const store = "New World";
-      const productPrice = (product["price"] / 100).toFixed(2);
-      const productSku = product["productId"];
+  //   // const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+  //   // const fetchPaknSaveData = fetch(
+  //   //   `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
+  //   //   {
+  //   //     method: "get",
+  //   //     headers: new Headers({
+  //   //       "User-Agent":
+  //   //         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  //   //       Authorization: paknsaveSecretToken,
+  //   //     }),
+  //   //   }
+  //   // );
+  //   // fetchPaknSaveData
+  //   //   .then((response) => response.json())
+  //   //   .then((data) => {
+  //   //     setpaknsaveResults(data.data.products);
+  //   //   });
+  // };
 
-      const productCupPrice = product["comparativePricePerUnit"]
-        ? product["comparativePricePerUnit"]
-        : "";
-      const productCupUnit = product["comparativeUnitQuantity"]
-        ? product["comparativeUnitQuantity"]
-        : "";
-      const productCupMeasure = product["comparativeUnitQuantityUoM"]
-        ? product["comparativeUnitQuantityUoM"]
-        : "";
-      const ratio = productCupMeasure
-        ? `$${(productCupPrice / 100).toFixed(
-            2
-          )} / ${productCupUnit} ${productCupMeasure
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`
-        : "*";
+  // console.log(newworldProductIDs);
 
-      const productPackage = `${product["displayName"]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
-      const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
-        "-",
-        "_"
-      )}`;
-      rows.push(
-        createData(
-          countdownIndex,
-          CapitalizeFirstLetter(productName),
-          productPrice,
-          ratio,
-          productPackage,
-          store,
-          URL
-        )
-      );
-    }
-  });
+  // countdownResults.forEach((product, countdownIndex) => {
+  //   if (product["type"] === "Product") {
+  //     const productName: string = product["name"];
+  //     if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+  //       const store = "Countdown";
+  //       const productPrice = product["price"]["salePrice"].toLocaleString(
+  //         "en",
+  //         {
+  //           minimumFractionDigits: 2,
+  //         }
+  //       );
+  //       const productSku = product["sku"];
+  //       const productCupPrice = product["size"]["cupPrice"].toLocaleString(
+  //         "en",
+  //         {
+  //           minimumFractionDigits: 2,
+  //         }
+  //       );
+  //       const productCupMeasure = product["size"]["cupMeasure"]
+  //         ? product["size"]["cupMeasure"].replace("mL", "ml")
+  //         : "";
+  //       const ratio = productCupMeasure
+  //         ? `$${productCupPrice} / ${productCupMeasure}`
+  //         : "*";
+  //       const productPackage = `${product["size"]["volumeSize"]?.replace(
+  //         "mL",
+  //         "ml"
+  //       )} ${
+  //         product["size"]["packageType"] != null
+  //           ? product["size"]["packageType"]
+  //           : ""
+  //       }`;
+  //       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+  //       rows.push(
+  //         createData(
+  //           countdownIndex,
+  //           CapitalizeFirstLetter(productName),
+  //           productPrice,
+  //           ratio,
+  //           productPackage,
+  //           store,
+  //           URL
+  //         )
+  //       );
+  //     }
+  //   }
+  // });
 
-  paknsaveResults.forEach((product, countdownIndex) => {
-    const productName = product["brand"]
-      ? `${product["brand"]} ${product["name"]}`
-      : product["name"];
-    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      const store = "Pak n Save";
-      const productPrice = (product["price"] / 100).toFixed(2);
-      const productSku = product["productId"];
-      const productCupPrice = product["comparativePricePerUnit"]
-        ? product["comparativePricePerUnit"]
-        : "";
-      const productCupUnit = product["comparativeUnitQuantity"]
-        ? product["comparativeUnitQuantity"]
-        : "";
-      const productCupMeasure = product["comparativeUnitQuantityUoM"]
-        ? product["comparativeUnitQuantityUoM"]
-        : "";
-      const ratio = productCupMeasure
-        ? `$${(productCupPrice / 100).toFixed(
-            2
-          )} / ${productCupUnit} ${productCupMeasure
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`
-        : "*";
+  // paknsaveResults.forEach((product, countdownIndex) => {
+  //   const productName = product["brand"]
+  //     ? `${product["brand"]} ${product["name"]}`
+  //     : product["name"];
+  //   if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+  //     const store = "Pak n Save";
+  //     const productPrice = (product["price"] / 100).toFixed(2);
+  //     const productSku = product["productId"];
+  //     const productCupPrice = product["comparativePricePerUnit"]
+  //       ? product["comparativePricePerUnit"]
+  //       : "";
+  //     const productCupUnit = product["comparativeUnitQuantity"]
+  //       ? product["comparativeUnitQuantity"]
+  //       : "";
+  //     const productCupMeasure = product["comparativeUnitQuantityUoM"]
+  //       ? product["comparativeUnitQuantityUoM"]
+  //       : "";
+  //     const ratio = productCupMeasure
+  //       ? `$${(productCupPrice / 100).toFixed(
+  //           2
+  //         )} / ${productCupUnit} ${productCupMeasure
+  //           ?.replace("l", "L")
+  //           ?.replace("mL", "ml")}`
+  //       : "*";
 
-      const productPackage = `${product["displayName"]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
-      const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-        "-",
-        "_"
-      )}`;
-      rows.push(
-        createData(
-          countdownIndex,
-          CapitalizeFirstLetter(productName),
-          productPrice,
-          ratio,
-          productPackage,
-          store,
-          URL
-        )
-      );
-    }
-  });
+  //     const productPackage = `${product["displayName"]
+  //       ?.replace("l", "L")
+  //       ?.replace("mL", "ml")}`;
+  //     const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+  //       "-",
+  //       "_"
+  //     )}`;
+  //     rows.push(
+  //       createData(
+  //         countdownIndex,
+  //         CapitalizeFirstLetter(productName),
+  //         productPrice,
+  //         ratio,
+  //         productPackage,
+  //         store,
+  //         URL
+  //       )
+  //     );
+  //   }
+  // });
 
   // console.log(rows.at(0).name);
+
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof Data
@@ -437,6 +508,19 @@ export default function EnhancedTable() {
 
   return (
     <>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {/* Countdown: {countdownAPIStatus} <br /> */}
+        New World: {newworldAPIStatus} <br />
+        {/* Pak n Save: {paknsaveAPIStatus} <br /> */}
+      </Box>
+
       <Box>
         <ButtonGroup>
           <TextField
@@ -581,7 +665,6 @@ export default function EnhancedTable() {
           </Box>
         </Box>
       </Box>
-
       <Box sx={{ width: "60%" }}>
         <TableContainer>
           <Table
@@ -676,8 +759,7 @@ export default function EnhancedTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
-
-      {console.log(`${sortedName[0]} - ${sortedPrice[0]} - ${sortedRatio[0]}`)}
+      {/* {console.log(`${sortedName[0]} - ${sortedPrice[0]} - ${sortedRatio[0]}`)} */}
     </>
   );
 }
