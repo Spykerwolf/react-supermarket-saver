@@ -21,13 +21,21 @@ import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
 import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
+import SellIcon from "@mui/icons-material/Sell";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import Checkbox from "@mui/material/Checkbox";
+import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
+import Favorite from "@mui/icons-material/Favorite";
 
 interface Data {
   index: number;
   name: string;
-  price: string;
-  ratio: string;
+  onSpecial: boolean;
+  specialPrice: string;
+  standardPrice: string;
   productPackage: string;
+  ratio: string;
   store: string;
   URL: string;
 }
@@ -35,18 +43,24 @@ interface Data {
 export function createData(
   index: number,
   name: string,
-  price: string,
-  ratio: string,
+  onSpecial: boolean,
+  specialPrice: string,
+  standardPrice: string,
   productPackage: string,
+  ratio: string,
+
   store: string,
   URL: string
 ): Data {
   return {
     index,
     name,
-    price,
-    ratio,
+    onSpecial,
+    specialPrice,
+    standardPrice,
     productPackage,
+    ratio,
+
     store,
     URL,
   };
@@ -67,22 +81,35 @@ const headCells: readonly HeadCell[] = [
     label: "Name",
   },
   {
-    id: "price",
+    id: "onSpecial",
+    numeric: false,
+    disablePadding: true,
+    label: "",
+  },
+  {
+    id: "specialPrice",
     numeric: false,
     disablePadding: false,
     label: "Price",
+  },
+  {
+    id: "standardPrice",
+    numeric: false,
+    disablePadding: false,
+    label: "",
+  },
+
+  {
+    id: "productPackage",
+    numeric: false,
+    disablePadding: false,
+    label: "Packaging",
   },
   {
     id: "ratio",
     numeric: false,
     disablePadding: false,
     label: "Ratio",
-  },
-  {
-    id: "productPackage",
-    numeric: false,
-    disablePadding: false,
-    label: "Packaging",
   },
   {
     id: "store",
@@ -121,7 +148,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
   return (
     <TableHead>
-      <TableRow>
+      <TableRow sx={{ bgcolor: "lightgrey" }}>
         <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
@@ -151,10 +178,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 export default function EnhancedTable() {
   let rows: any = [];
-
-  let sortedName: any = [];
-  let sortedPrice: any = [];
-  let sortedRatio: any = [];
 
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
@@ -191,14 +214,14 @@ export default function EnhancedTable() {
 
     const newworldStoreId: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
 
-    const getUser: Response = await fetch(
-      "https://www.newworld.co.nz/CommonApi/Account/GetCurrentUser"
-    );
+    // const getUser: Response = await fetch(
+    //   "https://www.newworld.co.nz/CommonApi/Account/GetCurrentUser"
+    // );
 
-    const getUserJSON = await getUser.json();
-    console.log("getUserJSON.expires_time");
+    // const getUserJSON = await getUser.json();
+    // console.log("getUserJSON.expires_time");
 
-    console.log(getUser.json());
+    // console.log(getUser.json());
 
     const fetchNewWorldSkus: Response = await fetch(
       `http://localhost:8585/https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
@@ -237,8 +260,12 @@ export default function EnhancedTable() {
       }
     );
 
-    !fetchNewWorldSkus.ok && setNewworldAPIStatus("API key needs refreshing");
+    !fetchNewWorldSkus.ok
+      ? setNewworldAPIStatus("API key needs refreshing")
+      : setNewworldAPIStatus("");
     const newworldResponse = await fetchNewWorldSkus.json();
+    console.log(newworldResponse.hits);
+
     setNewworldProductIDs(newworldResponse.hits);
 
     let productIdTogether: string[] = [];
@@ -270,38 +297,44 @@ export default function EnhancedTable() {
 
   newworldResults !== undefined &&
     newworldResults.forEach((product, countdownIndex) => {
-      console.log(product);
+      // console.log(product);
       const productName = product["brand"]
         ? `${product["brand"]} ${product["name"]}`
         : product["name"];
-      if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-        console.log(productName);
+      if (
+        productName
+          .toLowerCase()
+          .replace("-", " ")
+          .includes(searchTerm.toLowerCase())
+      ) {
         const store = "New World";
-        const productPrice = (product["singlePrice"]["price"] / 100).toFixed(2);
+        const productStandardPrice = (
+          product["singlePrice"]["price"] / 100
+        ).toFixed(2);
+
+        const productSpecialPrice = product["promotions"]
+          ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+          : productStandardPrice;
         const productSku = product["productId"];
 
-        const productCupPrice = product["singlePrice"]["comparativePrice"][
-          "pricePerUnit"
-        ]
+        const productCupPrice = product["singlePrice"]["comparativePrice"]
           ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
           : "";
-        const productCupUnit = product["singlePrice"]["comparativePrice"][
-          "unitQuantity"
-        ]
+
+        const productCupUnit = product["singlePrice"]["comparativePrice"]
           ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
           : "";
-        const productCupMeasure = product["singlePrice"]["comparativePrice"][
-          "unitQuantityUom"
-        ]
+        const productCupMeasure = product["singlePrice"]["comparativePrice"]
           ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
           : "";
-        const ratio = productCupMeasure
-          ? `$${(productCupPrice / 100).toFixed(
-              2
-            )} / ${productCupUnit} ${productCupMeasure
-              ?.replace("l", "L")
-              ?.replace("mL", "ml")}`
-          : "*";
+
+        const ratio =
+          productCupMeasure &&
+          `$${(productCupPrice / 100).toFixed(
+            2
+          )} / ${productCupUnit} ${productCupMeasure
+            ?.replace("l", "L")
+            ?.replace("mL", "ml")}`;
 
         const productPackage = `${product["displayName"]
           ?.replace("l", "L")
@@ -310,18 +343,24 @@ export default function EnhancedTable() {
           "-",
           "_"
         )}`;
+        const onSpecial = product["promotions"] && true;
         rows.push(
           createData(
             countdownIndex,
             CapitalizeFirstLetter(productName),
-            productPrice,
-            ratio,
+            onSpecial,
+            productSpecialPrice,
+            productStandardPrice,
             productPackage,
+            ratio,
+
             store,
             URL
           )
         );
       }
+      console.log(productName.toLowerCase());
+      console.log(searchTerm.toLowerCase());
       console.log(rows);
     });
 
@@ -516,8 +555,8 @@ export default function EnhancedTable() {
           flex: 1,
         }}
       >
+        {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}`}
         {/* Countdown: {countdownAPIStatus} <br /> */}
-        New World: {newworldAPIStatus} <br />
         {/* Pak n Save: {paknsaveAPIStatus} <br /> */}
       </Box>
 
@@ -700,7 +739,13 @@ export default function EnhancedTable() {
                       key={Math.random()}
                       sx={{ cursor: "pointer" }}
                     >
-                      <TableCell padding="none"></TableCell>
+                      <TableCell padding="none">
+                        <Checkbox
+                          icon={<StarBorderIcon />}
+                          checkedIcon={<StarIcon />}
+                          color="warning"
+                        />
+                      </TableCell>
 
                       <TableCell
                         component="th"
@@ -709,16 +754,29 @@ export default function EnhancedTable() {
                         padding="none"
                         key={row.index}
                         align="left"
+                        color="white"
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">${row.price}</TableCell>
-                      <TableCell align="left">{row.ratio}</TableCell>
-                      <TableCell align="left">{row.productPackage}</TableCell>
-                      <TableCell align="left">{row.store}</TableCell>
 
+                      <TableCell align="right">
+                        {row.onSpecial && (
+                          <IconButton>
+                            <SellIcon color="info" />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                      <TableCell align="left">${row.specialPrice}</TableCell>
+                      <TableCell align="left">
+                        {row.onSpecial && `$${row.standardPrice}`}
+                      </TableCell>
+                      <TableCell align="left">{row.productPackage}</TableCell>
+
+                      <TableCell align="left">{row.ratio}</TableCell>
+                      <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
+                          color="warning"
                           onClick={() => {
                             open(row.URL, "_blank", "noopener,noreferrer");
                           }}
@@ -731,9 +789,6 @@ export default function EnhancedTable() {
                           <ShoppingCartIcon />
                         </IconButton>
                       </TableCell>
-                      {sortedName.push(row.name)}
-                      {sortedPrice.push(row.price)}
-                      {sortedRatio.push(row.ratio)}
                     </TableRow>
                   );
                 })}
