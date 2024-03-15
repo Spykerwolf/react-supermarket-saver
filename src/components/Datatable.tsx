@@ -17,15 +17,16 @@ import Chip from "@mui/material/Chip";
 import SearchIcon from "@mui/icons-material/Search";
 import TextField from "@mui/material/TextField";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { Button, ButtonGroup, getLinkUtilityClass } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
+import { newworldSecretToken } from "../secrets";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
-import Autocomplete from "@mui/material/Autocomplete";
+
+let rows: any = [];
 
 interface Data {
   index: number;
@@ -175,8 +176,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 export default function EnhancedTable() {
-  let rows: any = [];
-
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
@@ -199,10 +198,10 @@ export default function EnhancedTable() {
   const productIdTogether: string[] = [];
 
   useEffect(() => {
-    // async function displaySKUs() {
-    //   newworldProductSKUs.length &&
-    //     console.log("newworldProductSKUs", newworldProductSKUs);
-    // }
+    async function displaySKUs() {
+      newworldProductSKUs.length &&
+        console.log("newworldProductSKUs", newworldProductSKUs);
+    }
 
     async function extractSKUs() {
       newworldProductSKUs !== undefined &&
@@ -211,11 +210,18 @@ export default function EnhancedTable() {
         });
     }
 
-    // async function displayProductIds() {
-    //   productIdTogether.length &&
-    //     console.log("productIdTogether", productIdTogether);
-    // }
+    async function displayProductIds() {
+      productIdTogether.length &&
+        console.log("productIdTogether", productIdTogether);
+    }
 
+    displaySKUs();
+    extractSKUs();
+    displayProductIds();
+  }, [newworldProductSKUs]);
+
+  useEffect(() => {}, [rows]);
+  useEffect(() => {
     async function getData() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
@@ -234,11 +240,16 @@ export default function EnhancedTable() {
       setnewworldResults(newworldSKUsJSON.products);
     }
 
+    productIdTogether.length && getData();
+  }, [productIdTogether]);
+
+  useEffect(() => {
+    newworldResults.length && console.log("newworldResults", newworldResults);
+    console.log("rows", rows);
     async function displayResults() {
-      console.log("starting displayResults");
-      newworldResults !== undefined &&
+      if (newworldResults !== undefined) {
         newworldResults.forEach((product, countdownIndex) => {
-          const productName = product["brand"]
+          const productName: string = product["brand"]
             ? `${product["brand"]} ${product["name"]}`
             : product["name"];
           if (
@@ -284,7 +295,6 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] && true;
-
             rows.push(
               createData(
                 countdownIndex,
@@ -300,21 +310,12 @@ export default function EnhancedTable() {
             );
           }
         });
+      }
     }
-
-    // displaySKUs();
-    extractSKUs();
-    // displayProductIds();
-    newworldProductSKUs.length && getData();
-    newworldResults.length && displayResults();
-  }, [newworldProductSKUs]);
+    displayResults();
+  }, [newworldResults]);
 
   useEffect(() => {}, [countdownResults]);
-  useEffect(() => {}, [newworldResults]);
-
-  useEffect(() => {
-    rows.length && console.log("rows", rows);
-  }, [rows]);
   useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
     {
@@ -487,15 +488,6 @@ export default function EnhancedTable() {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.index);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -524,6 +516,7 @@ export default function EnhancedTable() {
       countdownResults,
       newworldResults,
       paknsaveResults,
+      rows,
     ]
   );
 
