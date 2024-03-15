@@ -232,7 +232,6 @@ export default function EnhancedTable() {
       );
       const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
       setnewworldResults(newworldSKUsJSON.products);
-      // console.log("newworldSKUsJSON.products", newworldSKUsJSON.products);
     }
 
     async function displayResults() {
@@ -285,6 +284,7 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] && true;
+
             rows.push(
               createData(
                 countdownIndex,
@@ -300,7 +300,6 @@ export default function EnhancedTable() {
             );
           }
         });
-      console.log("rows", rows);
     }
 
     // displaySKUs();
@@ -311,8 +310,10 @@ export default function EnhancedTable() {
   }, [newworldProductSKUs]);
 
   useEffect(() => {}, [countdownResults]);
+  useEffect(() => {}, [newworldResults]);
+
   useEffect(() => {
-    newworldResults.length && console.log("newworldResults", newworldResults);
+    rows.length && console.log("rows", rows);
   }, [rows]);
   useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
