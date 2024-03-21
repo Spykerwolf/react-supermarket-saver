@@ -245,7 +245,7 @@ export default function EnhancedTable() {
   }, [productIdTogether]);
 
   useEffect(() => {
-    newworldResults.length && console.log("newworldResults", newworldResults);
+    newworldResults?.length && console.log("newworldResults", newworldResults);
     async function displayResults() {
       if (newworldResults !== undefined) {
         newworldResults.forEach((product, index) => {
@@ -379,10 +379,13 @@ export default function EnhancedTable() {
       setCountdownresults(countdownResponse.products.items);
     }
   }
+  let searchTermArray = searchTerm.split(" ");
   countdownresults.forEach((product, countdownIndex) => {
     if (product["type"] === "Product") {
       const productName: string = product["name"];
-      if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      // console.log("productName", productName);
+      // if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTermArray.some((e) => productName.toLowerCase().includes(e))) {
         const store = "Countdown";
         const productStandardPrice = product["price"][
           "originalPrice"
@@ -752,7 +755,10 @@ export default function EnhancedTable() {
                       hover
                       tabIndex={-1}
                       key={Math.random()}
-                      sx={{ cursor: "pointer" }}
+                      sx={{
+                        cursor: "pointer",
+                        backgroundColor: "#00000008",
+                      }}
                     >
                       <TableCell padding="none">
                         <Checkbox
