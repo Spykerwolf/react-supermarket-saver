@@ -26,7 +26,7 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 
-let rows: any = [];
+let rows: any[] = [];
 
 interface Data {
   index: number;
@@ -126,7 +126,7 @@ const headCells: readonly HeadCell[] = [
 type Order = "asc" | "desc";
 
 interface EnhancedTableProps {
-  numSelected: number;
+  // numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof Data
@@ -177,24 +177,23 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
-  const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(75);
-  const [countdownResults, setcountdownResults] = useState([]);
-  const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
+  // const [countdownResults, setcountdownResults] = useState([]);
+  // const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
   const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
-  const [paknsaveResults, setpaknsaveResults] = useState([]);
-  const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
+  // const [paknsaveResults, setpaknsaveResults] = useState([]);
+  // const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-  const [chipData, setChipData] = useState([]);
-  const [mycoolrows, setMycoolrows] = useState([]);
+  const [chipData, setChipData] = useState<any[]>([]);
+  const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
 
   useEffect(() => {
@@ -267,16 +266,20 @@ export default function EnhancedTable() {
             const productSpecialPrice = product["promotions"]
               ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
               : productStandardPrice;
-            const productSku = product["productId"];
+            const productSku: string = product["productId"];
 
-            const productCupPrice = product["singlePrice"]["comparativePrice"]
+            const productCupPrice: any = product["singlePrice"][
+              "comparativePrice"
+            ]
               ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
               : "";
 
             const productCupUnit = product["singlePrice"]["comparativePrice"]
               ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
               : "";
-            const productCupMeasure = product["singlePrice"]["comparativePrice"]
+            const productCupMeasure: string = product["singlePrice"][
+              "comparativePrice"
+            ]
               ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
               : "";
 
@@ -287,11 +290,11 @@ export default function EnhancedTable() {
               )} / ${productCupUnit} ${productCupMeasure
                 ?.replace("l", "L")
                 ?.replace("mL", "ml")}`;
-
-            const productPackage: string = `${product["displayName"]
+            const displayName: string = product["displayName"];
+            const productPackage: string = `${displayName
               ?.replace("l", "L")
               ?.replace("mL", "ml")}`;
-            const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+            const URL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
               "-",
               "_"
             )}`;
@@ -318,8 +321,8 @@ export default function EnhancedTable() {
     displayResults();
   }, [newworldResults]);
 
-  useEffect(() => {}, [countdownResults]);
-  useEffect(() => {}, [paknsaveResults]);
+  // useEffect(() => {}, [countdownResults]);
+  // useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
     {
       chipData.length != 0 &&
@@ -506,7 +509,7 @@ export default function EnhancedTable() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const visibleRows = React.useMemo(
+  const visibleRows: any[] = React.useMemo(
     () =>
       stableSort(rows, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
@@ -517,9 +520,9 @@ export default function EnhancedTable() {
       orderBy,
       page,
       rowsPerPage,
-      countdownResults,
+      // countdownResults,
       newworldResults,
-      paknsaveResults,
+      // paknsaveResults,
       mycoolrows,
     ]
   );
@@ -683,7 +686,6 @@ export default function EnhancedTable() {
               m: 0,
             }}
             component="ul"
-            variant="string"
             key={Math.random()}
           >
             {chipData.map((data) => {
@@ -707,7 +709,7 @@ export default function EnhancedTable() {
             size={"small"}
           >
             <EnhancedTableHead
-              numSelected={selected.length}
+              // numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
@@ -716,9 +718,10 @@ export default function EnhancedTable() {
             <TableBody>
               {visibleRows
                 .filter((row) => {
+                  let lowerCaseValue: string = row.name;
                   return chipData.length === 0
                     ? row
-                    : !row.name
+                    : !lowerCaseValue
                         .toLowerCase()
                         .includes(
                           chipData.map((e) => e.label).at(chipData.length - 1)
@@ -809,7 +812,6 @@ export default function EnhancedTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
-      {/* {console.log(`${sortedName[0]} - ${sortedPrice[0]} - ${sortedRatio[0]}`)} */}
     </>
   );
 }
