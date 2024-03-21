@@ -184,7 +184,7 @@ export default function EnhancedTable() {
   const [newworldResults, setnewworldResults] = useState([]);
   const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
-  const [paknsaveResults, setpaknsaveResults] = useState([]);
+  const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
   const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -466,7 +466,7 @@ export default function EnhancedTable() {
 
       const productSku = product["productId"];
 
-      const productCupPrice = product["comparativePricePerUnit"]
+      const productCupPrice: any = product["comparativePricePerUnit"]
         ? product["comparativePricePerUnit"]
         : "";
       const productCupUnit = product["comparativeUnitQuantity"]
