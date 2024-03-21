@@ -179,8 +179,8 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(75);
-  // const [countdownResults, setcountdownResults] = useState([]);
-  // const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
+  const [countdownresults, setCountdownresults] = useState<any[]>([]);
+  const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
   const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
@@ -248,7 +248,7 @@ export default function EnhancedTable() {
     newworldResults.length && console.log("newworldResults", newworldResults);
     async function displayResults() {
       if (newworldResults !== undefined) {
-        newworldResults.forEach((product, countdownIndex) => {
+        newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
             ? `${product["brand"]} ${product["name"]}`
             : product["name"];
@@ -302,7 +302,7 @@ export default function EnhancedTable() {
 
             rows.push(
               createData(
-                countdownIndex,
+                index,
                 CapitalizeFirstLetter(productName),
                 onSpecial,
                 productSpecialPrice,
@@ -321,7 +321,7 @@ export default function EnhancedTable() {
     displayResults();
   }, [newworldResults]);
 
-  // useEffect(() => {}, [countdownResults]);
+  useEffect(() => {}, [countdownresults]);
   // useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
     {
@@ -331,10 +331,11 @@ export default function EnhancedTable() {
   }, [chipData]);
 
   async function GetSupermarketPrices() {
+    rows = [];
     newworld();
+    countdown();
 
     async function newworld() {
-      rows = [];
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
       getSKUs();
       async function getSKUs() {
@@ -365,7 +366,73 @@ export default function EnhancedTable() {
         setNewworldProductSKUs(newworldResponse.hits);
       }
     }
+
+    async function countdown() {
+      const fetchCountDownData = await fetch(
+        `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
+      );
+      !fetchCountDownData.ok
+        ? setCountdownAPIStatus("API key needs refreshing")
+        : setCountdownAPIStatus("");
+      const countdownResponse = await fetchCountDownData.json();
+      console.log("countdownResponse", countdownResponse.products.items);
+      setCountdownresults(countdownResponse.products.items);
+    }
   }
+  countdownresults.forEach((product, countdownIndex) => {
+    if (product["type"] === "Product") {
+      const productName: string = product["name"];
+      if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+        const store = "Countdown";
+        const productStandardPrice = product["price"][
+          "originalPrice"
+        ].toLocaleString("en", {
+          minimumFractionDigits: 2,
+        });
+        const productSku = product["sku"];
+        const productCupPrice = product["size"]["cupPrice"];
+        const productCup: string = product["size"]["cupMeasure"];
+        const productCupMeasure: string = productCup
+          ? productCup.replace("mL", "ml")
+          : "";
+        const ratio = productCupMeasure
+          ? `$${productCupPrice} / ${productCupMeasure}`
+          : "*";
+        const productVolumeSize: string = product["size"]["volumeSize"];
+        const productPackage = `${productVolumeSize?.replace("mL", "ml")} ${
+          product["size"]["packageType"] != null
+            ? product["size"]["packageType"]
+            : ""
+        }`;
+        const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+        const onSpecial = product["price"]["isSpecial"] && true;
+
+        const productSpecialPrice: string = onSpecial
+          ? product["price"]["salePrice"].toLocaleString("en", {
+              minimumFractionDigits: 2,
+            })
+          : productStandardPrice;
+
+        // const productSpecialPrice = product["promotions"]
+        // ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+        // : productStandardPrice;
+        onSpecial && console.log(productName + " " + URL);
+        rows.push(
+          createData(
+            countdownIndex,
+            CapitalizeFirstLetter(productName),
+            onSpecial,
+            productSpecialPrice,
+            productStandardPrice,
+            productPackage,
+            ratio,
+            store,
+            URL
+          )
+        );
+      }
+    }
+  });
 
   // Send skus to get products
 
@@ -387,56 +454,6 @@ export default function EnhancedTable() {
   //   //     setpaknsaveResults(data.data.products);
   //   //   });
   // };
-
-  // console.log(newworldProductIDs);
-
-  // countdownResults.forEach((product, countdownIndex) => {
-  //   if (product["type"] === "Product") {
-  //     const productName: string = product["name"];
-  //     if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-  //       const store = "Countdown";
-  //       const productPrice = product["price"]["salePrice"].toLocaleString(
-  //         "en",
-  //         {
-  //           minimumFractionDigits: 2,
-  //         }
-  //       );
-  //       const productSku = product["sku"];
-  //       const productCupPrice = product["size"]["cupPrice"].toLocaleString(
-  //         "en",
-  //         {
-  //           minimumFractionDigits: 2,
-  //         }
-  //       );
-  //       const productCupMeasure = product["size"]["cupMeasure"]
-  //         ? product["size"]["cupMeasure"].replace("mL", "ml")
-  //         : "";
-  //       const ratio = productCupMeasure
-  //         ? `$${productCupPrice} / ${productCupMeasure}`
-  //         : "*";
-  //       const productPackage = `${product["size"]["volumeSize"]?.replace(
-  //         "mL",
-  //         "ml"
-  //       )} ${
-  //         product["size"]["packageType"] != null
-  //           ? product["size"]["packageType"]
-  //           : ""
-  //       }`;
-  //       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-  //       rows.push(
-  //         createData(
-  //           countdownIndex,
-  //           CapitalizeFirstLetter(productName),
-  //           productPrice,
-  //           ratio,
-  //           productPackage,
-  //           store,
-  //           URL
-  //         )
-  //       );
-  //     }
-  //   }
-  // });
 
   // paknsaveResults.forEach((product, countdownIndex) => {
   //   const productName = product["brand"]
@@ -520,7 +537,7 @@ export default function EnhancedTable() {
       orderBy,
       page,
       rowsPerPage,
-      // countdownResults,
+      countdownresults,
       newworldResults,
       // paknsaveResults,
       mycoolrows,
@@ -553,7 +570,7 @@ export default function EnhancedTable() {
         }}
       >
         {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}`}
-        {/* Countdown: {countdownAPIStatus} <br /> */}
+        {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}`}
         {/* Pak n Save: {paknsaveAPIStatus} <br /> */}
       </Box>
 
