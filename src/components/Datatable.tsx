@@ -20,14 +20,22 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
+import { newworldSecretToken } from "../secrets";
+import SellIcon from "@mui/icons-material/Sell";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import Checkbox from "@mui/material/Checkbox";
+
+let rows: any = [];
 
 interface Data {
   index: number;
   name: string;
-  price: string;
-  ratio: string;
+  onSpecial: boolean;
+  specialPrice: string;
+  standardPrice: string;
   productPackage: string;
+  ratio: string;
   store: string;
   URL: string;
 }
@@ -35,18 +43,22 @@ interface Data {
 export function createData(
   index: number,
   name: string,
-  price: string,
-  ratio: string,
+  onSpecial: boolean,
+  specialPrice: string,
+  standardPrice: string,
   productPackage: string,
+  ratio: string,
   store: string,
   URL: string
 ): Data {
   return {
     index,
     name,
-    price,
-    ratio,
+    onSpecial,
+    specialPrice,
+    standardPrice,
     productPackage,
+    ratio,
     store,
     URL,
   };
@@ -67,22 +79,35 @@ const headCells: readonly HeadCell[] = [
     label: "Name",
   },
   {
-    id: "price",
+    id: "onSpecial",
+    numeric: false,
+    disablePadding: true,
+    label: "",
+  },
+  {
+    id: "specialPrice",
     numeric: false,
     disablePadding: false,
     label: "Price",
+  },
+  {
+    id: "standardPrice",
+    numeric: false,
+    disablePadding: false,
+    label: "",
+  },
+
+  {
+    id: "productPackage",
+    numeric: false,
+    disablePadding: false,
+    label: "Packaging",
   },
   {
     id: "ratio",
     numeric: false,
     disablePadding: false,
     label: "Ratio",
-  },
-  {
-    id: "productPackage",
-    numeric: false,
-    disablePadding: false,
-    label: "Packaging",
   },
   {
     id: "store",
@@ -121,7 +146,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
   return (
     <TableHead>
-      <TableRow>
+      <TableRow sx={{ bgcolor: "lightgrey" }}>
         <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
@@ -150,26 +175,150 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 export default function EnhancedTable() {
-  let rows: any = [];
-
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(-1);
+  const [rowsPerPage, setRowsPerPage] = useState(75);
   const [countdownResults, setcountdownResults] = useState([]);
+  const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
+  const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
+  const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState([]);
+  const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-  const [chipData, setChipData] = React.useState([]);
+  const [chipData, setChipData] = useState([]);
+  const [mycoolrows, setMycoolrows] = useState([]);
+  const productIdTogether: string[] = [];
+
+  useEffect(() => {
+    // async function displaySKUs() {
+    //   newworldProductSKUs.length &&
+    //     console.log("newworldProductSKUs", newworldProductSKUs);
+    // }
+
+    async function extractSKUs() {
+      newworldProductSKUs !== undefined &&
+        newworldProductSKUs.forEach((product) => {
+          productIdTogether.push(product["productID"]);
+        });
+    }
+
+    // async function displayProductIds() {
+    //   productIdTogether.length &&
+    //     console.log("productIdTogether", productIdTogether);
+    // }
+
+    // displaySKUs();
+    extractSKUs();
+    // displayProductIds();
+  }, [newworldProductSKUs]);
+
+  useEffect(() => {
+    rows.length > 0 && console.log("rows", rows);
+  }, [mycoolrows]);
+  useEffect(() => {
+    async function getData() {
+      const combineNewworldSKUsWithProducts: Response = await fetch(
+        `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
+        {
+          method: "post",
+          headers: new Headers({
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            Authorization: newworldSecretToken,
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ productIds: productIdTogether }),
+        }
+      );
+      const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
+      setnewworldResults(newworldSKUsJSON.products);
+    }
+
+    productIdTogether.length && getData();
+  }, [productIdTogether]);
+
+  useEffect(() => {
+    newworldResults.length && console.log("newworldResults", newworldResults);
+    async function displayResults() {
+      if (newworldResults !== undefined) {
+        newworldResults.forEach((product, countdownIndex) => {
+          const productName: string = product["brand"]
+            ? `${product["brand"]} ${product["name"]}`
+            : product["name"];
+          if (
+            productName
+              .toLowerCase()
+              .replace("-", " ")
+              .includes(searchTerm.toLowerCase())
+          ) {
+            const store = "New World";
+            const productStandardPrice = (
+              product["singlePrice"]["price"] / 100
+            ).toFixed(2);
+
+            const productSpecialPrice = product["promotions"]
+              ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+              : productStandardPrice;
+            const productSku = product["productId"];
+
+            const productCupPrice = product["singlePrice"]["comparativePrice"]
+              ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
+              : "";
+
+            const productCupUnit = product["singlePrice"]["comparativePrice"]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
+              : "";
+            const productCupMeasure = product["singlePrice"]["comparativePrice"]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
+              : "";
+
+            const ratio =
+              productCupMeasure &&
+              `$${(productCupPrice / 100).toFixed(
+                2
+              )} / ${productCupUnit} ${productCupMeasure
+                ?.replace("l", "L")
+                ?.replace("mL", "ml")}`;
+
+            const productPackage: string = `${product["displayName"]
+              ?.replace("l", "L")
+              ?.replace("mL", "ml")}`;
+            const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+              "-",
+              "_"
+            )}`;
+            const onSpecial = product["promotions"] && true;
+
+            rows.push(
+              createData(
+                countdownIndex,
+                CapitalizeFirstLetter(productName),
+                onSpecial,
+                productSpecialPrice,
+                productStandardPrice,
+                productPackage,
+                ratio,
+                store,
+                URL
+              )
+            );
+          }
+        });
+        setMycoolrows([rows]);
+      }
+    }
+    displayResults();
+  }, [newworldResults]);
 
   useEffect(() => {}, [countdownResults]);
-  useEffect(() => {}, [newworldResults]);
   useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
     {
@@ -178,193 +327,161 @@ export default function EnhancedTable() {
     }
   }, [chipData]);
 
-  const GetData = () => {
-    const fetchCountDownData = fetch(
-      `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
-    );
-    fetchCountDownData
-      .then((response) => response.json())
-      .then((data) => {
-        setcountdownResults(data.products.items);
-      });
+  async function GetSupermarketPrices() {
+    newworld();
 
-    const newworldStoreId = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
-    const fetchNewWorldData = fetch(
-      `http://localhost:8585/https://www.newworld.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${newworldStoreId}&publish=true&ps=100`,
-      {
-        method: "get",
-        headers: new Headers({
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-          Authorization: newworldSecretToken,
-        }),
-      }
-    );
-
-    fetchNewWorldData
-      .then((response) => response.json())
-      .then((data) => {
-        setnewworldResults(data.data.products);
-      });
-    const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-    const fetchPaknSaveData = fetch(
-      `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
-      {
-        method: "get",
-        headers: new Headers({
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-          Authorization: paknsaveSecretToken,
-        }),
-      }
-    );
-    fetchPaknSaveData
-      .then((response) => response.json())
-      .then((data) => {
-        setpaknsaveResults(data.data.products);
-      });
-  };
-
-  countdownResults.forEach((product, countdownIndex) => {
-    if (product["type"] === "Product") {
-      const productName: string = product["name"];
-      if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-        const store = "Countdown";
-        const productPrice = product["price"]["salePrice"].toLocaleString(
-          "en",
+    async function newworld() {
+      rows = [];
+      const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
+      getSKUs();
+      async function getSKUs() {
+        const fetchNewWorldSkus: Response = await fetch(
+          `https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
           {
-            minimumFractionDigits: 2,
+            method: "post",
+            headers: new Headers({
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+              Authorization: newworldSecretToken,
+              "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({
+              algoliaQuery: {
+                attributesToRetrieve: ["productID", "Type", "sponsored"],
+                filters: `stores:${storeID}`,
+                query: searchTerm,
+              },
+            }),
           }
         );
-        const productSku = product["sku"];
-        const productCupPrice = product["size"]["cupPrice"].toLocaleString(
-          "en",
-          {
-            minimumFractionDigits: 2,
-          }
-        );
-        const productCupMeasure = product["size"]["cupMeasure"]
-          ? product["size"]["cupMeasure"].replace("mL", "ml")
-          : "";
-        const ratio = productCupMeasure
-          ? `$${productCupPrice} / ${productCupMeasure}`
-          : "*";
-        const productPackage = `${product["size"]["volumeSize"]?.replace(
-          "mL",
-          "ml"
-        )} ${
-          product["size"]["packageType"] != null
-            ? product["size"]["packageType"]
-            : ""
-        }`;
-        const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-        rows.push(
-          createData(
-            countdownIndex,
-            CapitalizeFirstLetter(productName),
-            productPrice,
-            ratio,
-            productPackage,
-            store,
-            URL
-          )
-        );
+
+        !fetchNewWorldSkus.ok
+          ? setNewworldAPIStatus("API key needs refreshing")
+          : setNewworldAPIStatus("");
+        const newworldResponse = await fetchNewWorldSkus.json();
+        setNewworldProductSKUs(newworldResponse.hits);
       }
     }
-  });
+  }
 
-  newworldResults.forEach((product, countdownIndex) => {
-    const productName = product["brand"]
-      ? `${product["brand"]} ${product["name"]}`
-      : product["name"];
-    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      const store = "New World";
-      const productPrice = (product["price"] / 100).toFixed(2);
-      const productSku = product["productId"];
+  // Send skus to get products
 
-      const productCupPrice = product["comparativePricePerUnit"]
-        ? product["comparativePricePerUnit"]
-        : "";
-      const productCupUnit = product["comparativeUnitQuantity"]
-        ? product["comparativeUnitQuantity"]
-        : "";
-      const productCupMeasure = product["comparativeUnitQuantityUoM"]
-        ? product["comparativeUnitQuantityUoM"]
-        : "";
-      const ratio = productCupMeasure
-        ? `$${(productCupPrice / 100).toFixed(
-            2
-          )} / ${productCupUnit} ${productCupMeasure
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`
-        : "*";
+  //   // const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+  //   // const fetchPaknSaveData = fetch(
+  //   //   `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
+  //   //   {
+  //   //     method: "get",
+  //   //     headers: new Headers({
+  //   //       "User-Agent":
+  //   //         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  //   //       Authorization: paknsaveSecretToken,
+  //   //     }),
+  //   //   }
+  //   // );
+  //   // fetchPaknSaveData
+  //   //   .then((response) => response.json())
+  //   //   .then((data) => {
+  //   //     setpaknsaveResults(data.data.products);
+  //   //   });
+  // };
 
-      const productPackage = `${product["displayName"]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
-      const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
-        "-",
-        "_"
-      )}`;
-      rows.push(
-        createData(
-          countdownIndex,
-          CapitalizeFirstLetter(productName),
-          productPrice,
-          ratio,
-          productPackage,
-          store,
-          URL
-        )
-      );
-    }
-  });
+  // console.log(newworldProductIDs);
 
-  paknsaveResults.forEach((product, countdownIndex) => {
-    const productName = product["brand"]
-      ? `${product["brand"]} ${product["name"]}`
-      : product["name"];
-    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      const store = "Pak n Save";
-      const productPrice = (product["price"] / 100).toFixed(2);
-      const productSku = product["productId"];
-      const productCupPrice = product["comparativePricePerUnit"]
-        ? product["comparativePricePerUnit"]
-        : "";
-      const productCupUnit = product["comparativeUnitQuantity"]
-        ? product["comparativeUnitQuantity"]
-        : "";
-      const productCupMeasure = product["comparativeUnitQuantityUoM"]
-        ? product["comparativeUnitQuantityUoM"]
-        : "";
-      const ratio = productCupMeasure
-        ? `$${(productCupPrice / 100).toFixed(
-            2
-          )} / ${productCupUnit} ${productCupMeasure
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`
-        : "*";
+  // countdownResults.forEach((product, countdownIndex) => {
+  //   if (product["type"] === "Product") {
+  //     const productName: string = product["name"];
+  //     if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+  //       const store = "Countdown";
+  //       const productPrice = product["price"]["salePrice"].toLocaleString(
+  //         "en",
+  //         {
+  //           minimumFractionDigits: 2,
+  //         }
+  //       );
+  //       const productSku = product["sku"];
+  //       const productCupPrice = product["size"]["cupPrice"].toLocaleString(
+  //         "en",
+  //         {
+  //           minimumFractionDigits: 2,
+  //         }
+  //       );
+  //       const productCupMeasure = product["size"]["cupMeasure"]
+  //         ? product["size"]["cupMeasure"].replace("mL", "ml")
+  //         : "";
+  //       const ratio = productCupMeasure
+  //         ? `$${productCupPrice} / ${productCupMeasure}`
+  //         : "*";
+  //       const productPackage = `${product["size"]["volumeSize"]?.replace(
+  //         "mL",
+  //         "ml"
+  //       )} ${
+  //         product["size"]["packageType"] != null
+  //           ? product["size"]["packageType"]
+  //           : ""
+  //       }`;
+  //       const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+  //       rows.push(
+  //         createData(
+  //           countdownIndex,
+  //           CapitalizeFirstLetter(productName),
+  //           productPrice,
+  //           ratio,
+  //           productPackage,
+  //           store,
+  //           URL
+  //         )
+  //       );
+  //     }
+  //   }
+  // });
 
-      const productPackage = `${product["displayName"]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
-      const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-        "-",
-        "_"
-      )}`;
-      rows.push(
-        createData(
-          countdownIndex,
-          CapitalizeFirstLetter(productName),
-          productPrice,
-          ratio,
-          productPackage,
-          store,
-          URL
-        )
-      );
-    }
-  });
+  // paknsaveResults.forEach((product, countdownIndex) => {
+  //   const productName = product["brand"]
+  //     ? `${product["brand"]} ${product["name"]}`
+  //     : product["name"];
+  //   if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+  //     const store = "Pak n Save";
+  //     const productPrice = (product["price"] / 100).toFixed(2);
+  //     const productSku = product["productId"];
+  //     const productCupPrice = product["comparativePricePerUnit"]
+  //       ? product["comparativePricePerUnit"]
+  //       : "";
+  //     const productCupUnit = product["comparativeUnitQuantity"]
+  //       ? product["comparativeUnitQuantity"]
+  //       : "";
+  //     const productCupMeasure = product["comparativeUnitQuantityUoM"]
+  //       ? product["comparativeUnitQuantityUoM"]
+  //       : "";
+  //     const ratio = productCupMeasure
+  //       ? `$${(productCupPrice / 100).toFixed(
+  //           2
+  //         )} / ${productCupUnit} ${productCupMeasure
+  //           ?.replace("l", "L")
+  //           ?.replace("mL", "ml")}`
+  //       : "*";
+
+  //     const productPackage = `${product["displayName"]
+  //       ?.replace("l", "L")
+  //       ?.replace("mL", "ml")}`;
+  //     const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+  //       "-",
+  //       "_"
+  //     )}`;
+  //     rows.push(
+  //       createData(
+  //         countdownIndex,
+  //         CapitalizeFirstLetter(productName),
+  //         productPrice,
+  //         ratio,
+  //         productPackage,
+  //         store,
+  //         URL
+  //       )
+  //     );
+  //   }
+  // });
+
+  // console.log(rows.at(0).name);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -373,15 +490,6 @@ export default function EnhancedTable() {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
-  };
-
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.index);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -412,6 +520,7 @@ export default function EnhancedTable() {
       countdownResults,
       newworldResults,
       paknsaveResults,
+      mycoolrows,
     ]
   );
 
@@ -432,6 +541,19 @@ export default function EnhancedTable() {
 
   return (
     <>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}`}
+        {/* Countdown: {countdownAPIStatus} <br /> */}
+        {/* Pak n Save: {paknsaveAPIStatus} <br /> */}
+      </Box>
+
       <Box>
         <ButtonGroup>
           <TextField
@@ -468,7 +590,7 @@ export default function EnhancedTable() {
                   setSearchHelperText("Please search for something");
                 } else {
                   e.preventDefault();
-                  searchTerm != "" && GetData();
+                  searchTerm != "" && GetSupermarketPrices();
                   setSearchPlaceholderText("Search for a product");
                   setSearchHelperText("");
                 }
@@ -484,7 +606,7 @@ export default function EnhancedTable() {
               if (searchTerm === "") {
                 setSearchHelperText("Please search for something");
               } else {
-                GetData();
+                GetSupermarketPrices();
                 setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
               }
@@ -612,7 +734,13 @@ export default function EnhancedTable() {
                       key={Math.random()}
                       sx={{ cursor: "pointer" }}
                     >
-                      <TableCell padding="none"></TableCell>
+                      <TableCell padding="none">
+                        <Checkbox
+                          icon={<StarBorderIcon />}
+                          checkedIcon={<StarIcon />}
+                          color="warning"
+                        />
+                      </TableCell>
 
                       <TableCell
                         component="th"
@@ -621,16 +749,29 @@ export default function EnhancedTable() {
                         padding="none"
                         key={row.index}
                         align="left"
+                        color="white"
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">${row.price}</TableCell>
-                      <TableCell align="left">{row.ratio}</TableCell>
-                      <TableCell align="left">{row.productPackage}</TableCell>
-                      <TableCell align="left">{row.store}</TableCell>
 
+                      <TableCell align="right">
+                        {row.onSpecial && (
+                          <IconButton>
+                            <SellIcon color="info" />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                      <TableCell align="left">${row.specialPrice}</TableCell>
+                      <TableCell align="left">
+                        {row.onSpecial && `$${row.standardPrice}`}
+                      </TableCell>
+                      <TableCell align="left">{row.productPackage}</TableCell>
+
+                      <TableCell align="left">{row.ratio}</TableCell>
+                      <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
+                          color="warning"
                           onClick={() => {
                             open(row.URL, "_blank", "noopener,noreferrer");
                           }}
@@ -659,7 +800,7 @@ export default function EnhancedTable() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[10, 25, { value: -1, label: "All" }]}
+          rowsPerPageOptions={[25, 50, 75, { value: -1, label: "All" }]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}
@@ -668,6 +809,7 @@ export default function EnhancedTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
+      {/* {console.log(`${sortedName[0]} - ${sortedPrice[0]} - ${sortedRatio[0]}`)} */}
     </>
   );
 }
