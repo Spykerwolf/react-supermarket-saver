@@ -20,7 +20,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { newworldSecretToken } from "../secrets";
+import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -184,8 +184,8 @@ export default function EnhancedTable() {
   const [newworldResults, setnewworldResults] = useState([]);
   const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
-  // const [paknsaveResults, setpaknsaveResults] = useState([]);
-  // const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
+  const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
+  const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -220,7 +220,7 @@ export default function EnhancedTable() {
   }, [newworldProductSKUs]);
 
   useEffect(() => {
-    rows.length > 0 && console.log("rows", rows);
+    // rows.length > 0 && console.log("rows", rows);
   }, [mycoolrows]);
   useEffect(() => {
     async function getData() {
@@ -245,18 +245,18 @@ export default function EnhancedTable() {
   }, [productIdTogether]);
 
   useEffect(() => {
-    newworldResults?.length && console.log("newworldResults", newworldResults);
+    // newworldResults?.length && console.log("newworldResults", newworldResults);
     async function displayResults() {
       if (newworldResults !== undefined) {
+        let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
             ? `${product["brand"]} ${product["name"]}`
             : product["name"];
           if (
-            productName
-              .toLowerCase()
-              .replace("-", " ")
-              .includes(searchTerm.toLowerCase())
+            searchTermArray.some((e) =>
+              productName.toLowerCase().replace("-", " ").includes(e)
+            )
           ) {
             const store = "New World";
             const productStandardPrice = (
@@ -322,7 +322,7 @@ export default function EnhancedTable() {
   }, [newworldResults]);
 
   useEffect(() => {}, [countdownresults]);
-  // useEffect(() => {}, [paknsaveResults]);
+  useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
     {
       chipData.length != 0 &&
@@ -334,6 +334,7 @@ export default function EnhancedTable() {
     rows = [];
     newworld();
     countdown();
+    paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
@@ -375,11 +376,33 @@ export default function EnhancedTable() {
         ? setCountdownAPIStatus("API key needs refreshing")
         : setCountdownAPIStatus("");
       const countdownResponse = await fetchCountDownData.json();
-      console.log("countdownResponse", countdownResponse.products.items);
+      // console.log("countdownResponse", countdownResponse.products.items);
       setCountdownresults(countdownResponse.products.items);
     }
+
+    async function paknsave() {
+      const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+      const fetchPaknSaveData = await fetch(
+        `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
+        {
+          method: "get",
+          headers: new Headers({
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            Authorization: paknsaveSecretToken,
+          }),
+        }
+      );
+      !fetchPaknSaveData.ok
+        ? setPaknsaveAPIStatus("API key needs refreshing")
+        : setPaknsaveAPIStatus("");
+      const paknsaveResponse = await fetchPaknSaveData.json();
+      setpaknsaveResults(paknsaveResponse.data.products);
+    }
   }
+
   let searchTermArray = searchTerm.split(" ");
+
   countdownresults.forEach((product, countdownIndex) => {
     if (product["type"] === "Product") {
       const productName: string = product["name"];
@@ -416,10 +439,6 @@ export default function EnhancedTable() {
             })
           : productStandardPrice;
 
-        // const productSpecialPrice = product["promotions"]
-        // ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
-        // : productStandardPrice;
-        onSpecial && console.log(productName + " " + URL);
         rows.push(
           createData(
             countdownIndex,
@@ -437,74 +456,57 @@ export default function EnhancedTable() {
     }
   });
 
-  // Send skus to get products
+  paknsaveResults.forEach((product, countdownIndex) => {
+    const productName = product["brand"]
+      ? `${product["brand"]} ${product["name"]}`
+      : product["name"];
+    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      const store = "Pak n Save";
+      const productStandardPrice = (product["price"] / 100).toFixed(2);
 
-  //   // const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-  //   // const fetchPaknSaveData = fetch(
-  //   //   `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=100`,
-  //   //   {
-  //   //     method: "get",
-  //   //     headers: new Headers({
-  //   //       "User-Agent":
-  //   //         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  //   //       Authorization: paknsaveSecretToken,
-  //   //     }),
-  //   //   }
-  //   // );
-  //   // fetchPaknSaveData
-  //   //   .then((response) => response.json())
-  //   //   .then((data) => {
-  //   //     setpaknsaveResults(data.data.products);
-  //   //   });
-  // };
+      const productSku = product["productId"];
 
-  // paknsaveResults.forEach((product, countdownIndex) => {
-  //   const productName = product["brand"]
-  //     ? `${product["brand"]} ${product["name"]}`
-  //     : product["name"];
-  //   if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-  //     const store = "Pak n Save";
-  //     const productPrice = (product["price"] / 100).toFixed(2);
-  //     const productSku = product["productId"];
-  //     const productCupPrice = product["comparativePricePerUnit"]
-  //       ? product["comparativePricePerUnit"]
-  //       : "";
-  //     const productCupUnit = product["comparativeUnitQuantity"]
-  //       ? product["comparativeUnitQuantity"]
-  //       : "";
-  //     const productCupMeasure = product["comparativeUnitQuantityUoM"]
-  //       ? product["comparativeUnitQuantityUoM"]
-  //       : "";
-  //     const ratio = productCupMeasure
-  //       ? `$${(productCupPrice / 100).toFixed(
-  //           2
-  //         )} / ${productCupUnit} ${productCupMeasure
-  //           ?.replace("l", "L")
-  //           ?.replace("mL", "ml")}`
-  //       : "*";
+      const productCupPrice: any = product["comparativePricePerUnit"]
+        ? product["comparativePricePerUnit"]
+        : "";
+      const productCupUnit = product["comparativeUnitQuantity"]
+        ? product["comparativeUnitQuantity"]
+        : "";
+      const productCupMeasure = product["comparativeUnitQuantityUoM"]
+        ? product["comparativeUnitQuantityUoM"]
+        : "";
+      const ratio = productCupMeasure
+        ? `$${(productCupPrice / 100).toFixed(
+            2
+          )} / ${productCupUnit} ${productCupMeasure
+            ?.replace("l", "L")
+            ?.replace("mL", "ml")}`
+        : "*";
 
-  //     const productPackage = `${product["displayName"]
-  //       ?.replace("l", "L")
-  //       ?.replace("mL", "ml")}`;
-  //     const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-  //       "-",
-  //       "_"
-  //     )}`;
-  //     rows.push(
-  //       createData(
-  //         countdownIndex,
-  //         CapitalizeFirstLetter(productName),
-  //         productPrice,
-  //         ratio,
-  //         productPackage,
-  //         store,
-  //         URL
-  //       )
-  //     );
-  //   }
-  // });
+      const productPackage = `${product["displayName"]
+        ?.replace("l", "L")
+        ?.replace("mL", "ml")}`;
+      const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+        "-",
+        "_"
+      )}`;
+      const onSpecial = product["promotions"] && true;
 
-  // console.log(rows.at(0).name);
+      rows.push(
+        createData(
+          countdownIndex,
+          CapitalizeFirstLetter(productName),
+          onSpecial,
+          productStandardPrice,
+          productStandardPrice,
+          productPackage,
+          ratio,
+          store,
+          URL
+        )
+      );
+    }
+  });
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -542,7 +544,7 @@ export default function EnhancedTable() {
       rowsPerPage,
       countdownresults,
       newworldResults,
-      // paknsaveResults,
+      paknsaveResults,
       mycoolrows,
     ]
   );
@@ -572,9 +574,9 @@ export default function EnhancedTable() {
           flex: 1,
         }}
       >
-        {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}`}
-        {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}`}
-        {/* Pak n Save: {paknsaveAPIStatus} <br /> */}
+        {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}~`}
+        {paknsaveAPIStatus !== "" && `Pak n Save: ${paknsaveAPIStatus}~`}
+        {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}~`}
       </Box>
 
       <Box>
