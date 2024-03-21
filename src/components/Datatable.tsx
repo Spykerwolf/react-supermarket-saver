@@ -175,7 +175,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
-  const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
+  const [orderBy, setOrderBy] = useState<keyof Data>("name");
+  // const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(75);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
@@ -524,16 +525,7 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [
-      order,
-      orderBy,
-      page,
-      rowsPerPage,
-      countdownresults,
-      newworldResults,
-      paknsaveResults,
-      mycoolrows,
-    ]
+    [order, orderBy, page, rowsPerPage, GetSupermarketPrices]
   );
 
   interface ChipData {
