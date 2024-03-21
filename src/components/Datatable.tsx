@@ -126,7 +126,6 @@ const headCells: readonly HeadCell[] = [
 type Order = "asc" | "desc";
 
 interface EnhancedTableProps {
-  // numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
     property: keyof Data
@@ -197,11 +196,6 @@ export default function EnhancedTable() {
   const productIdTogether: string[] = [];
 
   useEffect(() => {
-    // async function displaySKUs() {
-    //   newworldProductSKUs.length &&
-    //     console.log("newworldProductSKUs", newworldProductSKUs);
-    // }
-
     async function extractSKUs() {
       newworldProductSKUs !== undefined &&
         newworldProductSKUs.forEach((product) => {
@@ -209,18 +203,11 @@ export default function EnhancedTable() {
         });
     }
 
-    // async function displayProductIds() {
-    //   productIdTogether.length &&
-    //     console.log("productIdTogether", productIdTogether);
-    // }
-
-    // displaySKUs();
     extractSKUs();
-    // displayProductIds();
   }, [newworldProductSKUs]);
 
   useEffect(() => {
-    // rows.length > 0 && console.log("rows", rows);
+    rows.length > 0 && console.log("rows", rows);
   }, [mycoolrows]);
   useEffect(() => {
     async function getData() {
