@@ -48,7 +48,6 @@ export function createData(
   standardPrice: string,
   productPackage: string,
   ratio: string,
-
   store: string,
   URL: string
 ): Data {
@@ -194,14 +193,15 @@ export default function EnhancedTable() {
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-  const [chipData, setChipData] = React.useState([]);
+  const [chipData, setChipData] = useState([]);
+  const [mycoolrows, setMycoolrows] = useState([]);
   const productIdTogether: string[] = [];
 
   useEffect(() => {
-    async function displaySKUs() {
-      newworldProductSKUs.length &&
-        console.log("newworldProductSKUs", newworldProductSKUs);
-    }
+    // async function displaySKUs() {
+    //   newworldProductSKUs.length &&
+    //     console.log("newworldProductSKUs", newworldProductSKUs);
+    // }
 
     async function extractSKUs() {
       newworldProductSKUs !== undefined &&
@@ -210,17 +210,19 @@ export default function EnhancedTable() {
         });
     }
 
-    async function displayProductIds() {
-      productIdTogether.length &&
-        console.log("productIdTogether", productIdTogether);
-    }
+    // async function displayProductIds() {
+    //   productIdTogether.length &&
+    //     console.log("productIdTogether", productIdTogether);
+    // }
 
-    displaySKUs();
+    // displaySKUs();
     extractSKUs();
-    displayProductIds();
+    // displayProductIds();
   }, [newworldProductSKUs]);
 
-  useEffect(() => {}, [rows]);
+  useEffect(() => {
+    rows.length > 0 && console.log("rows", rows);
+  }, [mycoolrows]);
   useEffect(() => {
     async function getData() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
@@ -245,7 +247,6 @@ export default function EnhancedTable() {
 
   useEffect(() => {
     newworldResults.length && console.log("newworldResults", newworldResults);
-    console.log("rows", rows);
     async function displayResults() {
       if (newworldResults !== undefined) {
         newworldResults.forEach((product, countdownIndex) => {
@@ -287,7 +288,7 @@ export default function EnhancedTable() {
                 ?.replace("l", "L")
                 ?.replace("mL", "ml")}`;
 
-            const productPackage = `${product["displayName"]
+            const productPackage: string = `${product["displayName"]
               ?.replace("l", "L")
               ?.replace("mL", "ml")}`;
             const URL = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
@@ -295,6 +296,7 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] && true;
+
             rows.push(
               createData(
                 countdownIndex,
@@ -310,6 +312,7 @@ export default function EnhancedTable() {
             );
           }
         });
+        setMycoolrows([rows]);
       }
     }
     displayResults();
@@ -328,6 +331,7 @@ export default function EnhancedTable() {
     newworld();
 
     async function newworld() {
+      rows = [];
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
       getSKUs();
       async function getSKUs() {
@@ -516,7 +520,7 @@ export default function EnhancedTable() {
       countdownResults,
       newworldResults,
       paknsaveResults,
-      rows,
+      mycoolrows,
     ]
   );
 
