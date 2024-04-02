@@ -178,7 +178,7 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState<keyof Data>("name");
   // const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(75);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
   const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
@@ -365,7 +365,7 @@ export default function EnhancedTable() {
           }
         }
       });
-      setMycoolrows(rows);
+      setMycoolrows([...mycoolrows, rows]);
     }
   }, [countdownresults]);
 
@@ -375,20 +375,76 @@ export default function EnhancedTable() {
     }
   }, [mycoolrows]);
 
-  // useEffect(() => {}, [paknsaveResults]);
-  // useEffect(() => {
-  //   {
-  //     chipData.length != 0 &&
-  //       console.log(chipData.map((e) => e.label).at(chipData.length - 1));
-  //   }
-  // }, [chipData]);
+  useEffect(() => {
+    if (paknsaveResults.length !== 0) {
+      console.log("paknsaveResults", paknsaveResults);
+      paknsaveResults.forEach((product, countdownIndex) => {
+        const productName = product["brand"]
+          ? `${product["brand"]} ${product["name"]}`
+          : product["name"];
+        if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+          const store = "Pak n Save";
+          const productStandardPrice = (product["price"] / 100).toFixed(2);
+
+          const productSku = product["productId"];
+
+          const productCupPrice: any = product["comparativePricePerUnit"]
+            ? product["comparativePricePerUnit"]
+            : "";
+          const productCupUnit = product["comparativeUnitQuantity"]
+            ? product["comparativeUnitQuantity"]
+            : "";
+          const productCupMeasure = product["comparativeUnitQuantityUoM"]
+            ? product["comparativeUnitQuantityUoM"]
+            : "";
+          const ratio = productCupMeasure
+            ? `$${(productCupPrice / 100).toFixed(
+                2
+              )} / ${productCupUnit} ${productCupMeasure
+                ?.replace("l", "L")
+                ?.replace("mL", "ml")}`
+            : "*";
+
+          const productPackage = `${product["displayName"]
+            ?.replace("l", "L")
+            ?.replace("mL", "ml")}`;
+          const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+            "-",
+            "_"
+          )}`;
+          const onSpecial = product["promotions"] && true;
+
+          rows.push(
+            createData(
+              countdownIndex,
+              CapitalizeFirstLetter(productName),
+              onSpecial,
+              productStandardPrice,
+              productStandardPrice,
+              productPackage,
+              ratio,
+              store,
+              URL
+            )
+          );
+          setMycoolrows([...mycoolrows, rows]);
+        }
+      });
+    }
+  }, [paknsaveResults]);
+  useEffect(() => {
+    {
+      chipData.length != 0 &&
+        console.log(chipData.map((e) => e.label).at(chipData.length - 1));
+    }
+  }, [chipData]);
 
   async function GetSupermarketPrices() {
     rows = [];
     console.log("rows inside GetSupermarketPrices", rows);
     // newworld();
     countdown();
-    // paknsave();
+    paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
@@ -456,58 +512,6 @@ export default function EnhancedTable() {
   }
 
   let searchTermArray = searchTerm.split(" ");
-
-  paknsaveResults.forEach((product, countdownIndex) => {
-    const productName = product["brand"]
-      ? `${product["brand"]} ${product["name"]}`
-      : product["name"];
-    if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      const store = "Pak n Save";
-      const productStandardPrice = (product["price"] / 100).toFixed(2);
-
-      const productSku = product["productId"];
-
-      const productCupPrice: any = product["comparativePricePerUnit"]
-        ? product["comparativePricePerUnit"]
-        : "";
-      const productCupUnit = product["comparativeUnitQuantity"]
-        ? product["comparativeUnitQuantity"]
-        : "";
-      const productCupMeasure = product["comparativeUnitQuantityUoM"]
-        ? product["comparativeUnitQuantityUoM"]
-        : "";
-      const ratio = productCupMeasure
-        ? `$${(productCupPrice / 100).toFixed(
-            2
-          )} / ${productCupUnit} ${productCupMeasure
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`
-        : "*";
-
-      const productPackage = `${product["displayName"]
-        ?.replace("l", "L")
-        ?.replace("mL", "ml")}`;
-      const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-        "-",
-        "_"
-      )}`;
-      const onSpecial = product["promotions"] && true;
-
-      rows.push(
-        createData(
-          countdownIndex,
-          CapitalizeFirstLetter(productName),
-          onSpecial,
-          productStandardPrice,
-          productStandardPrice,
-          productPackage,
-          ratio,
-          store,
-          URL
-        )
-      );
-    }
-  });
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
