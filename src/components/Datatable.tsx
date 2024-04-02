@@ -538,7 +538,7 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage, GetSupermarketPrices]
+    [order, orderBy, page, rowsPerPage, mycoolrows]
   );
 
   interface ChipData {
