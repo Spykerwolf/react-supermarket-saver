@@ -178,7 +178,7 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState<keyof Data>("name");
   // const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(75);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
   const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
@@ -196,101 +196,162 @@ export default function EnhancedTable() {
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
 
-  useEffect(() => {
-    async function extractSKUs() {
-      newworldProductSKUs !== undefined &&
-        newworldProductSKUs.forEach((product) => {
-          productIdTogether.push(product["productID"]);
-        });
-    }
+  // useEffect(() => {
+  //   async function extractSKUs() {
+  //     newworldProductSKUs.forEach((product) => {
+  //       productIdTogether.push(product["productID"]);
+  //     });
+  //   }
 
-    extractSKUs();
-  }, [newworldProductSKUs]);
+  //   newworldProductSKUs !== undefined && extractSKUs();
+  // }, [newworldProductSKUs]);
 
   useEffect(() => {
     rows.length > 0 && console.log("rows", rows);
-  }, [mycoolrows]);
-  useEffect(() => {
-    async function getData() {
-      const combineNewworldSKUsWithProducts: Response = await fetch(
-        `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
-        {
-          method: "post",
-          headers: new Headers({
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: newworldSecretToken,
-            "Content-Type": "application/json",
-          }),
-          body: JSON.stringify({ productIds: productIdTogether }),
-        }
-      );
-      const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
-      setnewworldResults(newworldSKUsJSON.products);
-    }
+  }, [rows]);
+  // useEffect(() => {
+  //   async function getData() {
+  //     const combineNewworldSKUsWithProducts: Response = await fetch(
+  //       `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
+  //       {
+  //         method: "post",
+  //         headers: new Headers({
+  //           "User-Agent":
+  //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  //           Authorization: newworldSecretToken,
+  //           "Content-Type": "application/json",
+  //         }),
+  //         body: JSON.stringify({ productIds: productIdTogether }),
+  //       }
+  //     );
+  //     const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
+  //     setnewworldResults(newworldSKUsJSON.products);
+  //   }
 
-    productIdTogether.length && getData();
-  }, [productIdTogether]);
+  //   productIdTogether.length && getData();
+  // }, [productIdTogether]);
+
+  // useEffect(() => {
+  //   // newworldResults?.length && console.log("newworldResults", newworldResults);
+  //   async function displayResults() {
+  //     if (newworldResults !== undefined) {
+  //       let searchTermArray = searchTerm.split(" ");
+  //       newworldResults.forEach((product, index) => {
+  //         const productName: string = product["brand"]
+  //           ? `${product["brand"]} ${product["name"]}`
+  //           : product["name"];
+  //         if (
+  //           searchTermArray.some((e) =>
+  //             productName.toLowerCase().replace("-", " ").includes(e)
+  //           )
+  //         ) {
+  //           const store = "New World";
+  //           const productStandardPrice = (
+  //             product["singlePrice"]["price"] / 100
+  //           ).toFixed(2);
+
+  //           const productSpecialPrice = product["promotions"]
+  //             ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+  //             : productStandardPrice;
+  //           const productSku: string = product["productId"];
+
+  //           const productCupPrice: any = product["singlePrice"][
+  //             "comparativePrice"
+  //           ]
+  //             ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
+  //             : "";
+
+  //           const productCupUnit = product["singlePrice"]["comparativePrice"]
+  //             ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
+  //             : "";
+  //           const productCupMeasure: string = product["singlePrice"][
+  //             "comparativePrice"
+  //           ]
+  //             ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
+  //             : "";
+
+  //           const ratio =
+  //             productCupMeasure &&
+  //             `$${(productCupPrice / 100).toFixed(
+  //               2
+  //             )} / ${productCupUnit} ${productCupMeasure
+  //               ?.replace("l", "L")
+  //               ?.replace("mL", "ml")}`;
+  //           const displayName: string = product["displayName"];
+  //           const productPackage: string = `${displayName
+  //             ?.replace("l", "L")
+  //             ?.replace("mL", "ml")}`;
+  //           const URL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+  //             "-",
+  //             "_"
+  //           )}`;
+  //           const onSpecial = product["promotions"] && true;
+
+  //           rows.push(
+  //             createData(
+  //               index,
+  //               CapitalizeFirstLetter(productName),
+  //               onSpecial,
+  //               productSpecialPrice,
+  //               productStandardPrice,
+  //               productPackage,
+  //               ratio,
+  //               store,
+  //               URL
+  //             )
+  //           );
+  //         }
+  //       });
+  //       setMycoolrows([rows]);
+  //     }
+  //   }
+  //   displayResults();
+  // }, [newworldResults]);
 
   useEffect(() => {
-    // newworldResults?.length && console.log("newworldResults", newworldResults);
-    async function displayResults() {
-      if (newworldResults !== undefined) {
-        let searchTermArray = searchTerm.split(" ");
-        newworldResults.forEach((product, index) => {
-          const productName: string = product["brand"]
-            ? `${product["brand"]} ${product["name"]}`
-            : product["name"];
+    if (countdownresults.length !== 0) {
+      console.log("countdownresults", countdownresults);
+      countdownresults.forEach((product, countdownIndex) => {
+        if (product["type"] === "Product") {
+          const productName: string = product["name"];
+          // console.log("productName", productName);
+          // if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
           if (
-            searchTermArray.some((e) =>
-              productName.toLowerCase().replace("-", " ").includes(e)
-            )
+            searchTermArray.some((e) => productName.toLowerCase().includes(e))
           ) {
-            const store = "New World";
-            const productStandardPrice = (
-              product["singlePrice"]["price"] / 100
-            ).toFixed(2);
+            const store = "Countdown";
+            const productStandardPrice = product["price"][
+              "originalPrice"
+            ].toLocaleString("en", {
+              minimumFractionDigits: 2,
+            });
+            const productSku = product["sku"];
+            const productCupPrice = product["size"]["cupPrice"];
+            const productCup: string = product["size"]["cupMeasure"];
+            const productCupMeasure: string = productCup
+              ? productCup.replace("mL", "ml")
+              : "";
+            const ratio = productCupMeasure
+              ? `$${productCupPrice} / ${productCupMeasure}`
+              : "*";
+            const productVolumeSize: string = product["size"]["volumeSize"];
+            const productPackage = `${productVolumeSize?.replace("mL", "ml")} ${
+              product["size"]["packageType"] != null
+                ? product["size"]["packageType"]
+                : ""
+            }`;
+            const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+            const onSpecial = product["price"]["isSpecial"] && true;
 
-            const productSpecialPrice = product["promotions"]
-              ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+            const productSpecialPrice: string = onSpecial
+              ? product["price"]["salePrice"].toLocaleString("en", {
+                  minimumFractionDigits: 2,
+                })
               : productStandardPrice;
-            const productSku: string = product["productId"];
-
-            const productCupPrice: any = product["singlePrice"][
-              "comparativePrice"
-            ]
-              ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
-              : "";
-
-            const productCupUnit = product["singlePrice"]["comparativePrice"]
-              ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
-              : "";
-            const productCupMeasure: string = product["singlePrice"][
-              "comparativePrice"
-            ]
-              ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
-              : "";
-
-            const ratio =
-              productCupMeasure &&
-              `$${(productCupPrice / 100).toFixed(
-                2
-              )} / ${productCupUnit} ${productCupMeasure
-                ?.replace("l", "L")
-                ?.replace("mL", "ml")}`;
-            const displayName: string = product["displayName"];
-            const productPackage: string = `${displayName
-              ?.replace("l", "L")
-              ?.replace("mL", "ml")}`;
-            const URL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
-              "-",
-              "_"
-            )}`;
-            const onSpecial = product["promotions"] && true;
 
             rows.push(
               createData(
-                index,
+                countdownIndex,
                 CapitalizeFirstLetter(productName),
                 onSpecial,
                 productSpecialPrice,
@@ -302,27 +363,32 @@ export default function EnhancedTable() {
               )
             );
           }
-        });
-        setMycoolrows([rows]);
-      }
+        }
+      });
+      setMycoolrows(rows);
     }
-    displayResults();
-  }, [newworldResults]);
+  }, [countdownresults]);
 
-  useEffect(() => {}, [countdownresults]);
-  useEffect(() => {}, [paknsaveResults]);
   useEffect(() => {
-    {
-      chipData.length != 0 &&
-        console.log(chipData.map((e) => e.label).at(chipData.length - 1));
+    if (mycoolrows.length !== 0) {
+      console.log("mycoolrows", mycoolrows);
     }
-  }, [chipData]);
+  }, [mycoolrows]);
+
+  // useEffect(() => {}, [paknsaveResults]);
+  // useEffect(() => {
+  //   {
+  //     chipData.length != 0 &&
+  //       console.log(chipData.map((e) => e.label).at(chipData.length - 1));
+  //   }
+  // }, [chipData]);
 
   async function GetSupermarketPrices() {
     rows = [];
-    newworld();
+    console.log("rows inside GetSupermarketPrices", rows);
+    // newworld();
     countdown();
-    paknsave();
+    // paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
@@ -390,59 +456,6 @@ export default function EnhancedTable() {
   }
 
   let searchTermArray = searchTerm.split(" ");
-
-  countdownresults.forEach((product, countdownIndex) => {
-    if (product["type"] === "Product") {
-      const productName: string = product["name"];
-      // console.log("productName", productName);
-      // if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-      if (searchTermArray.some((e) => productName.toLowerCase().includes(e))) {
-        const store = "Countdown";
-        const productStandardPrice = product["price"][
-          "originalPrice"
-        ].toLocaleString("en", {
-          minimumFractionDigits: 2,
-        });
-        const productSku = product["sku"];
-        const productCupPrice = product["size"]["cupPrice"];
-        const productCup: string = product["size"]["cupMeasure"];
-        const productCupMeasure: string = productCup
-          ? productCup.replace("mL", "ml")
-          : "";
-        const ratio = productCupMeasure
-          ? `$${productCupPrice} / ${productCupMeasure}`
-          : "*";
-        const productVolumeSize: string = product["size"]["volumeSize"];
-        const productPackage = `${productVolumeSize?.replace("mL", "ml")} ${
-          product["size"]["packageType"] != null
-            ? product["size"]["packageType"]
-            : ""
-        }`;
-        const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-        const onSpecial = product["price"]["isSpecial"] && true;
-
-        const productSpecialPrice: string = onSpecial
-          ? product["price"]["salePrice"].toLocaleString("en", {
-              minimumFractionDigits: 2,
-            })
-          : productStandardPrice;
-
-        rows.push(
-          createData(
-            countdownIndex,
-            CapitalizeFirstLetter(productName),
-            onSpecial,
-            productSpecialPrice,
-            productStandardPrice,
-            productPackage,
-            ratio,
-            store,
-            URL
-          )
-        );
-      }
-    }
-  });
 
   paknsaveResults.forEach((product, countdownIndex) => {
     const productName = product["brand"]
@@ -807,7 +820,7 @@ export default function EnhancedTable() {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[25, 50, 75, { value: -1, label: "All" }]}
+          rowsPerPageOptions={[5, 25, 50, 75, { value: -1, label: "All" }]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}
