@@ -26,7 +26,7 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
-import { doc, collection, setDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 // const querySnapshot = await getDocs(collection(db, "users"));
 // querySnapshot.forEach((doc) => {
@@ -305,7 +305,7 @@ export default function EnhancedTable() {
               )
             );
             try {
-              const docRef: any = setDoc(doc(db, "products"), {
+              const docRef: any = addDoc(collection(db, "products"), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -381,7 +381,7 @@ export default function EnhancedTable() {
             );
 
             try {
-              const docRef: any = setDoc(doc(db, "products"), {
+              const docRef: any = addDoc(collection(db, "products"), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -457,7 +457,7 @@ export default function EnhancedTable() {
             )
           );
           try {
-            const docRef: any = setDoc(doc(db, "products"), {
+            const docRef: any = addDoc(collection(db, "products"), {
               name: productName,
               onSpecial: onSpecial,
               specialPrice: productStandardPrice,
