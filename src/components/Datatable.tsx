@@ -25,6 +25,13 @@ import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
+import { db } from "../firebase";
+import { doc, collection, setDoc } from "firebase/firestore";
+
+// const querySnapshot = await getDocs(collection(db, "users"));
+// querySnapshot.forEach((doc) => {
+//   console.log(`${doc.id} => ${doc.data()}`);
+// });
 
 let rows: any[] = [];
 
@@ -235,8 +242,8 @@ export default function EnhancedTable() {
         let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
-            ? `${product["brand"]} ${product["name"]}`
-            : product["name"];
+            ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
+            : CapitalizeFirstLetter(product["name"]);
           if (
             searchTermArray.some((e) =>
               productName.toLowerCase().replace("-", " ").includes(e)
@@ -287,7 +294,7 @@ export default function EnhancedTable() {
             rows.push(
               createData(
                 index,
-                CapitalizeFirstLetter(productName),
+                productName,
                 onSpecial,
                 productSpecialPrice,
                 productStandardPrice,
@@ -297,6 +304,22 @@ export default function EnhancedTable() {
                 URL
               )
             );
+            try {
+              const docRef: any = setDoc(doc(db, "products"), {
+                name: productName,
+                onSpecial: onSpecial,
+                specialPrice: productSpecialPrice,
+                standardPrice: productStandardPrice,
+                productPackage: productPackage,
+                ratio: ratio,
+                store: store,
+                URL: URL,
+              });
+
+              console.log("Document written with ID: ", docRef.id);
+            } catch (e) {
+              console.error("Error adding document: ", e);
+            }
           }
         });
         setMycoolrows([...mycoolrows, rows]);
@@ -309,9 +332,7 @@ export default function EnhancedTable() {
     if (countdownresults.length !== 0) {
       countdownresults.forEach((product, countdownIndex) => {
         if (product["type"] === "Product") {
-          const productName: string = product["name"];
-          // console.log("productName", productName);
-          // if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+          const productName: string = CapitalizeFirstLetter(product["name"]);
           if (
             searchTermArray.some((e) => productName.toLowerCase().includes(e))
           ) {
@@ -348,7 +369,7 @@ export default function EnhancedTable() {
             rows.push(
               createData(
                 countdownIndex,
-                CapitalizeFirstLetter(productName),
+                productName,
                 onSpecial,
                 productSpecialPrice,
                 productStandardPrice,
@@ -358,6 +379,23 @@ export default function EnhancedTable() {
                 URL
               )
             );
+
+            try {
+              const docRef: any = setDoc(doc(db, "products"), {
+                name: productName,
+                onSpecial: onSpecial,
+                specialPrice: productSpecialPrice,
+                standardPrice: productStandardPrice,
+                productPackage: productPackage,
+                ratio: ratio,
+                store: store,
+                URL: URL,
+              });
+
+              console.log("Document written with ID: ", docRef.id);
+            } catch (e) {
+              console.error("Error adding document: ", e);
+            }
           }
         }
       });
@@ -369,8 +407,10 @@ export default function EnhancedTable() {
     if (paknsaveResults.length !== 0) {
       paknsaveResults.forEach((product, countdownIndex) => {
         const productName = product["brand"]
-          ? `${product["brand"]} ${product["name"]}`
-          : product["name"];
+          ? `${CapitalizeFirstLetter(product["brand"])} ${CapitalizeFirstLetter(
+              product["name"]
+            )}`
+          : CapitalizeFirstLetter(product["name"]);
         if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
           const store = "Pak n Save";
           const productStandardPrice = (product["price"] / 100).toFixed(2);
@@ -406,7 +446,7 @@ export default function EnhancedTable() {
           rows.push(
             createData(
               countdownIndex,
-              CapitalizeFirstLetter(productName),
+              productName,
               onSpecial,
               productStandardPrice,
               productStandardPrice,
@@ -416,6 +456,22 @@ export default function EnhancedTable() {
               URL
             )
           );
+          try {
+            const docRef: any = setDoc(doc(db, "products"), {
+              name: productName,
+              onSpecial: onSpecial,
+              specialPrice: productStandardPrice,
+              standardPrice: productStandardPrice,
+              productPackage: productPackage,
+              ratio: ratio,
+              store: store,
+              URL: URL,
+            });
+
+            console.log("Document written with ID: ", docRef.id);
+          } catch (e) {
+            console.error("Error adding document: ", e);
+          }
         }
       });
       setMycoolrows([...mycoolrows, rows]);
@@ -430,9 +486,9 @@ export default function EnhancedTable() {
 
   async function GetSupermarketPrices() {
     rows = [];
-    newworld();
+    // newworld();
     countdown();
-    paknsave();
+    // paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
