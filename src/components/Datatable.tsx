@@ -26,7 +26,7 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 let rows: any[] = [];
 
@@ -298,7 +298,7 @@ export default function EnhancedTable() {
               )
             );
             try {
-              const docRef: any = addDoc(collection(db, "newworld"), {
+              const docRef: any = setDoc(doc(db, "newworld", productSku), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -374,7 +374,7 @@ export default function EnhancedTable() {
             );
 
             try {
-              const docRef: any = addDoc(collection(db, "countdown"), {
+              const docRef: any = setDoc(doc(db, "countdown", productSku), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -450,7 +450,7 @@ export default function EnhancedTable() {
             )
           );
           try {
-            const docRef: any = addDoc(collection(db, "paknsave"), {
+            const docRef: any = setDoc(doc(db, "paknsave", productSku), {
               name: productName,
               onSpecial: onSpecial,
               specialPrice: productStandardPrice,
@@ -479,8 +479,8 @@ export default function EnhancedTable() {
 
   async function GetSupermarketPrices() {
     rows = [];
-    newworld();
     countdown();
+    newworld();
     paknsave();
 
     async function newworld() {
