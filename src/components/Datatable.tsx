@@ -28,11 +28,6 @@ import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
-// const querySnapshot = await getDocs(collection(db, "users"));
-// querySnapshot.forEach((doc) => {
-//   console.log(`${doc.id} => ${doc.data()}`);
-// });
-
 let rows: any[] = [];
 
 interface Data {
@@ -183,7 +178,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
-  // const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
@@ -236,7 +230,6 @@ export default function EnhancedTable() {
   }, [productIdTogether]);
 
   useEffect(() => {
-    // newworldResults?.length && console.log("newworldResults", newworldResults);
     async function displayResults() {
       if (newworldResults !== undefined) {
         let searchTermArray = searchTerm.split(" ");
@@ -289,7 +282,7 @@ export default function EnhancedTable() {
               "-",
               "_"
             )}`;
-            const onSpecial = product["promotions"] && true;
+            const onSpecial = product["promotions"] ? true : false;
 
             rows.push(
               createData(
@@ -305,7 +298,7 @@ export default function EnhancedTable() {
               )
             );
             try {
-              const docRef: any = addDoc(collection(db, "products"), {
+              const docRef: any = addDoc(collection(db, "newworld"), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -358,7 +351,7 @@ export default function EnhancedTable() {
                 : ""
             }`;
             const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-            const onSpecial = product["price"]["isSpecial"] && true;
+            const onSpecial = product["price"]["isSpecial"] ? true : false;
 
             const productSpecialPrice: string = onSpecial
               ? product["price"]["salePrice"].toLocaleString("en", {
@@ -381,7 +374,7 @@ export default function EnhancedTable() {
             );
 
             try {
-              const docRef: any = addDoc(collection(db, "products"), {
+              const docRef: any = addDoc(collection(db, "countdown"), {
                 name: productName,
                 onSpecial: onSpecial,
                 specialPrice: productSpecialPrice,
@@ -441,7 +434,7 @@ export default function EnhancedTable() {
             "-",
             "_"
           )}`;
-          const onSpecial = product["promotions"] && true;
+          const onSpecial = product["promotions"] ? true : false;
 
           rows.push(
             createData(
@@ -457,7 +450,7 @@ export default function EnhancedTable() {
             )
           );
           try {
-            const docRef: any = addDoc(collection(db, "products"), {
+            const docRef: any = addDoc(collection(db, "paknsave"), {
               name: productName,
               onSpecial: onSpecial,
               specialPrice: productStandardPrice,
@@ -486,9 +479,9 @@ export default function EnhancedTable() {
 
   async function GetSupermarketPrices() {
     rows = [];
-    // newworld();
+    newworld();
     countdown();
-    // paknsave();
+    paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
@@ -530,7 +523,6 @@ export default function EnhancedTable() {
         ? setCountdownAPIStatus("API key needs refreshing")
         : setCountdownAPIStatus("");
       const countdownResponse = await fetchCountDownData.json();
-      // console.log("countdownResponse", countdownResponse.products.items);
       setCountdownresults(countdownResponse.products.items);
     }
 
@@ -771,7 +763,6 @@ export default function EnhancedTable() {
             size={"small"}
           >
             <EnhancedTableHead
-              // numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
