@@ -293,52 +293,75 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] ? true : false;
-            const historicalLow = 1.5;
 
-            rows.push(
-              createData(
-                index,
-                productName,
-                onSpecial,
-                productSpecialPrice,
-                productStandardPrice,
-                historicalLow,
-                productPackage,
-                ratio,
-                store,
-                URL
-              )
-            );
-            const handleHistoricalLow = () => {
-              if (productSpecialPrice < historicalLow) {
-                // console.log("New historical low!!!!", productSpecialPrice);
-                return productSpecialPrice;
-              } else {
-                return historicalLow;
+            handleHistoricalLow();
+
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      specialPrice: productSpecialPrice,
+                      standardPrice: productStandardPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: URL,
+                    },
+                    { merge: true }
+                  );
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log(rows);
+                  rows.forEach((e) => {
+                    console.log(e.historicalLow);
+                  });
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
               }
-            };
-            try {
-              const docRef: any = setDoc(
-                doc(db, "newworld", productSku),
-                {
-                  name: productName,
-                  onSpecial: onSpecial,
-                  specialPrice: handleHistoricalLow(),
-                  standardPrice: productStandardPrice,
-                  productPackage: productPackage,
-                  ratio: ratio,
-                  store: store,
-                  URL: URL,
-                },
-                { merge: true }
+              rows.push(
+                createData(
+                  index,
+                  productName,
+                  onSpecial,
+                  productSpecialPrice,
+                  productStandardPrice,
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  URL
+                )
               );
-              console.log("Document written with ID: ", docRef.id);
-            } catch (e) {
-              console.error("Error adding document: ", e);
+              setMycoolrows([...mycoolrows, rows]);
             }
           }
         });
-        setMycoolrows([...mycoolrows, rows]);
       }
     }
     displayResults();
@@ -346,7 +369,7 @@ export default function EnhancedTable() {
 
   useEffect(() => {
     if (countdownresults.length !== 0) {
-      countdownresults.forEach((product, countdownIndex) => {
+      countdownresults.forEach((product, index) => {
         if (product["type"] === "Product") {
           const productName: string = CapitalizeFirstLetter(product["name"]);
           if (
@@ -382,73 +405,81 @@ export default function EnhancedTable() {
                 })
               : productStandardPrice;
 
-            const historicalLow = 1.5;
+            handleHistoricalLow();
 
-            async function compareHistoricalPrices() {
-              const docRef2 = doc(db, "countdown", productSku);
-              const docSnap = await getDoc(docRef2);
-              const existingSpecialPricing = docSnap.data().specialPrice;
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
 
-              if (docSnap.exists()) {
-                if (historicalLow > productSpecialPrice) {
-                  console.log(
-                    "New special price!",
-                    `${productSku} - ${productName} Old value: ${existingSpecialPricing} New value: ${productSpecialPrice}`
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      specialPrice: productSpecialPrice,
+                      standardPrice: productStandardPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: URL,
+                    },
+                    { merge: true }
                   );
-                  return productSpecialPrice;
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
                 }
-              } else {
-                // docSnap.data() will be undefined in this case
-                console.log("Not really a special now init");
-                return historicalLow;
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log(rows);
+                  rows.forEach((e) => {
+                    console.log(e.historicalLow);
+                  });
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
               }
-            }
-
-            rows.push(
-              createData(
-                countdownIndex,
-                productName,
-                onSpecial,
-                productSpecialPrice,
-                productStandardPrice,
-                historicalLow,
-                productPackage,
-                ratio,
-                store,
-                URL
-              )
-            );
-
-            try {
-              const docRef: any = setDoc(
-                doc(db, "countdown", productSku),
-                {
-                  name: productName,
-                  onSpecial: onSpecial,
-                  specialPrice: compareHistoricalPrices,
-                  standardPrice: productStandardPrice,
-                  productPackage: productPackage,
-                  ratio: ratio,
-                  store: store,
-                  URL: URL,
-                },
-                { merge: true }
+              rows.push(
+                createData(
+                  index,
+                  productName,
+                  onSpecial,
+                  productSpecialPrice,
+                  productStandardPrice,
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  URL
+                )
               );
-
-              console.log("Document written with ID: ", docRef.id);
-            } catch (e) {
-              console.error("Error adding document: ", e);
+              setMycoolrows([...mycoolrows, rows]);
             }
           }
         }
       });
-      setMycoolrows([...mycoolrows, rows]);
     }
   }, [countdownresults]);
 
   useEffect(() => {
     if (paknsaveResults.length !== 0) {
-      paknsaveResults.forEach((product, countdownIndex) => {
+      paknsaveResults.forEach((product, index) => {
         const productName = product["brand"]
           ? `${CapitalizeFirstLetter(product["brand"])} ${CapitalizeFirstLetter(
               product["name"]
@@ -485,45 +516,70 @@ export default function EnhancedTable() {
             "_"
           )}`;
           const onSpecial = product["promotions"] ? true : false;
-          const historicalLow = 1.5;
+          handleHistoricalLow();
 
-          rows.push(
-            createData(
-              countdownIndex,
-              productName,
-              onSpecial,
-              productStandardPrice,
-              productStandardPrice,
-              historicalLow,
-              productPackage,
-              ratio,
-              store,
-              URL
-            )
-          );
-          try {
-            const docRef: any = setDoc(
-              doc(db, "paknsave", productSku),
-              {
-                name: productName,
-                onSpecial: onSpecial,
-                specialPrice: productStandardPrice,
-                standardPrice: productStandardPrice,
-                productPackage: productPackage,
-                ratio: ratio,
-                store: store,
-                URL: URL,
-              },
-              { merge: true }
+          async function handleHistoricalLow() {
+            const docRef = doc(db, store, productSku);
+            const docSnap = await getDoc(docRef);
+            let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+            if (!existingHistoricalLow) {
+              try {
+                await setDoc(
+                  doc(db, store, productSku),
+                  {
+                    name: productName,
+                    onSpecial: onSpecial,
+                    specialPrice: productStandardPrice,
+                    standardPrice: productStandardPrice,
+                    historicalLow: productStandardPrice,
+                    productPackage: productPackage,
+                    ratio: ratio,
+                    store: store,
+                    URL: URL,
+                  },
+                  { merge: true }
+                );
+
+                console.log("SKU added: ", productSku);
+              } catch (e) {
+                console.error("Error adding document: ", e);
+              }
+              existingHistoricalLow = productStandardPrice;
+            } else if (productStandardPrice < existingHistoricalLow) {
+              console.log("New Special Price!");
+              try {
+                const docRef: any = await setDoc(
+                  doc(db, store, productSku),
+                  {
+                    historicalLow: productStandardPrice,
+                  },
+                  { merge: true }
+                );
+                existingHistoricalLow = productStandardPrice;
+                console.log("Document written with ID: ", docRef?.id);
+              } catch (e) {
+                console.error("Error adding document: ", e);
+              }
+            }
+            rows.push(
+              createData(
+                index,
+                productName,
+                onSpecial,
+                productStandardPrice,
+                productStandardPrice,
+                existingHistoricalLow,
+                productPackage,
+                ratio,
+                store,
+                URL
+              )
             );
-
-            console.log("Document written with ID: ", docRef.id);
-          } catch (e) {
-            console.error("Error adding document: ", e);
+            setMycoolrows([...mycoolrows, rows]);
           }
         }
       });
-      setMycoolrows([...mycoolrows, rows]);
     }
   }, [paknsaveResults]);
   useEffect(() => {
@@ -536,8 +592,8 @@ export default function EnhancedTable() {
   async function GetSupermarketPrices() {
     rows = [];
     countdown();
-    // newworld();
-    // paknsave();
+    newworld();
+    paknsave();
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
@@ -880,7 +936,7 @@ export default function EnhancedTable() {
                       <TableCell align="right">
                         {row.onSpecial && `$${row.standardPrice}`}
                       </TableCell>
-                      <TableCell align="right">{row.historicalLow}</TableCell>
+                      <TableCell align="right">{`$${row.historicalLow}`}</TableCell>
 
                       <TableCell align="left">{row.productPackage}</TableCell>
 
