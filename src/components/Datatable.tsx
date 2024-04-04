@@ -25,6 +25,8 @@ import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
+import { db } from "../firebase";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 
 let rows: any[] = [];
 
@@ -32,8 +34,9 @@ interface Data {
   index: number;
   name: string;
   onSpecial: boolean;
-  specialPrice: string;
-  standardPrice: string;
+  specialPrice: number;
+  standardPrice: number;
+  historicalLow: number;
   productPackage: string;
   ratio: string;
   store: string;
@@ -44,8 +47,9 @@ export function createData(
   index: number,
   name: string,
   onSpecial: boolean,
-  specialPrice: string,
-  standardPrice: string,
+  specialPrice: number,
+  standardPrice: number,
+  historicalLow: number,
   productPackage: string,
   ratio: string,
   store: string,
@@ -57,6 +61,7 @@ export function createData(
     onSpecial,
     specialPrice,
     standardPrice,
+    historicalLow,
     productPackage,
     ratio,
     store,
@@ -86,15 +91,22 @@ const headCells: readonly HeadCell[] = [
   },
   {
     id: "specialPrice",
-    numeric: false,
+    numeric: true,
     disablePadding: false,
-    label: "Price",
+    label: "Current Price",
   },
   {
     id: "standardPrice",
-    numeric: false,
+    numeric: true,
     disablePadding: false,
-    label: "",
+    label: "Standard Price",
+  },
+
+  {
+    id: "historicalLow",
+    numeric: true,
+    disablePadding: false,
+    label: "Historical Low",
   },
 
   {
@@ -176,7 +188,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
-  // const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
@@ -229,25 +240,24 @@ export default function EnhancedTable() {
   }, [productIdTogether]);
 
   useEffect(() => {
-    // newworldResults?.length && console.log("newworldResults", newworldResults);
     async function displayResults() {
       if (newworldResults !== undefined) {
         let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
-            ? `${product["brand"]} ${product["name"]}`
-            : product["name"];
+            ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
+            : CapitalizeFirstLetter(product["name"]);
           if (
             searchTermArray.some((e) =>
               productName.toLowerCase().replace("-", " ").includes(e)
             )
           ) {
             const store = "New World";
-            const productStandardPrice = (
+            const productStandardPrice: any = (
               product["singlePrice"]["price"] / 100
             ).toFixed(2);
 
-            const productSpecialPrice = product["promotions"]
+            const productSpecialPrice: number = product["promotions"]
               ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
               : productStandardPrice;
             const productSku: string = product["productId"];
@@ -282,24 +292,76 @@ export default function EnhancedTable() {
               "-",
               "_"
             )}`;
-            const onSpecial = product["promotions"] && true;
+            const onSpecial = product["promotions"] ? true : false;
 
-            rows.push(
-              createData(
-                index,
-                CapitalizeFirstLetter(productName),
-                onSpecial,
-                productSpecialPrice,
-                productStandardPrice,
-                productPackage,
-                ratio,
-                store,
-                URL
-              )
-            );
+            handleHistoricalLow();
+
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      specialPrice: productSpecialPrice,
+                      standardPrice: productStandardPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: URL,
+                    },
+                    { merge: true }
+                  );
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log(rows);
+                  rows.forEach((e) => {
+                    console.log(e.historicalLow);
+                  });
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+              }
+              rows.push(
+                createData(
+                  index,
+                  productName,
+                  onSpecial,
+                  productSpecialPrice,
+                  productStandardPrice,
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  URL
+                )
+              );
+              setMycoolrows([...mycoolrows, rows]);
+            }
           }
         });
-        setMycoolrows([...mycoolrows, rows]);
       }
     }
     displayResults();
@@ -307,16 +369,14 @@ export default function EnhancedTable() {
 
   useEffect(() => {
     if (countdownresults.length !== 0) {
-      countdownresults.forEach((product, countdownIndex) => {
+      countdownresults.forEach((product, index) => {
         if (product["type"] === "Product") {
-          const productName: string = product["name"];
-          // console.log("productName", productName);
-          // if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
+          const productName: string = CapitalizeFirstLetter(product["name"]);
           if (
             searchTermArray.some((e) => productName.toLowerCase().includes(e))
           ) {
             const store = "Countdown";
-            const productStandardPrice = product["price"][
+            const productStandardPrice: number = product["price"][
               "originalPrice"
             ].toLocaleString("en", {
               minimumFractionDigits: 2,
@@ -337,43 +397,97 @@ export default function EnhancedTable() {
                 : ""
             }`;
             const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-            const onSpecial = product["price"]["isSpecial"] && true;
+            const onSpecial = product["price"]["isSpecial"] ? true : false;
 
-            const productSpecialPrice: string = onSpecial
+            const productSpecialPrice: number = onSpecial
               ? product["price"]["salePrice"].toLocaleString("en", {
                   minimumFractionDigits: 2,
                 })
               : productStandardPrice;
 
-            rows.push(
-              createData(
-                countdownIndex,
-                CapitalizeFirstLetter(productName),
-                onSpecial,
-                productSpecialPrice,
-                productStandardPrice,
-                productPackage,
-                ratio,
-                store,
-                URL
-              )
-            );
+            handleHistoricalLow();
+
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      specialPrice: productSpecialPrice,
+                      standardPrice: productStandardPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: URL,
+                    },
+                    { merge: true }
+                  );
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log(rows);
+                  rows.forEach((e) => {
+                    console.log(e.historicalLow);
+                  });
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+              }
+              rows.push(
+                createData(
+                  index,
+                  productName,
+                  onSpecial,
+                  productSpecialPrice,
+                  productStandardPrice,
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  URL
+                )
+              );
+              setMycoolrows([...mycoolrows, rows]);
+            }
           }
         }
       });
-      setMycoolrows([...mycoolrows, rows]);
     }
   }, [countdownresults]);
 
   useEffect(() => {
     if (paknsaveResults.length !== 0) {
-      paknsaveResults.forEach((product, countdownIndex) => {
+      paknsaveResults.forEach((product, index) => {
         const productName = product["brand"]
-          ? `${product["brand"]} ${product["name"]}`
-          : product["name"];
+          ? `${CapitalizeFirstLetter(product["brand"])} ${CapitalizeFirstLetter(
+              product["name"]
+            )}`
+          : CapitalizeFirstLetter(product["name"]);
         if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
           const store = "Pak n Save";
-          const productStandardPrice = (product["price"] / 100).toFixed(2);
+          const productStandardPrice: any = (product["price"] / 100).toFixed(2);
 
           const productSku = product["productId"];
 
@@ -401,24 +515,71 @@ export default function EnhancedTable() {
             "-",
             "_"
           )}`;
-          const onSpecial = product["promotions"] && true;
+          const onSpecial = product["promotions"] ? true : false;
+          handleHistoricalLow();
 
-          rows.push(
-            createData(
-              countdownIndex,
-              CapitalizeFirstLetter(productName),
-              onSpecial,
-              productStandardPrice,
-              productStandardPrice,
-              productPackage,
-              ratio,
-              store,
-              URL
-            )
-          );
+          async function handleHistoricalLow() {
+            const docRef = doc(db, store, productSku);
+            const docSnap = await getDoc(docRef);
+            let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+            if (!existingHistoricalLow) {
+              try {
+                await setDoc(
+                  doc(db, store, productSku),
+                  {
+                    name: productName,
+                    onSpecial: onSpecial,
+                    specialPrice: productStandardPrice,
+                    standardPrice: productStandardPrice,
+                    historicalLow: productStandardPrice,
+                    productPackage: productPackage,
+                    ratio: ratio,
+                    store: store,
+                    URL: URL,
+                  },
+                  { merge: true }
+                );
+
+                console.log("SKU added: ", productSku);
+              } catch (e) {
+                console.error("Error adding document: ", e);
+              }
+              existingHistoricalLow = productStandardPrice;
+            } else if (productStandardPrice < existingHistoricalLow) {
+              console.log("New Special Price!");
+              try {
+                const docRef: any = await setDoc(
+                  doc(db, store, productSku),
+                  {
+                    historicalLow: productStandardPrice,
+                  },
+                  { merge: true }
+                );
+                existingHistoricalLow = productStandardPrice;
+                console.log("Document written with ID: ", docRef?.id);
+              } catch (e) {
+                console.error("Error adding document: ", e);
+              }
+            }
+            rows.push(
+              createData(
+                index,
+                productName,
+                onSpecial,
+                productStandardPrice,
+                productStandardPrice,
+                existingHistoricalLow,
+                productPackage,
+                ratio,
+                store,
+                URL
+              )
+            );
+            setMycoolrows([...mycoolrows, rows]);
+          }
         }
       });
-      setMycoolrows([...mycoolrows, rows]);
     }
   }, [paknsaveResults]);
   useEffect(() => {
@@ -430,8 +591,8 @@ export default function EnhancedTable() {
 
   async function GetSupermarketPrices() {
     rows = [];
-    newworld();
     countdown();
+    newworld();
     paknsave();
 
     async function newworld() {
@@ -474,7 +635,6 @@ export default function EnhancedTable() {
         ? setCountdownAPIStatus("API key needs refreshing")
         : setCountdownAPIStatus("");
       const countdownResponse = await fetchCountDownData.json();
-      // console.log("countdownResponse", countdownResponse.products.items);
       setCountdownresults(countdownResponse.products.items);
     }
 
@@ -707,7 +867,7 @@ export default function EnhancedTable() {
         </Box>
       </Box>
 
-      <Box sx={{ width: "60%" }}>
+      <Box sx={{ width: "90%" }}>
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -715,7 +875,6 @@ export default function EnhancedTable() {
             size={"small"}
           >
             <EnhancedTableHead
-              // numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
@@ -773,10 +932,12 @@ export default function EnhancedTable() {
                           </IconButton>
                         )}
                       </TableCell>
-                      <TableCell align="left">${row.specialPrice}</TableCell>
-                      <TableCell align="left">
+                      <TableCell align="right">${row.specialPrice}</TableCell>
+                      <TableCell align="right">
                         {row.onSpecial && `$${row.standardPrice}`}
                       </TableCell>
+                      <TableCell align="right">{`$${row.historicalLow}`}</TableCell>
+
                       <TableCell align="left">{row.productPackage}</TableCell>
 
                       <TableCell align="left">{row.ratio}</TableCell>
