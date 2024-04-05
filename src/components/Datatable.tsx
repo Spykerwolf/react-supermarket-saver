@@ -242,7 +242,7 @@ export default function EnhancedTable() {
   useEffect(() => {
     async function displayResults() {
       if (newworldResults !== undefined) {
-        let searchTermArray = searchTerm.split(" ");
+        const searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
             ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
@@ -883,7 +883,7 @@ export default function EnhancedTable() {
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  let lowerCaseValue: string = row.name;
+                  const lowerCaseValue: string = row.name;
                   return chipData.length === 0
                     ? row
                     : !lowerCaseValue
@@ -910,6 +910,10 @@ export default function EnhancedTable() {
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
                           color="warning"
+                          onChange={() => {
+                            console.log("Click me senpai!");
+                            localStorage.setItem("favourites", row.name);
+                          }}
                         />
                       </TableCell>
 
