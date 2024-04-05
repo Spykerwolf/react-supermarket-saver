@@ -34,8 +34,7 @@ interface Data {
   index: number;
   name: string;
   onSpecial: boolean;
-  specialPrice: number;
-  standardPrice: number;
+  currentPrice: number;
   historicalLow: number;
   productPackage: string;
   ratio: string;
@@ -47,8 +46,7 @@ export function createData(
   index: number,
   name: string,
   onSpecial: boolean,
-  specialPrice: number,
-  standardPrice: number,
+  currentPrice: number,
   historicalLow: number,
   productPackage: string,
   ratio: string,
@@ -59,8 +57,7 @@ export function createData(
     index,
     name,
     onSpecial,
-    specialPrice,
-    standardPrice,
+    currentPrice,
     historicalLow,
     productPackage,
     ratio,
@@ -90,16 +87,10 @@ const headCells: readonly HeadCell[] = [
     label: "",
   },
   {
-    id: "specialPrice",
+    id: "currentPrice",
     numeric: true,
     disablePadding: false,
     label: "Current Price",
-  },
-  {
-    id: "standardPrice",
-    numeric: true,
-    disablePadding: false,
-    label: "Standard Price",
   },
 
   {
@@ -242,7 +233,7 @@ export default function EnhancedTable() {
   useEffect(() => {
     async function displayResults() {
       if (newworldResults !== undefined) {
-        const searchTermArray = searchTerm.split(" ");
+        let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
           const productName: string = product["brand"]
             ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
@@ -253,13 +244,13 @@ export default function EnhancedTable() {
             )
           ) {
             const store = "New World";
-            const productStandardPrice: any = (
+            const productCurrentPrice: any = (
               product["singlePrice"]["price"] / 100
             ).toFixed(2);
 
             const productSpecialPrice: number = product["promotions"]
               ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
-              : productStandardPrice;
+              : productCurrentPrice;
             const productSku: string = product["productId"];
 
             const productCupPrice: any = product["singlePrice"][
@@ -308,8 +299,7 @@ export default function EnhancedTable() {
                     {
                       name: productName,
                       onSpecial: onSpecial,
-                      specialPrice: productSpecialPrice,
-                      standardPrice: productStandardPrice,
+                      currentPrice: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
                       ratio: ratio,
@@ -350,7 +340,6 @@ export default function EnhancedTable() {
                   productName,
                   onSpecial,
                   productSpecialPrice,
-                  productStandardPrice,
                   existingHistoricalLow,
                   productPackage,
                   ratio,
@@ -376,7 +365,7 @@ export default function EnhancedTable() {
             searchTermArray.some((e) => productName.toLowerCase().includes(e))
           ) {
             const store = "Countdown";
-            const productStandardPrice: number = product["price"][
+            const productCurrentPrice: number = product["price"][
               "originalPrice"
             ].toLocaleString("en", {
               minimumFractionDigits: 2,
@@ -403,7 +392,7 @@ export default function EnhancedTable() {
               ? product["price"]["salePrice"].toLocaleString("en", {
                   minimumFractionDigits: 2,
                 })
-              : productStandardPrice;
+              : productCurrentPrice;
 
             handleHistoricalLow();
 
@@ -419,8 +408,7 @@ export default function EnhancedTable() {
                     {
                       name: productName,
                       onSpecial: onSpecial,
-                      specialPrice: productSpecialPrice,
-                      standardPrice: productStandardPrice,
+                      currentPrice: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
                       ratio: ratio,
@@ -461,7 +449,6 @@ export default function EnhancedTable() {
                   productName,
                   onSpecial,
                   productSpecialPrice,
-                  productStandardPrice,
                   existingHistoricalLow,
                   productPackage,
                   ratio,
@@ -487,7 +474,7 @@ export default function EnhancedTable() {
           : CapitalizeFirstLetter(product["name"]);
         if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
           const store = "Pak n Save";
-          const productStandardPrice: any = (product["price"] / 100).toFixed(2);
+          const productCurrentPrice: any = (product["price"] / 100).toFixed(2);
 
           const productSku = product["productId"];
 
@@ -530,9 +517,8 @@ export default function EnhancedTable() {
                   {
                     name: productName,
                     onSpecial: onSpecial,
-                    specialPrice: productStandardPrice,
-                    standardPrice: productStandardPrice,
-                    historicalLow: productStandardPrice,
+                    currentPrice: productCurrentPrice,
+                    historicalLow: productCurrentPrice,
                     productPackage: productPackage,
                     ratio: ratio,
                     store: store,
@@ -545,18 +531,18 @@ export default function EnhancedTable() {
               } catch (e) {
                 console.error("Error adding document: ", e);
               }
-              existingHistoricalLow = productStandardPrice;
-            } else if (productStandardPrice < existingHistoricalLow) {
+              existingHistoricalLow = productCurrentPrice;
+            } else if (productCurrentPrice < existingHistoricalLow) {
               console.log("New Special Price!");
               try {
                 const docRef: any = await setDoc(
                   doc(db, store, productSku),
                   {
-                    historicalLow: productStandardPrice,
+                    historicalLow: productCurrentPrice,
                   },
                   { merge: true }
                 );
-                existingHistoricalLow = productStandardPrice;
+                existingHistoricalLow = productCurrentPrice;
                 console.log("Document written with ID: ", docRef?.id);
               } catch (e) {
                 console.error("Error adding document: ", e);
@@ -567,8 +553,7 @@ export default function EnhancedTable() {
                 index,
                 productName,
                 onSpecial,
-                productStandardPrice,
-                productStandardPrice,
+                productCurrentPrice,
                 existingHistoricalLow,
                 productPackage,
                 ratio,
@@ -883,7 +868,7 @@ export default function EnhancedTable() {
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  const lowerCaseValue: string = row.name;
+                  let lowerCaseValue: string = row.name;
                   return chipData.length === 0
                     ? row
                     : !lowerCaseValue
@@ -936,10 +921,7 @@ export default function EnhancedTable() {
                           </IconButton>
                         )}
                       </TableCell>
-                      <TableCell align="right">${row.specialPrice}</TableCell>
-                      <TableCell align="right">
-                        {row.onSpecial && `$${row.standardPrice}`}
-                      </TableCell>
+                      <TableCell align="right">${row.currentPrice}</TableCell>
                       <TableCell align="right">{`$${row.historicalLow}`}</TableCell>
 
                       <TableCell align="left">{row.productPackage}</TableCell>
