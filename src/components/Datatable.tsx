@@ -197,6 +197,7 @@ export default function EnhancedTable() {
   const [chipData, setChipData] = useState<any[]>([]);
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
+  const [favProduct, setFavProduct] = useState(false);
 
   useEffect(() => {
     async function extractSKUs() {
@@ -852,7 +853,7 @@ export default function EnhancedTable() {
         </Box>
       </Box>
 
-      <Box sx={{ width: "90%" }}>
+      <Box sx={{ width: "70%" }}>
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -895,6 +896,7 @@ export default function EnhancedTable() {
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
                           color="warning"
+                          checked={favProduct}
                           onChange={() => {
                             console.log("Click me senpai!");
                             localStorage.setItem("favourites", row.name);
