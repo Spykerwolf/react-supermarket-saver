@@ -202,8 +202,6 @@ export default function EnhancedTable() {
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
 
-  // useEffect(() => {}, favProduct);
-
   useEffect(() => {
     async function extractSKUs() {
       newworldProductSKUs.forEach((product) => {
@@ -702,8 +700,6 @@ export default function EnhancedTable() {
     );
   };
 
-  let favVisible: boolean;
-
   return (
     <>
       <Box
@@ -740,13 +736,20 @@ export default function EnhancedTable() {
             id="outlined-error-helper-text"
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
-            value={searchTerm}
+            // value={searchTerm}
             onChange={(e) => {
               if (e.target.value === "") {
                 setSearchHelperText("");
               }
-              setSearchTerm(e.target.value);
-              setSearchHelperText("");
+
+              if (e.target.value.length > 0) {
+                setSearchHelperText("");
+              }
+              if (e.target.value.length > 3) {
+                console.log(e.target.value);
+                setSearchTerm(e.target.value);
+                setSearchHelperText("");
+              }
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
