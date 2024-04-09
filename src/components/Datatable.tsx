@@ -32,6 +32,7 @@ let rows: any[] = [];
 
 interface Data {
   index: number;
+  sku: string | number;
   name: string;
   onSpecial: boolean;
   currentPrice: number;
@@ -44,6 +45,7 @@ interface Data {
 
 export function createData(
   index: number,
+  sku: string | number,
   name: string,
   onSpecial: boolean,
   currentPrice: number,
@@ -55,6 +57,7 @@ export function createData(
 ): Data {
   return {
     index,
+    sku,
     name,
     onSpecial,
     currentPrice,
@@ -199,6 +202,8 @@ export default function EnhancedTable() {
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
 
+  // useEffect(() => {}, favProduct);
+
   useEffect(() => {
     async function extractSKUs() {
       newworldProductSKUs.forEach((product) => {
@@ -338,6 +343,7 @@ export default function EnhancedTable() {
               rows.push(
                 createData(
                   index,
+                  productSku,
                   productName,
                   onSpecial,
                   productSpecialPrice,
@@ -447,6 +453,7 @@ export default function EnhancedTable() {
               rows.push(
                 createData(
                   index,
+                  productSku,
                   productName,
                   onSpecial,
                   productSpecialPrice,
@@ -552,6 +559,7 @@ export default function EnhancedTable() {
             rows.push(
               createData(
                 index,
+                productSku,
                 productName,
                 onSpecial,
                 productCurrentPrice,
@@ -676,7 +684,7 @@ export default function EnhancedTable() {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       ),
-    [order, orderBy, page, rowsPerPage, mycoolrows]
+    [order, orderBy, page, rowsPerPage, mycoolrows, favProduct]
   );
 
   interface ChipData {
@@ -693,6 +701,8 @@ export default function EnhancedTable() {
       chips.filter((chip) => chip.key !== chipToDelete.key)
     );
   };
+
+  let favVisible: boolean;
 
   return (
     <>
@@ -895,11 +905,15 @@ export default function EnhancedTable() {
                         <Checkbox
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
-                          color="warning"
-                          checked={favProduct}
+                          color="secondary"
+                          checked={localStorage.getItem(row.sku)}
                           onChange={() => {
-                            console.log("Click me senpai!");
-                            localStorage.setItem("favourites", row.name);
+                            if (localStorage.getItem(row.sku)) {
+                              localStorage.removeItem(row.sku);
+                            } else {
+                              localStorage.setItem(row.sku, row.name);
+                            }
+                            setFavProduct(!favProduct);
                           }}
                         />
                       </TableCell>
