@@ -27,6 +27,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
+import Autocomplete from "@mui/material/Autocomplete";
 
 let rows: any[] = [];
 
@@ -574,13 +575,14 @@ export default function EnhancedTable() {
       });
     }
   }, [paknsaveResults]);
-  useEffect(() => {
-    {
-      chipData.length != 0 &&
-        console.log(chipData.map((e) => e.label).at(chipData.length - 1));
-    }
-  }, [chipData]);
+  // useEffect(() => {
+  //   chipData.length != 0 && chipData.map((e) => console.log(e));
+  // }, [chipData]);
 
+  useEffect(() => {
+    filterSearchText.length > 3 &&
+      console.log("filterSearchText", filterSearchText.replace(",", ""));
+  }, [filterSearchText]);
   async function GetSupermarketPrices() {
     rows = [];
     countdown();
@@ -753,6 +755,9 @@ export default function EnhancedTable() {
                 e.preventDefault();
                 if ((e.target as HTMLInputElement).value === "") {
                   setSearchHelperText("Please search for something");
+                  setTimeout(() => {
+                    setSearchHelperText("");
+                  }, 1500);
                 } else {
                   e.preventDefault();
                   searchTerm != "" && GetSupermarketPrices();
@@ -780,6 +785,7 @@ export default function EnhancedTable() {
             type="button"
             sx={{
               marginBottom: "5px",
+              height: "42px",
             }}
           >
             Search
@@ -798,27 +804,92 @@ export default function EnhancedTable() {
             className="filterAProduct"
             sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
             placeholder="Filter a product"
+            value={filterSearchText.replace(",", "")}
             onKeyDown={(e) => {
               if (
                 e.key === "," &&
-                (e.target as HTMLInputElement).value !== ""
+                (e.target as HTMLInputElement).value.length > 0
               ) {
-                setChipData([
-                  ...chipData,
-                  {
-                    key: Math.random(),
-                    label: filterSearchText,
-                  },
-                ]);
-                setFilterSearchText("");
-                e.preventDefault;
+                if (chipData.length === 0) {
+                  setChipData([
+                    ...chipData,
+                    {
+                      key: Math.random(),
+                      label: filterSearchText,
+                    },
+                  ]);
+                  setFilterSearchText("");
+                  e.preventDefault;
+                }
+                if (chipData.length > 0) {
+                  // console.log("OMG running");
+
+                  const testArray = ["test", "cool"];
+                  const myArray = ["test", "woooza"];
+                  let check = testArray.some(myArray);
+
+                  if (!check) {
+                    console.log("check", check);
+                  } else {
+                    console.log("Fuck");
+                  }
+
+                  //     setChipData([
+                  //       ...chipData,
+                  //       {
+                  //         key: Math.random(),
+                  //         label: filterSearchText,
+                  //       },
+                  //     ]);
+                  //     setFilterSearchText("");
+
+                  // chipData.filter((e) => {
+                  //   let matched = filterSearchText.match(e.label);
+                  //   if (!matched) {
+                  //     console.log(matched);
+
+                  //   }
+                  // });
+
+                  // chipData.map((e) => {
+                  //   console.log(e.label);
+                  //   console.log(e.label.some(test));
+                  // if (e.label.some(test)) {
+
+                  // }
+                  // if (!e.label.includes(filterSearchText)) {
+                  //   console.log("Data already exists");
+
+                  //   e.preventDefault;
+                  // }
+                  // });
+
+                  // chipData.map((e) => {
+                  //   console.log(filterSearchText);
+                  //   if (!e.label.includes(filterSearchText)) {
+                  //     console.log("Data already exists");
+                  //     setChipData([
+                  //       ...chipData,
+                  //       {
+                  //         key: Math.random(),
+                  //         label: filterSearchText,
+                  //       },
+                  //     ]);
+                  //     console.log("filterSearchText", filterSearchText);
+                  //     setFilterSearchText("");
+                  //     e.preventDefault;
+                  //   }
+                  // });
+                }
               }
             }}
             onChange={(e) => {
               if (e.target.value !== " ") {
                 e.preventDefault;
                 e.target.value !== "," &&
-                  setFilterSearchText(e.target.value.toLowerCase());
+                  setFilterSearchText(
+                    e.target.value.toLowerCase().replace(",", "")
+                  );
               }
             }}
           />
@@ -832,12 +903,14 @@ export default function EnhancedTable() {
             sx={{
               marginBottom: "5px",
               paddingRight: "20px",
+              height: "42px",
             }}
             aria-label="search"
           >
             Filter
           </Button>
         </ButtonGroup>
+
         <Box>
           <Box
             sx={{
