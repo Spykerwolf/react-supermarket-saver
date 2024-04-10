@@ -736,16 +736,13 @@ export default function EnhancedTable() {
             id="outlined-error-helper-text"
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
-            // value={searchTerm}
+            value={searchTerm}
             onChange={(e) => {
               if (e.target.value === "") {
                 setSearchHelperText("");
               }
 
-              if (e.target.value.length > 0) {
-                setSearchHelperText("");
-              }
-              if (e.target.value.length > 3) {
+              if (e.target.value.length >= 0) {
                 console.log(e.target.value);
                 setSearchTerm(e.target.value);
                 setSearchHelperText("");
@@ -759,6 +756,7 @@ export default function EnhancedTable() {
                 } else {
                   e.preventDefault();
                   searchTerm != "" && GetSupermarketPrices();
+                  setSearchTerm("");
                   setSearchPlaceholderText("Search for a product");
                   setSearchHelperText("");
                 }
@@ -796,7 +794,6 @@ export default function EnhancedTable() {
                 padding: 10,
               },
             }}
-            value={filterSearchText}
             autoComplete="off"
             className="filterAProduct"
             sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
