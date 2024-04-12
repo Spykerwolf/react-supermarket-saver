@@ -688,7 +688,7 @@ export default function EnhancedTable() {
     setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
 
-  const existingTag = Object.values(tags).toString().includes(filterSearchText);
+  const existingTag = Object.values(tags).toString().toLowerCase();
 
   return (
     <>
@@ -794,15 +794,15 @@ export default function EnhancedTable() {
             value={filterSearchText.replace(",", "")}
             onKeyDown={(e) => {
               if (
-                e.key === "," &&
+                (e.key === "," || e.key === "Enter") &&
                 (e.target as HTMLInputElement).value.length > 0
               ) {
-                if (!existingTag) {
+                if (!existingTag.includes(filterSearchText)) {
                   console.log(`Added ${filterSearchText}`);
                   setTags([...tags, filterSearchText]);
                   setFilterSearchText("");
                   e.preventDefault;
-                } else if (existingTag) {
+                } else if (existingTag.includes(filterSearchText)) {
                   setFilterSearchText("");
                   e.preventDefault;
                 }
@@ -878,15 +878,13 @@ export default function EnhancedTable() {
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  if (tags.length === 0) {
+                  if (
+                    tags.length === 0 ||
+                    !row.name.toLowerCase().includes(existingTag.split(","))
+                  ) {
                     return row;
-                  } else {
-                    tags.every((e) => {
-                      console.log(filterSearchText.includes(e));
-                    });
                   }
                 })
-
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
                   return (
