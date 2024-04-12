@@ -701,10 +701,29 @@ export default function EnhancedTable() {
         }}
       >
         {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}~`}
+      </Box>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {" "}
         {paknsaveAPIStatus !== "" && `Pak n Save: ${paknsaveAPIStatus}~`}
+      </Box>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {" "}
         {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}~`}
       </Box>
-
       <Box>
         <ButtonGroup>
           <TextField
