@@ -27,7 +27,6 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
-import Autocomplete from "@mui/material/Autocomplete";
 
 let rows: any[] = [];
 
@@ -198,7 +197,7 @@ export default function EnhancedTable() {
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-  const [chipData, setChipData] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
@@ -575,14 +574,7 @@ export default function EnhancedTable() {
       });
     }
   }, [paknsaveResults]);
-  // useEffect(() => {
-  //   chipData.length != 0 && chipData.map((e) => console.log(e));
-  // }, [chipData]);
 
-  useEffect(() => {
-    filterSearchText.length > 3 &&
-      console.log("filterSearchText", filterSearchText.replace(",", ""));
-  }, [filterSearchText]);
   async function GetSupermarketPrices() {
     rows = [];
     countdown();
@@ -687,20 +679,16 @@ export default function EnhancedTable() {
     [order, orderBy, page, rowsPerPage, mycoolrows, favProduct]
   );
 
-  interface ChipData {
-    key: number;
-    label: string;
-  }
-
   const ListItem = styled("li")(({ theme }) => ({
     margin: theme.spacing(0.5),
   }));
 
-  const handleDelete = (chipToDelete: ChipData) => () => {
-    setChipData((chips) =>
-      chips.filter((chip) => chip.key !== chipToDelete.key)
-    );
+  const handleDelete = (tagToDelete: string) => () => {
+    console.log(`Deleted ${tagToDelete}`);
+    setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
+
+  const existingTag = Object.values(tags).toString().includes(filterSearchText);
 
   return (
     <>
@@ -745,7 +733,6 @@ export default function EnhancedTable() {
               }
 
               if (e.target.value.length >= 0) {
-                console.log(e.target.value);
                 setSearchTerm(e.target.value);
                 setSearchHelperText("");
               }
@@ -810,76 +797,14 @@ export default function EnhancedTable() {
                 e.key === "," &&
                 (e.target as HTMLInputElement).value.length > 0
               ) {
-                if (chipData.length === 0) {
-                  setChipData([
-                    ...chipData,
-                    {
-                      key: Math.random(),
-                      label: filterSearchText,
-                    },
-                  ]);
+                if (!existingTag) {
+                  console.log(`Added ${filterSearchText}`);
+                  setTags([...tags, filterSearchText]);
                   setFilterSearchText("");
                   e.preventDefault;
-                }
-                if (chipData.length > 0) {
-                  // console.log("OMG running");
-
-                  const testArray = ["test", "cool"];
-                  const myArray = ["test", "woooza"];
-                  let check = testArray.some(myArray);
-
-                  if (!check) {
-                    console.log("check", check);
-                  } else {
-                    console.log("Fuck");
-                  }
-
-                  //     setChipData([
-                  //       ...chipData,
-                  //       {
-                  //         key: Math.random(),
-                  //         label: filterSearchText,
-                  //       },
-                  //     ]);
-                  //     setFilterSearchText("");
-
-                  // chipData.filter((e) => {
-                  //   let matched = filterSearchText.match(e.label);
-                  //   if (!matched) {
-                  //     console.log(matched);
-
-                  //   }
-                  // });
-
-                  // chipData.map((e) => {
-                  //   console.log(e.label);
-                  //   console.log(e.label.some(test));
-                  // if (e.label.some(test)) {
-
-                  // }
-                  // if (!e.label.includes(filterSearchText)) {
-                  //   console.log("Data already exists");
-
-                  //   e.preventDefault;
-                  // }
-                  // });
-
-                  // chipData.map((e) => {
-                  //   console.log(filterSearchText);
-                  //   if (!e.label.includes(filterSearchText)) {
-                  //     console.log("Data already exists");
-                  //     setChipData([
-                  //       ...chipData,
-                  //       {
-                  //         key: Math.random(),
-                  //         label: filterSearchText,
-                  //       },
-                  //     ]);
-                  //     console.log("filterSearchText", filterSearchText);
-                  //     setFilterSearchText("");
-                  //     e.preventDefault;
-                  //   }
-                  // });
+                } else if (existingTag) {
+                  setFilterSearchText("");
+                  e.preventDefault;
                 }
               }
             }}
@@ -923,11 +848,11 @@ export default function EnhancedTable() {
             component="ul"
             key={Math.random()}
           >
-            {chipData.map((data) => {
+            {tags.map((data) => {
               return (
                 <>
-                  <ListItem key={data.key}>
-                    <Chip label={data.label} onDelete={handleDelete(data)} />
+                  <ListItem key={Math.random()}>
+                    <Chip label={data} onDelete={handleDelete(data)} />
                   </ListItem>
                 </>
               );
@@ -949,21 +874,21 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
+
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  let lowerCaseValue: string = row.name;
-                  return chipData.length === 0
-                    ? row
-                    : !lowerCaseValue
-                        .toLowerCase()
-                        .includes(
-                          chipData.map((e) => e.label).at(chipData.length - 1)
-                        );
+                  if (tags.length === 0) {
+                    return row;
+                  } else {
+                    tags.every((e) => {
+                      console.log(filterSearchText.includes(e));
+                    });
+                  }
                 })
+
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
-
                   return (
                     <TableRow
                       hover
