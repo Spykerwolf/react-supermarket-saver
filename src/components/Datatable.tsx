@@ -197,12 +197,10 @@ export default function EnhancedTable() {
     "Search for a product"
   );
   const [searchHelperText, setSearchHelperText] = useState("");
-  const [chipData, setChipData] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
-
-  // useEffect(() => {}, favProduct);
 
   useEffect(() => {
     async function extractSKUs() {
@@ -576,12 +574,6 @@ export default function EnhancedTable() {
       });
     }
   }, [paknsaveResults]);
-  useEffect(() => {
-    {
-      chipData.length != 0 &&
-        console.log(chipData.map((e) => e.label).at(chipData.length - 1));
-    }
-  }, [chipData]);
 
   async function GetSupermarketPrices() {
     rows = [];
@@ -687,22 +679,16 @@ export default function EnhancedTable() {
     [order, orderBy, page, rowsPerPage, mycoolrows, favProduct]
   );
 
-  interface ChipData {
-    key: number;
-    label: string;
-  }
-
   const ListItem = styled("li")(({ theme }) => ({
     margin: theme.spacing(0.5),
   }));
 
-  const handleDelete = (chipToDelete: ChipData) => () => {
-    setChipData((chips) =>
-      chips.filter((chip) => chip.key !== chipToDelete.key)
-    );
+  const handleDelete = (tagToDelete: string) => () => {
+    console.log(`Deleted ${tagToDelete}`);
+    setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
 
-  let favVisible: boolean;
+  const existingTag = tags.some((tag) => filterSearchText.includes(tag));
 
   return (
     <>
@@ -715,10 +701,29 @@ export default function EnhancedTable() {
         }}
       >
         {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}~`}
+      </Box>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {" "}
         {paknsaveAPIStatus !== "" && `Pak n Save: ${paknsaveAPIStatus}~`}
+      </Box>
+      <Box
+        sx={{
+          ml: 2,
+          mb: 0,
+          width: "485px",
+          flex: 1,
+        }}
+      >
+        {" "}
         {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}~`}
       </Box>
-
       <Box>
         <ButtonGroup>
           <TextField
@@ -735,7 +740,6 @@ export default function EnhancedTable() {
               width: "485px",
               flex: 1,
             }}
-            className="searchProduct"
             variant="outlined"
             id="outlined-error-helper-text"
             helperText={searchHelperText}
@@ -745,17 +749,25 @@ export default function EnhancedTable() {
               if (e.target.value === "") {
                 setSearchHelperText("");
               }
-              setSearchTerm(e.target.value);
-              setSearchHelperText("");
+
+              if (e.target.value.length >= 0) {
+                setSearchTerm(e.target.value);
+                setSearchHelperText("");
+              }
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
                 if ((e.target as HTMLInputElement).value === "") {
                   setSearchHelperText("Please search for something");
+                  setTimeout(() => {
+                    setSearchHelperText("");
+                  }, 1500);
                 } else {
                   e.preventDefault();
+                  setTags([]);
                   searchTerm != "" && GetSupermarketPrices();
+                  setSearchTerm("");
                   setSearchPlaceholderText("Search for a product");
                   setSearchHelperText("");
                 }
@@ -771,6 +783,7 @@ export default function EnhancedTable() {
               if (searchTerm === "") {
                 setSearchHelperText("Please search for something");
               } else {
+                setTags([]);
                 GetSupermarketPrices();
                 setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
@@ -779,6 +792,7 @@ export default function EnhancedTable() {
             type="button"
             sx={{
               marginBottom: "5px",
+              height: "42px",
             }}
           >
             Search
@@ -793,32 +807,33 @@ export default function EnhancedTable() {
                 padding: 10,
               },
             }}
-            value={filterSearchText}
             autoComplete="off"
-            className="filterAProduct"
             sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
             placeholder="Filter a product"
+            value={filterSearchText.replace(",", "")}
             onKeyDown={(e) => {
               if (
-                e.key === "," &&
-                (e.target as HTMLInputElement).value !== ""
+                (e.key === "," || e.key === "Enter") &&
+                (e.target as HTMLInputElement).value.length > 0
               ) {
-                setChipData([
-                  ...chipData,
-                  {
-                    key: Math.random(),
-                    label: filterSearchText,
-                  },
-                ]);
-                setFilterSearchText("");
-                e.preventDefault;
+                if (!existingTag) {
+                  console.log(`Added ${filterSearchText}`);
+                  setTags([...tags, filterSearchText]);
+                  setFilterSearchText("");
+                  e.preventDefault;
+                } else if (existingTag) {
+                  setFilterSearchText("");
+                  e.preventDefault;
+                }
               }
             }}
             onChange={(e) => {
               if (e.target.value !== " ") {
                 e.preventDefault;
                 e.target.value !== "," &&
-                  setFilterSearchText(e.target.value.toLowerCase());
+                  setFilterSearchText(
+                    e.target.value.toLowerCase().replace(",", "")
+                  );
               }
             }}
           />
@@ -832,12 +847,14 @@ export default function EnhancedTable() {
             sx={{
               marginBottom: "5px",
               paddingRight: "20px",
+              height: "42px",
             }}
             aria-label="search"
           >
             Filter
           </Button>
         </ButtonGroup>
+
         <Box>
           <Box
             sx={{
@@ -850,11 +867,11 @@ export default function EnhancedTable() {
             component="ul"
             key={Math.random()}
           >
-            {chipData.map((data) => {
+            {tags.map((data) => {
               return (
                 <>
-                  <ListItem key={data.key}>
-                    <Chip label={data.label} onDelete={handleDelete(data)} />
+                  <ListItem key={Math.random()}>
+                    <Chip label={data} onDelete={handleDelete(data)} />
                   </ListItem>
                 </>
               );
@@ -876,21 +893,22 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
             />
+
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  let lowerCaseValue: string = row.name;
-                  return chipData.length === 0
-                    ? row
-                    : !lowerCaseValue
-                        .toLowerCase()
-                        .includes(
-                          chipData.map((e) => e.label).at(chipData.length - 1)
-                        );
+                  const tagInRowName = tags.some((item) =>
+                    row.name.toLowerCase().includes(item.toLowerCase())
+                  );
+                  if (tags.length === 0) {
+                    return row;
+                  } else if (!tagInRowName) {
+                    return row;
+                  }
                 })
+
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
-
                   return (
                     <TableRow
                       hover
