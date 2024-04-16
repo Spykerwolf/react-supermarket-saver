@@ -688,7 +688,7 @@ export default function EnhancedTable() {
     setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
 
-  const existingTag = Object.values(tags).toString().toLowerCase();
+  const existingTag = tags.some((tag) => filterSearchText.includes(tag));
 
   return (
     <>
@@ -740,7 +740,6 @@ export default function EnhancedTable() {
               width: "485px",
               flex: 1,
             }}
-            className="searchProduct"
             variant="outlined"
             id="outlined-error-helper-text"
             helperText={searchHelperText}
@@ -766,6 +765,7 @@ export default function EnhancedTable() {
                   }, 1500);
                 } else {
                   e.preventDefault();
+                  setTags([]);
                   searchTerm != "" && GetSupermarketPrices();
                   setSearchTerm("");
                   setSearchPlaceholderText("Search for a product");
@@ -783,6 +783,7 @@ export default function EnhancedTable() {
               if (searchTerm === "") {
                 setSearchHelperText("Please search for something");
               } else {
+                setTags([]);
                 GetSupermarketPrices();
                 setSearchPlaceholderText(searchTerm);
                 setSearchHelperText("");
@@ -807,7 +808,6 @@ export default function EnhancedTable() {
               },
             }}
             autoComplete="off"
-            className="filterAProduct"
             sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
             placeholder="Filter a product"
             value={filterSearchText.replace(",", "")}
@@ -816,12 +816,12 @@ export default function EnhancedTable() {
                 (e.key === "," || e.key === "Enter") &&
                 (e.target as HTMLInputElement).value.length > 0
               ) {
-                if (!existingTag.includes(filterSearchText)) {
+                if (!existingTag) {
                   console.log(`Added ${filterSearchText}`);
                   setTags([...tags, filterSearchText]);
                   setFilterSearchText("");
                   e.preventDefault;
-                } else if (existingTag.includes(filterSearchText)) {
+                } else if (existingTag) {
                   setFilterSearchText("");
                   e.preventDefault;
                 }
@@ -897,13 +897,16 @@ export default function EnhancedTable() {
             <TableBody>
               {visibleRows
                 .filter((row) => {
-                  if (
-                    tags.length === 0 ||
-                    !row.name.toLowerCase().includes(existingTag.split(","))
-                  ) {
+                  const tagInRowName = tags.some((item) =>
+                    row.name.toLowerCase().includes(item.toLowerCase())
+                  );
+                  if (tags.length === 0) {
+                    return row;
+                  } else if (!tagInRowName) {
                     return row;
                   }
                 })
+
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
                   return (
