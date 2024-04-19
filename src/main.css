@@ -1,8 +1,0 @@
-.Items-active {
-  background-color: orange;
-}
-
-.searchBar:hover label {
-  transform-origin: left;
-  transform: scale(1.15);
-}

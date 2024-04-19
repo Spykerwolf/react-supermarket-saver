@@ -31,6 +31,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import GoogleIcon from "@mui/icons-material/Google";
 
 let rows: any[] = [];
 
@@ -144,7 +145,6 @@ interface EnhancedTableProps {
 
   order: Order;
   orderBy: string;
-  rowCount: number;
   numSelected: number;
 }
 
@@ -156,7 +156,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     };
 
   return (
-    <TableHead>
+    <TableHead sx={{ margin: 1 }}>
       <TableRow sx={{ bgcolor: "lightgrey" }}>
         <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
@@ -194,9 +194,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
   return (
     <Toolbar
+      id="mainToolbar"
       sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
+        display: "flex",
+        pl: { sm: 0 },
+        pr: { sm: 0 },
+        height: "60px",
         padding: 0,
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
@@ -221,7 +224,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           }}
         >
           Add to list
-          {/* Add {numSelected} items to list */}
         </Button>
       ) : (
         <Button
@@ -257,11 +259,52 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           component="div"
         ></Typography>
       )}
+      {numSelected > 0 ? (
+        <Button
+          onClick={() => {
+            open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+          }}
+          onMouseDown={(e) => {
+            if (e.button === 1) {
+              open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+            }
+          }}
+          variant="contained"
+          color="warning"
+          size="small"
+          endIcon={<GoogleIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Open Keep
+        </Button>
+      ) : (
+        <Button
+          disabled
+          variant="contained"
+          color="warning"
+          size="small"
+          endIcon={<GoogleIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Open Keep
+        </Button>
+      )}
     </Toolbar>
   );
 }
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
+
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
@@ -280,6 +323,8 @@ export default function EnhancedTable() {
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
   const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [sendItemToKeep, setSendItemToKeep] = useState([]);
 
   useEffect(() => {
     async function extractSKUs() {
@@ -291,6 +336,9 @@ export default function EnhancedTable() {
     newworldProductSKUs !== undefined && extractSKUs();
   }, [newworldProductSKUs]);
 
+  useEffect(() => {
+    sendItemToKeep.length > 0 && console.log(sendItemToKeep);
+  }, [sendItemToKeep]);
   useEffect(() => {
     async function getData() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
@@ -658,6 +706,7 @@ export default function EnhancedTable() {
   }, [paknsaveResults]);
 
   async function GetSupermarketPrices() {
+    setSelected([]);
     rows = [];
     countdown();
     newworld();
@@ -698,7 +747,6 @@ export default function EnhancedTable() {
       const fetchCountDownData = await fetch(
         `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
-      console.log(fetchCountDownData);
       !fetchCountDownData.ok &&
         console.log("Countdown API key needs refreshing");
       const countdownResponse = await fetchCountDownData.json();
@@ -791,33 +839,22 @@ export default function EnhancedTable() {
 
   const existingTag = tags.some((tag) => filterSearchText.includes(tag));
 
+  const filteredVisibleRows = visibleRows.filter((row) => {
+    const tagInRowName = tags.some((item) =>
+      row.name.toLowerCase().includes(item.toLowerCase())
+    );
+    if (tags.length === 0) {
+      return row;
+    } else if (!tagInRowName) {
+      return row;
+    }
+  }).length;
+
+  React.useMemo(() => setRowCount(filteredVisibleRows), [filteredVisibleRows]);
+
   return (
     <>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      ></Box>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      ></Box>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      ></Box>
-      <Box>
+      <Box justifyContent="center" display={"flex"}>
         <ButtonGroup>
           <TextField
             inputProps={{
@@ -828,8 +865,6 @@ export default function EnhancedTable() {
             multiline={false}
             autoComplete="off"
             sx={{
-              ml: 2,
-              mb: 0.5,
               width: "485px",
               flex: 1,
             }}
@@ -892,92 +927,104 @@ export default function EnhancedTable() {
           </Button>
         </ButtonGroup>
       </Box>
-      <Box>
-        <ButtonGroup>
-          <TextField
-            inputProps={{
-              style: {
-                padding: 10,
-              },
-            }}
-            autoComplete="off"
-            sx={{ ml: 2, mb: 0.5, width: "485px", flex: 1 }}
-            placeholder="Filter a product"
-            value={filterSearchText.replace(",", "")}
-            onKeyDown={(e) => {
-              if (
-                (e.key === "," || e.key === "Enter") &&
-                (e.target as HTMLInputElement).value.length > 0
-              ) {
-                if (!existingTag) {
-                  console.log(`Added ${filterSearchText}`);
-                  setTags([...tags, filterSearchText]);
-                  setFilterSearchText("");
-                  e.preventDefault;
-                } else if (existingTag) {
-                  setFilterSearchText("");
-                  e.preventDefault;
+      <Box justifyContent="center" display={"flex"}>
+        <Box>
+          <ButtonGroup>
+            <TextField
+              id="filterInput"
+              inputProps={{
+                style: {
+                  padding: 10,
+                },
+              }}
+              autoComplete="off"
+              sx={{ width: "485px", flex: 1 }}
+              placeholder="Filter a product"
+              value={filterSearchText.replace(",", "")}
+              onKeyDown={(e) => {
+                if (
+                  (e.key === "," || e.key === "Enter") &&
+                  (e.target as HTMLInputElement).value.length > 0
+                ) {
+                  if (!existingTag) {
+                    setTags([...tags, filterSearchText]);
+                    setFilterSearchText("");
+                    e.preventDefault;
+                  } else if (existingTag) {
+                    setFilterSearchText("");
+                    e.preventDefault;
+                  }
                 }
-              }
-            }}
-            onChange={(e) => {
-              if (e.target.value !== " ") {
-                e.preventDefault;
-                e.target.value !== "," &&
-                  setFilterSearchText(
-                    e.target.value.toLowerCase().replace(",", "")
-                  );
-              }
-            }}
-          />
-          <Button
-            variant="contained"
-            size="small"
-            endIcon={<RemoveIcon />}
-            onClick={() => setFilterSearchText("")}
-            type="button"
-            sx={{
-              marginBottom: "5px",
-              paddingRight: "20px",
-              height: "42px",
-            }}
-            aria-label="search"
-          >
-            Filter
-          </Button>
-        </ButtonGroup>
-        {tags.length > 0 && (
-          <Box>
-            <Box
+              }}
+              onChange={(e) => {
+                if (e.target.value !== " ") {
+                  e.preventDefault;
+                  e.target.value !== "," &&
+                    setFilterSearchText(
+                      e.target.value.toLowerCase().replace(",", "")
+                    );
+                }
+              }}
+            />
+            <Button
+              id="filterButton"
+              variant="contained"
+              size="small"
+              endIcon={<RemoveIcon />}
+              onClick={() => setFilterSearchText("")}
+              type="button"
               sx={{
-                display: "flex",
-                flexWrap: "wrap",
+                marginBottom: "5px",
+                paddingRight: "20px",
+                height: "42px",
+              }}
+              aria-label="search"
+            >
+              Filter
+            </Button>
+          </ButtonGroup>
+
+          {tags.length > 0 && (
+            <Box
+              margin={"auto"}
+              id="tagsBox"
+              sx={{
+                padding: 0,
+                marginTop: 0,
+                marginBottom: 0,
                 listStyle: "none",
-                p: 0.5,
-                m: 0,
               }}
               component="ul"
               key={Math.random()}
             >
-              {tags.map((data) => {
-                return (
-                  <>
-                    <ListItem key={Math.random()}>
-                      <Chip label={data} onDelete={handleDelete(data)} />
-                    </ListItem>
-                  </>
-                );
-              })}
+              <Box display={"flex"}>
+                {tags.map((data) => {
+                  return (
+                    <>
+                      <ListItem>
+                        <Chip label={data} onDelete={handleDelete(data)} />
+                      </ListItem>
+                    </>
+                  );
+                })}
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
+        </Box>
       </Box>
-
-      <Box sx={{ width: "80%" }}>
+      <Box paddingLeft={"5%"} paddingRight={"5%"}>
         <EnhancedTableToolbar numSelected={selected.length} />
+      </Box>
+      <Box
+        justifyContent="center"
+        display={"flex"}
+        width={"100%"}
+        paddingLeft={"5%"}
+        paddingRight={"5%"}
+      >
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: "250" }}
             aria-labelledby="tableTitle"
             size={"small"}
           >
@@ -986,7 +1033,6 @@ export default function EnhancedTable() {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
             />
 
             <TableBody>
@@ -1004,10 +1050,13 @@ export default function EnhancedTable() {
 
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.sku);
-
                   const labelId = `enhanced-table-checkbox-${index}`;
+
                   return (
                     <TableRow
+                      style={{
+                        height: 33 * emptyRows,
+                      }}
                       hover
                       tabIndex={-1}
                       key={Math.random()}
@@ -1019,21 +1068,47 @@ export default function EnhancedTable() {
                     >
                       <TableCell padding="none">
                         <Checkbox
+                          id="addtolistCheckbox"
                           sx={{ paddingRight: 1 }}
                           color="info"
                           size="small"
-                          onClick={() => handleClick(row.sku)}
-                          selected={isItemSelected}
+                          onClick={() => {
+                            if (
+                              !sendItemToKeep.some((item) =>
+                                row.sku.includes(item)
+                              )
+                            ) {
+                              console.log(`Added ${row.name}`);
+
+                              setSendItemToKeep([
+                                ...sendItemToKeep,
+                                `${row.sku}`,
+                              ]);
+                            }
+                            if (
+                              sendItemToKeep.some((item) =>
+                                row.sku.includes(item)
+                              )
+                            ) {
+                              console.log(`Deleted ${row.name}`);
+                              setSendItemToKeep((items) =>
+                                items.filter((item) => item !== `${row.sku}`)
+                              );
+                            }
+
+                            handleClick(row.sku);
+                          }}
                           key={row.sku}
                           checked={isItemSelected}
                         />
                       </TableCell>
                       <TableCell padding="none" align="left">
                         <Checkbox
+                          id="favouriteCheckbox"
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
                           color="secondary"
-                          checked={localStorage.getItem(row.sku)}
+                          checked={localStorage.getItem(row.sku) ? true : false}
                           onChange={() => {
                             if (localStorage.getItem(row.sku)) {
                               localStorage.removeItem(row.sku);
@@ -1099,10 +1174,12 @@ export default function EnhancedTable() {
             </TableBody>
           </Table>
         </TableContainer>
+      </Box>
+      <Box paddingLeft={"5%"} paddingRight={"5%"}>
         <TablePagination
           rowsPerPageOptions={[5, 25, 50, 75, { value: -1, label: "All" }]}
           component="div"
-          count={rows.length}
+          count={rowCount}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
