@@ -20,7 +20,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
+import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../secrets";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -348,7 +348,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: newworldSecretToken,
+            Authorization: NEW_WORLD_SECRET,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogether }),
@@ -723,7 +723,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: newworldSecretToken,
+              Authorization: NEW_WORLD_SECRET,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -762,7 +762,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: paknsaveSecretToken,
+            Authorization: PAK_N_SAVE_SECRET,
           }),
         }
       );
