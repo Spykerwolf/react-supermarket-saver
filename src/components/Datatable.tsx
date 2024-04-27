@@ -20,13 +20,18 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { newworldSecretToken, paknsaveSecretToken } from "../secrets";
+import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../secrets";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import { db } from "../firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import GoogleIcon from "@mui/icons-material/Google";
 
 let rows: any[] = [];
 
@@ -35,7 +40,8 @@ interface Data {
   sku: string | number;
   name: string;
   onSpecial: boolean;
-  currentPrice: number;
+  isFavourite: boolean;
+  price: number;
   historicalLow: number;
   productPackage: string;
   ratio: string;
@@ -48,7 +54,8 @@ export function createData(
   sku: string | number,
   name: string,
   onSpecial: boolean,
-  currentPrice: number,
+  isFavourite: boolean,
+  price: number,
   historicalLow: number,
   productPackage: string,
   ratio: string,
@@ -60,7 +67,9 @@ export function createData(
     sku,
     name,
     onSpecial,
-    currentPrice,
+
+    isFavourite,
+    price,
     historicalLow,
     productPackage,
     ratio,
@@ -70,7 +79,6 @@ export function createData(
 }
 
 interface HeadCell {
-  disablePadding: boolean;
   id: keyof Data;
   label: string;
   numeric: boolean;
@@ -78,53 +86,51 @@ interface HeadCell {
 
 const headCells: readonly HeadCell[] = [
   {
-    id: "name",
+    id: "isFavourite",
     numeric: false,
-    disablePadding: true,
-    label: "Name",
-  },
-  {
-    id: "onSpecial",
-    numeric: false,
-    disablePadding: true,
     label: "",
   },
   {
-    id: "currentPrice",
-    numeric: true,
-    disablePadding: false,
-    label: "Current Price",
+    id: "name",
+    numeric: false,
+    label: "Name",
+  },
+
+  {
+    id: "onSpecial",
+    numeric: false,
+    label: "",
+  },
+  {
+    id: "price",
+    numeric: false,
+    label: "Price",
   },
 
   {
     id: "historicalLow",
-    numeric: true,
-    disablePadding: false,
+    numeric: false,
     label: "Historical Low",
   },
 
   {
     id: "productPackage",
     numeric: false,
-    disablePadding: false,
     label: "Packaging",
   },
   {
     id: "ratio",
     numeric: false,
-    disablePadding: false,
     label: "Ratio",
   },
   {
     id: "store",
     numeric: false,
-    disablePadding: false,
     label: "Store",
   },
   {
     id: "URL",
     numeric: false,
-    disablePadding: false,
     label: "URL",
   },
 ];
@@ -139,7 +145,7 @@ interface EnhancedTableProps {
 
   order: Order;
   orderBy: string;
-  rowCount: number;
+  numSelected: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
@@ -150,14 +156,14 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     };
 
   return (
-    <TableHead>
+    <TableHead sx={{ margin: 1 }}>
       <TableRow sx={{ bgcolor: "lightgrey" }}>
         <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={Math.random()}
             align={headCell.numeric ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
+            padding={"normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
@@ -179,18 +185,133 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
+interface EnhancedTableToolbarProps {
+  numSelected: number;
+}
+
+function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
+  const { numSelected } = props;
+
+  return (
+    <Toolbar
+      id="mainToolbar"
+      sx={{
+        display: "flex",
+        pl: { sm: 0 },
+        pr: { sm: 0 },
+        height: "60px",
+        padding: 0,
+        ...(numSelected > 0 && {
+          bgcolor: (theme) =>
+            alpha(
+              theme.palette.primary.main,
+              theme.palette.action.activatedOpacity
+            ),
+        }),
+      }}
+    >
+      {numSelected > 0 ? (
+        <Button
+          variant="contained"
+          color="error"
+          size="small"
+          endIcon={<ShoppingCartIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Add to list
+        </Button>
+      ) : (
+        <Button
+          disabled
+          variant="contained"
+          color="error"
+          size="small"
+          endIcon={<ShoppingCartIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Add to list
+        </Button>
+      )}
+      {numSelected > 0 ? (
+        <Typography
+          sx={{ flex: "1 1 100%", paddingLeft: 1 }}
+          color="inherit"
+          variant="subtitle1"
+          component="div"
+        >
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Typography
+          sx={{ flex: "1 1 100%" }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        ></Typography>
+      )}
+      {numSelected > 0 ? (
+        <Button
+          onClick={() => {
+            open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+          }}
+          onMouseDown={(e) => {
+            if (e.button === 1) {
+              open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+            }
+          }}
+          variant="contained"
+          color="warning"
+          size="small"
+          endIcon={<GoogleIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Open Keep
+        </Button>
+      ) : (
+        <Button
+          disabled
+          variant="contained"
+          color="warning"
+          size="small"
+          endIcon={<GoogleIcon />}
+          type="button"
+          sx={{
+            minHeight: "40px",
+            minWidth: "128px",
+            width: "fit-content",
+          }}
+        >
+          Open Keep
+        </Button>
+      )}
+    </Toolbar>
+  );
+}
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
+
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
-  const [countdownAPIStatus, setCountdownAPIStatus] = useState("");
   const [newworldResults, setnewworldResults] = useState([]);
-  const [newworldAPIStatus, setNewworldAPIStatus] = useState("");
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
-  const [paknsaveAPIStatus, setPaknsaveAPIStatus] = useState("");
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -201,6 +322,9 @@ export default function EnhancedTable() {
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const productIdTogether: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
+  const [selected, setSelected] = React.useState<readonly number[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [sendItemToKeep, setSendItemToKeep] = useState([]);
 
   useEffect(() => {
     async function extractSKUs() {
@@ -213,6 +337,9 @@ export default function EnhancedTable() {
   }, [newworldProductSKUs]);
 
   useEffect(() => {
+    sendItemToKeep.length > 0 && console.log(sendItemToKeep);
+  }, [sendItemToKeep]);
+  useEffect(() => {
     async function getData() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
@@ -221,7 +348,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: newworldSecretToken,
+            Authorization: NEW_WORLD_SECRET,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogether }),
@@ -248,13 +375,13 @@ export default function EnhancedTable() {
             )
           ) {
             const store = "New World";
-            const productCurrentPrice: any = (
+            const productPrice: any = (
               product["singlePrice"]["price"] / 100
             ).toFixed(2);
 
             const productSpecialPrice: number = product["promotions"]
               ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
-              : productCurrentPrice;
+              : productPrice;
             const productSku: string = product["productId"];
 
             const productCupPrice: any = product["singlePrice"][
@@ -303,7 +430,7 @@ export default function EnhancedTable() {
                     {
                       name: productName,
                       onSpecial: onSpecial,
-                      currentPrice: productSpecialPrice,
+                      price: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
                       ratio: ratio,
@@ -343,6 +470,7 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
+                  favProduct,
                   onSpecial,
                   productSpecialPrice,
                   existingHistoricalLow,
@@ -370,7 +498,7 @@ export default function EnhancedTable() {
             searchTermArray.some((e) => productName.toLowerCase().includes(e))
           ) {
             const store = "Countdown";
-            const productCurrentPrice: number = product["price"][
+            const productPrice: number = product["price"][
               "originalPrice"
             ].toLocaleString("en", {
               minimumFractionDigits: 2,
@@ -397,7 +525,7 @@ export default function EnhancedTable() {
               ? product["price"]["salePrice"].toLocaleString("en", {
                   minimumFractionDigits: 2,
                 })
-              : productCurrentPrice;
+              : productPrice;
 
             handleHistoricalLow();
 
@@ -413,7 +541,7 @@ export default function EnhancedTable() {
                     {
                       name: productName,
                       onSpecial: onSpecial,
-                      currentPrice: productSpecialPrice,
+                      price: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
                       ratio: ratio,
@@ -453,6 +581,7 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
+                  favProduct,
                   onSpecial,
                   productSpecialPrice,
                   existingHistoricalLow,
@@ -480,7 +609,7 @@ export default function EnhancedTable() {
           : CapitalizeFirstLetter(product["name"]);
         if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
           const store = "Pak n Save";
-          const productCurrentPrice: any = (product["price"] / 100).toFixed(2);
+          const productPrice: any = (product["price"] / 100).toFixed(2);
 
           const productSku = product["productId"];
 
@@ -523,8 +652,8 @@ export default function EnhancedTable() {
                   {
                     name: productName,
                     onSpecial: onSpecial,
-                    currentPrice: productCurrentPrice,
-                    historicalLow: productCurrentPrice,
+                    price: productPrice,
+                    historicalLow: productPrice,
                     productPackage: productPackage,
                     ratio: ratio,
                     store: store,
@@ -537,18 +666,18 @@ export default function EnhancedTable() {
               } catch (e) {
                 console.error("Error adding document: ", e);
               }
-              existingHistoricalLow = productCurrentPrice;
-            } else if (productCurrentPrice < existingHistoricalLow) {
+              existingHistoricalLow = productPrice;
+            } else if (productPrice < existingHistoricalLow) {
               console.log("New Special Price!");
               try {
                 const docRef: any = await setDoc(
                   doc(db, store, productSku),
                   {
-                    historicalLow: productCurrentPrice,
+                    historicalLow: productPrice,
                   },
                   { merge: true }
                 );
-                existingHistoricalLow = productCurrentPrice;
+                existingHistoricalLow = productPrice;
                 console.log("Document written with ID: ", docRef?.id);
               } catch (e) {
                 console.error("Error adding document: ", e);
@@ -559,8 +688,9 @@ export default function EnhancedTable() {
                 index,
                 productSku,
                 productName,
+                favProduct,
                 onSpecial,
-                productCurrentPrice,
+                productPrice,
                 existingHistoricalLow,
                 productPackage,
                 ratio,
@@ -576,6 +706,7 @@ export default function EnhancedTable() {
   }, [paknsaveResults]);
 
   async function GetSupermarketPrices() {
+    setSelected([]);
     rows = [];
     countdown();
     newworld();
@@ -592,7 +723,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: newworldSecretToken,
+              Authorization: NEW_WORLD_SECRET,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -605,9 +736,8 @@ export default function EnhancedTable() {
           }
         );
 
-        !fetchNewWorldSkus.ok
-          ? setNewworldAPIStatus("API key needs refreshing")
-          : setNewworldAPIStatus("");
+        !fetchNewWorldSkus.ok &&
+          console.log("New World API key needs refreshing");
         const newworldResponse = await fetchNewWorldSkus.json();
         setNewworldProductSKUs(newworldResponse.hits);
       }
@@ -617,9 +747,8 @@ export default function EnhancedTable() {
       const fetchCountDownData = await fetch(
         `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
-      !fetchCountDownData.ok
-        ? setCountdownAPIStatus("API key needs refreshing")
-        : setCountdownAPIStatus("");
+      !fetchCountDownData.ok &&
+        console.log("Countdown API key needs refreshing");
       const countdownResponse = await fetchCountDownData.json();
       setCountdownresults(countdownResponse.products.items);
     }
@@ -633,13 +762,12 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: paknsaveSecretToken,
+            Authorization: PAK_N_SAVE_SECRET,
           }),
         }
       );
-      !fetchPaknSaveData.ok
-        ? setPaknsaveAPIStatus("API key needs refreshing")
-        : setPaknsaveAPIStatus("");
+      !fetchPaknSaveData.ok &&
+        console.log("Pak n Save API key needs refreshing");
       const paknsaveResponse = await fetchPaknSaveData.json();
       setpaknsaveResults(paknsaveResponse.data.products);
     }
@@ -656,6 +784,25 @@ export default function EnhancedTable() {
     setOrderBy(property);
   };
 
+  const handleClick = (sku: number) => {
+    const selectedIndex = selected.indexOf(sku);
+    let newSelected: readonly number[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, sku);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
+    }
+    setSelected(newSelected);
+  };
+
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -666,6 +813,8 @@ export default function EnhancedTable() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const isSelected = (sku: number) => selected.indexOf(sku) !== -1;
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -690,41 +839,22 @@ export default function EnhancedTable() {
 
   const existingTag = tags.some((tag) => filterSearchText.includes(tag));
 
+  const filteredVisibleRows = visibleRows.filter((row) => {
+    const tagInRowName = tags.some((item) =>
+      row.name.toLowerCase().includes(item.toLowerCase())
+    );
+    if (tags.length === 0) {
+      return row;
+    } else if (!tagInRowName) {
+      return row;
+    }
+  }).length;
+
+  React.useMemo(() => setRowCount(filteredVisibleRows), [filteredVisibleRows]);
+
   return (
     <>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      >
-        {newworldAPIStatus !== "" && `New World: ${newworldAPIStatus}~`}
-      </Box>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      >
-        {" "}
-        {paknsaveAPIStatus !== "" && `Pak n Save: ${paknsaveAPIStatus}~`}
-      </Box>
-      <Box
-        sx={{
-          ml: 2,
-          mb: 0,
-          width: "485px",
-          flex: 1,
-        }}
-      >
-        {" "}
-        {countdownAPIStatus !== "" && `Countdown: ${countdownAPIStatus}~`}
-      </Box>
-      <Box>
+      <Box justifyContent="center" display={"flex"}>
         <ButtonGroup>
           <TextField
             inputProps={{
@@ -735,8 +865,6 @@ export default function EnhancedTable() {
             multiline={false}
             autoComplete="off"
             sx={{
-              ml: 1,
-              mb: 0.5,
               width: "485px",
               flex: 1,
             }}
@@ -799,99 +927,112 @@ export default function EnhancedTable() {
           </Button>
         </ButtonGroup>
       </Box>
-      <Box>
-        <ButtonGroup>
-          <TextField
-            inputProps={{
-              style: {
-                padding: 10,
-              },
-            }}
-            autoComplete="off"
-            sx={{ ml: 1, mb: 0.5, width: "485px", flex: 1 }}
-            placeholder="Filter a product"
-            value={filterSearchText.replace(",", "")}
-            onKeyDown={(e) => {
-              if (
-                (e.key === "," || e.key === "Enter") &&
-                (e.target as HTMLInputElement).value.length > 0
-              ) {
-                if (!existingTag) {
-                  console.log(`Added ${filterSearchText}`);
-                  setTags([...tags, filterSearchText]);
-                  setFilterSearchText("");
-                  e.preventDefault;
-                } else if (existingTag) {
-                  setFilterSearchText("");
-                  e.preventDefault;
-                }
-              }
-            }}
-            onChange={(e) => {
-              if (e.target.value !== " ") {
-                e.preventDefault;
-                e.target.value !== "," &&
-                  setFilterSearchText(
-                    e.target.value.toLowerCase().replace(",", "")
-                  );
-              }
-            }}
-          />
-
-          <Button
-            variant="contained"
-            size="small"
-            endIcon={<RemoveIcon />}
-            onClick={() => setFilterSearchText("")}
-            type="button"
-            sx={{
-              marginBottom: "5px",
-              paddingRight: "20px",
-              height: "42px",
-            }}
-            aria-label="search"
-          >
-            Filter
-          </Button>
-        </ButtonGroup>
-
+      <Box justifyContent="center" display={"flex"}>
         <Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              listStyle: "none",
-              p: 0.5,
-              m: 0,
-            }}
-            component="ul"
-            key={Math.random()}
-          >
-            {tags.map((data) => {
-              return (
-                <>
-                  <ListItem key={Math.random()}>
-                    <Chip label={data} onDelete={handleDelete(data)} />
-                  </ListItem>
-                </>
-              );
-            })}
-          </Box>
+          <ButtonGroup>
+            <TextField
+              id="filterInput"
+              inputProps={{
+                style: {
+                  padding: 10,
+                },
+              }}
+              autoComplete="off"
+              sx={{ width: "485px", flex: 1 }}
+              placeholder="Filter a product"
+              value={filterSearchText.replace(",", "")}
+              onKeyDown={(e) => {
+                if (
+                  (e.key === "," || e.key === "Enter") &&
+                  (e.target as HTMLInputElement).value.length > 0
+                ) {
+                  if (!existingTag) {
+                    setTags([...tags, filterSearchText]);
+                    setFilterSearchText("");
+                    e.preventDefault;
+                  } else if (existingTag) {
+                    setFilterSearchText("");
+                    e.preventDefault;
+                  }
+                }
+              }}
+              onChange={(e) => {
+                if (e.target.value !== " ") {
+                  e.preventDefault;
+                  e.target.value !== "," &&
+                    setFilterSearchText(
+                      e.target.value.toLowerCase().replace(",", "")
+                    );
+                }
+              }}
+            />
+            <Button
+              id="filterButton"
+              variant="contained"
+              size="small"
+              endIcon={<RemoveIcon />}
+              onClick={() => setFilterSearchText("")}
+              type="button"
+              sx={{
+                marginBottom: "5px",
+                paddingRight: "20px",
+                height: "42px",
+              }}
+              aria-label="search"
+            >
+              Filter
+            </Button>
+          </ButtonGroup>
+
+          {tags.length > 0 && (
+            <Box
+              margin={"auto"}
+              id="tagsBox"
+              sx={{
+                padding: 0,
+                marginTop: 0,
+                marginBottom: 0,
+                listStyle: "none",
+              }}
+              component="ul"
+              key={Math.random()}
+            >
+              <Box display={"flex"}>
+                {tags.map((data) => {
+                  return (
+                    <>
+                      <ListItem>
+                        <Chip label={data} onDelete={handleDelete(data)} />
+                      </ListItem>
+                    </>
+                  );
+                })}
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
-
-      <Box sx={{ width: "70%" }}>
+      <Box paddingLeft={"5%"} paddingRight={"5%"}>
+        <EnhancedTableToolbar numSelected={selected.length} />
+      </Box>
+      <Box
+        justifyContent="center"
+        display={"flex"}
+        width={"100%"}
+        paddingLeft={"5%"}
+        paddingRight={"5%"}
+      >
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: "250" }}
             aria-labelledby="tableTitle"
             size={"small"}
           >
             <EnhancedTableHead
+              numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
             />
 
             <TableBody>
@@ -908,23 +1049,66 @@ export default function EnhancedTable() {
                 })
 
                 .map((row, index) => {
+                  const isItemSelected = isSelected(row.sku);
                   const labelId = `enhanced-table-checkbox-${index}`;
+
                   return (
                     <TableRow
+                      style={{
+                        height: 33 * emptyRows,
+                      }}
                       hover
                       tabIndex={-1}
                       key={Math.random()}
                       sx={{
                         cursor: "pointer",
                         backgroundColor: "#00000008",
+                        paddingBottom: 0,
                       }}
                     >
                       <TableCell padding="none">
                         <Checkbox
+                          id="addtolistCheckbox"
+                          sx={{ paddingRight: 1 }}
+                          color="info"
+                          size="small"
+                          onClick={() => {
+                            if (
+                              !sendItemToKeep.some((item) =>
+                                row.sku.includes(item)
+                              )
+                            ) {
+                              console.log(`Added ${row.name}`);
+
+                              setSendItemToKeep([
+                                ...sendItemToKeep,
+                                `${row.sku}`,
+                              ]);
+                            }
+                            if (
+                              sendItemToKeep.some((item) =>
+                                row.sku.includes(item)
+                              )
+                            ) {
+                              console.log(`Deleted ${row.name}`);
+                              setSendItemToKeep((items) =>
+                                items.filter((item) => item !== `${row.sku}`)
+                              );
+                            }
+
+                            handleClick(row.sku);
+                          }}
+                          key={row.sku}
+                          checked={isItemSelected}
+                        />
+                      </TableCell>
+                      <TableCell padding="none" align="left">
+                        <Checkbox
+                          id="favouriteCheckbox"
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
                           color="secondary"
-                          checked={localStorage.getItem(row.sku)}
+                          checked={localStorage.getItem(row.sku) ? true : false}
                           onChange={() => {
                             if (localStorage.getItem(row.sku)) {
                               localStorage.removeItem(row.sku);
@@ -935,12 +1119,10 @@ export default function EnhancedTable() {
                           }}
                         />
                       </TableCell>
-
                       <TableCell
                         component="th"
                         id={labelId}
                         scope="row"
-                        padding="none"
                         key={row.index}
                         align="left"
                         color="white"
@@ -955,8 +1137,9 @@ export default function EnhancedTable() {
                           </IconButton>
                         )}
                       </TableCell>
-                      <TableCell align="right">${row.currentPrice}</TableCell>
-                      <TableCell align="right">{`$${row.historicalLow}`}</TableCell>
+
+                      <TableCell align="left">{`$${row.price}`}</TableCell>
+                      <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
 
                       <TableCell align="left">{row.productPackage}</TableCell>
 
@@ -964,7 +1147,6 @@ export default function EnhancedTable() {
                       <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
-                          color="warning"
                           onClick={() => {
                             open(row.URL, "_blank", "noopener,noreferrer");
                           }}
@@ -974,7 +1156,7 @@ export default function EnhancedTable() {
                             }
                           }}
                         >
-                          <ShoppingCartIcon />
+                          <OpenInNewIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -992,10 +1174,12 @@ export default function EnhancedTable() {
             </TableBody>
           </Table>
         </TableContainer>
+      </Box>
+      <Box paddingLeft={"5%"} paddingRight={"5%"}>
         <TablePagination
           rowsPerPageOptions={[5, 25, 50, 75, { value: -1, label: "All" }]}
           component="div"
-          count={rows.length}
+          count={rowCount}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

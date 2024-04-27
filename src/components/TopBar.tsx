@@ -8,16 +8,22 @@ export const TopBar = () => {
 
   return (
     <>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        paddingLeft={2}
-        paddingRight={2}
-      >
-        <h1>Supermarket Savings</h1>
-        <IconButton onClick={toggleColorMode} color="inherit">
-          {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
+      <Box justifyContent="center" display={"flex"}>
+        <Box display="inline-flex" justifyContent="center">
+          <h1>Supermarket Savings </h1>
+        </Box>
+        <Box display="inline-flex" justifyContent="center">
+          <IconButton
+            sx={{
+              marginLeft: 2,
+              margin: "auto",
+            }}
+            onClick={toggleColorMode}
+            color="inherit"
+          >
+            {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </Box>
       </Box>
     </>
   );
