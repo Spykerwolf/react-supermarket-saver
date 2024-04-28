@@ -32,6 +32,9 @@ import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import GoogleIcon from "@mui/icons-material/Google";
+import GetBearer from "./auth/bearer";
+
+GetBearer();
 
 let rows: any[] = [];
 
