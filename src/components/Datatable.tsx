@@ -20,18 +20,19 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../secrets";
+import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../auth/auth";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
-import { db } from "../firebase";
+import { db } from "../auth/firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import GoogleIcon from "@mui/icons-material/Google";
+import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
 
 let rows: any[] = [];
 
@@ -738,6 +739,7 @@ export default function EnhancedTable() {
 
         !fetchNewWorldSkus.ok &&
           console.log("New World API key needs refreshing");
+        getTokenNewWorld();
         const newworldResponse = await fetchNewWorldSkus.json();
         setNewworldProductSKUs(newworldResponse.hits);
       }
@@ -768,6 +770,7 @@ export default function EnhancedTable() {
       );
       !fetchPaknSaveData.ok &&
         console.log("Pak n Save API key needs refreshing");
+      getTokenPakNSave();
       const paknsaveResponse = await fetchPaknSaveData.json();
       setpaknsaveResults(paknsaveResponse.data.products);
     }
