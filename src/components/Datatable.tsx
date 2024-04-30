@@ -20,7 +20,6 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../auth/auth";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -31,8 +30,12 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import GoogleIcon from "@mui/icons-material/Google";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
+import ArticleIcon from "@mui/icons-material/Article";
+import {
+  AuthenticateTickTick,
+  GetTickTick_access_token,
+} from "../auth/ticktick";
 
 let rows: any[] = [];
 
@@ -223,6 +226,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             minWidth: "128px",
             width: "fit-content",
           }}
+          onClick={AuthenticateTickTick}
         >
           Add to list
         </Button>
@@ -263,17 +267,25 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       {numSelected > 0 ? (
         <Button
           onClick={() => {
-            open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+            open(
+              "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+              "_blank",
+              "noopener,noreferrer"
+            );
           }}
           onMouseDown={(e) => {
             if (e.button === 1) {
-              open("https://keep.google.com/", "_blank", "noopener,noreferrer");
+              open(
+                "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                "_blank",
+                "noopener,noreferrer"
+              );
             }
           }}
           variant="contained"
           color="warning"
           size="small"
-          endIcon={<GoogleIcon />}
+          endIcon={<ArticleIcon />}
           type="button"
           sx={{
             minHeight: "40px",
@@ -281,7 +293,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             width: "fit-content",
           }}
         >
-          Open Keep
+          Open List
         </Button>
       ) : (
         <Button
@@ -289,7 +301,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           variant="contained"
           color="warning"
           size="small"
-          endIcon={<GoogleIcon />}
+          endIcon={<ArticleIcon />}
           type="button"
           sx={{
             minHeight: "40px",
@@ -297,7 +309,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             width: "fit-content",
           }}
         >
-          Open Keep
+          Open List
         </Button>
       )}
     </Toolbar>
@@ -305,7 +317,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
-
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
@@ -326,6 +337,11 @@ export default function EnhancedTable() {
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [sendItemToKeep, setSendItemToKeep] = useState([]);
+
+  useEffect(() => {
+    getTokenNewWorld();
+    getTokenPakNSave();
+  }, []);
 
   useEffect(() => {
     async function extractSKUs() {
@@ -349,7 +365,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: NEW_WORLD_SECRET,
+            Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogether }),
@@ -457,10 +473,6 @@ export default function EnhancedTable() {
                     { merge: true }
                   );
                   existingHistoricalLow = productSpecialPrice;
-                  console.log(rows);
-                  rows.forEach((e) => {
-                    console.log(e.historicalLow);
-                  });
                   console.log("Document written with ID: ", docRef?.id);
                 } catch (e) {
                   console.error("Error adding document: ", e);
@@ -724,7 +736,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: NEW_WORLD_SECRET,
+              Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -737,9 +749,6 @@ export default function EnhancedTable() {
           }
         );
 
-        !fetchNewWorldSkus.ok &&
-          console.log("New World API key needs refreshing");
-        getTokenNewWorld();
         const newworldResponse = await fetchNewWorldSkus.json();
         setNewworldProductSKUs(newworldResponse.hits);
       }
@@ -749,8 +758,6 @@ export default function EnhancedTable() {
       const fetchCountDownData = await fetch(
         `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
-      !fetchCountDownData.ok &&
-        console.log("Countdown API key needs refreshing");
       const countdownResponse = await fetchCountDownData.json();
       setCountdownresults(countdownResponse.products.items);
     }
@@ -764,13 +771,10 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: PAK_N_SAVE_SECRET,
+            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
           }),
         }
       );
-      !fetchPaknSaveData.ok &&
-        console.log("Pak n Save API key needs refreshing");
-      getTokenPakNSave();
       const paknsaveResponse = await fetchPaknSaveData.json();
       setpaknsaveResults(paknsaveResponse.data.products);
     }
@@ -836,7 +840,6 @@ export default function EnhancedTable() {
   }));
 
   const handleDelete = (tagToDelete: string) => () => {
-    console.log(`Deleted ${tagToDelete}`);
     setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
 
@@ -986,6 +989,9 @@ export default function EnhancedTable() {
               Filter
             </Button>
           </ButtonGroup>
+          <br></br>
+          <Button onClick={AuthenticateTickTick}>FirstStep</Button>
+          <Button onClick={GetTickTick_access_token}>SecondStep</Button>
 
           {tags.length > 0 && (
             <Box
