@@ -32,6 +32,8 @@ import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
 import ArticleIcon from "@mui/icons-material/Article";
+import StarsIcon from "@mui/icons-material/Stars";
+import Tooltip from "@mui/material/Tooltip";
 
 let rows: any[] = [];
 
@@ -42,6 +44,7 @@ interface Data {
   onSpecial: boolean;
   isFavourite: boolean;
   price: number;
+  historicalIcon: string;
   historicalLow: number;
   productPackage: string;
   ratio: string;
@@ -56,6 +59,7 @@ export function createData(
   onSpecial: boolean,
   isFavourite: boolean,
   price: number,
+  historicalIcon: string,
   historicalLow: number,
   productPackage: string,
   ratio: string,
@@ -69,6 +73,7 @@ export function createData(
     onSpecial,
     isFavourite,
     price,
+    historicalIcon,
     historicalLow,
     productPackage,
     ratio,
@@ -100,12 +105,18 @@ const headCells: readonly HeadCell[] = [
     numeric: false,
     label: "",
   },
+
   {
     id: "price",
     numeric: false,
     label: "Price",
   },
 
+  {
+    id: "historicalIcon",
+    numeric: false,
+    label: "",
+  },
   {
     id: "historicalLow",
     numeric: false,
@@ -487,6 +498,7 @@ export default function EnhancedTable() {
                   onSpecial,
                   favProduct,
                   productSpecialPrice,
+                  "",
                   existingHistoricalLow,
                   productPackage,
                   ratio,
@@ -601,6 +613,7 @@ export default function EnhancedTable() {
                   onSpecial,
                   favProduct,
                   productSpecialPrice,
+                  "",
                   existingHistoricalLow,
                   productPackage,
                   ratio,
@@ -708,6 +721,7 @@ export default function EnhancedTable() {
                 onSpecial,
                 favProduct,
                 productPrice,
+                "",
                 existingHistoricalLow,
                 productPackage,
                 ratio,
@@ -1026,13 +1040,7 @@ export default function EnhancedTable() {
       <Box>
         <EnhancedTableToolbar numSelected={selected.length} />
       </Box>
-      <Box
-        justifyContent="center"
-        display={"flex"}
-        width={"100%"}
-        // paddingLeft={"0%"}
-        // paddingRight={"0%"}
-      >
+      <Box justifyContent="center" display={"flex"} width={"100%"}>
         <TableContainer>
           <Table
             sx={{ minWidth: "250" }}
@@ -1143,14 +1151,30 @@ export default function EnhancedTable() {
 
                       <TableCell align="right">
                         {row.onSpecial && (
-                          <IconButton>
-                            <SellIcon color="info" />
-                          </IconButton>
+                          <Tooltip title="On Special" placement="left">
+                            <IconButton>
+                              <SellIcon color="info" />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </TableCell>
 
                       <TableCell align="left">{`$${row.price}`}</TableCell>
+                      <TableCell align="right">
+                        {row.historicalLow < row.price && (
+                          <Tooltip
+                            title="Historical price is lower"
+                            placement="left"
+                          >
+                            <IconButton>
+                              <StarsIcon color="info" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+
                       <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
+
                       <TableCell align="left">{row.productPackage}</TableCell>
                       <TableCell align="left">{row.ratio}</TableCell>
                       <TableCell align="left">{row.store}</TableCell>
