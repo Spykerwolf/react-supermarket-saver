@@ -334,8 +334,11 @@ export default function EnhancedTable() {
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
   const [newworldResults, setnewworldResults] = useState([]);
+
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
+  const [paknsaveProductSKUs, setPaknsaveProductSKUs] = useState([]);
+
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -344,8 +347,10 @@ export default function EnhancedTable() {
   const [searchHelperText, setSearchHelperText] = useState("");
   const [tags, setTags] = useState<any[]>([]);
   const [mycoolrows, setMycoolrows] = useState([] as any);
-  const productIdTogether: string[] = [];
+  const productIdTogetherNewWorld: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
+  const productIdTogetherPaknsave: string[] = [];
+
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [sendItemToKeep, setSendItemToKeep] = useState([]);
@@ -356,20 +361,30 @@ export default function EnhancedTable() {
   }, []);
 
   useEffect(() => {
-    async function extractSKUs() {
+    async function extractSKUsNewWorld() {
       newworldProductSKUs.forEach((product) => {
-        productIdTogether.push(product["productID"]);
+        productIdTogetherNewWorld.push(product["productID"]);
       });
     }
 
-    newworldProductSKUs !== undefined && extractSKUs();
+    newworldProductSKUs !== undefined && extractSKUsNewWorld();
   }, [newworldProductSKUs]);
+
+  useEffect(() => {
+    async function extractSKUsPaknSave() {
+      paknsaveProductSKUs.forEach((product) => {
+        productIdTogetherPaknsave.push(product["productID"]);
+      });
+    }
+
+    paknsaveProductSKUs !== undefined && extractSKUsPaknSave();
+  }, [paknsaveProductSKUs]);
 
   useEffect(() => {
     sendItemToKeep.length > 0 && console.log(sendItemToKeep);
   }, [sendItemToKeep]);
   useEffect(() => {
-    async function getData() {
+    async function getDataNewWorld() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
         {
@@ -380,18 +395,40 @@ export default function EnhancedTable() {
             Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
             "Content-Type": "application/json",
           }),
-          body: JSON.stringify({ productIds: productIdTogether }),
+          body: JSON.stringify({ productIds: productIdTogetherNewWorld }),
         }
       );
       const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
       setnewworldResults(newworldSKUsJSON.products);
     }
 
-    productIdTogether.length !== 0 && getData();
-  }, [productIdTogether]);
+    productIdTogetherNewWorld.length !== 0 && getDataNewWorld();
+  }, [productIdTogetherNewWorld]);
 
   useEffect(() => {
-    async function displayResults() {
+    async function getDataPaknSave() {
+      const combinePaknSaveSKUsWithProducts: Response = await fetch(
+        `https://api-prod.newworld.co.nz/v1/edge/store/64eab5b1-8d79-45f4-94f1-02b8cf8b6202/decorateProducts`,
+        {
+          method: "post",
+          headers: new Headers({
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ productIds: productIdTogetherPaknsave }),
+        }
+      );
+      const paknsaveSKUsJSON = await combinePaknSaveSKUsWithProducts.json();
+      setpaknsaveResults(paknsaveSKUsJSON.products);
+    }
+
+    productIdTogetherPaknsave.length !== 0 && getDataPaknSave();
+  }, [productIdTogetherPaknsave]);
+
+  useEffect(() => {
+    async function displayResultsNewWorld() {
       if (newworldResults !== undefined) {
         let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
@@ -512,9 +549,133 @@ export default function EnhancedTable() {
         });
       }
     }
-    displayResults();
+    displayResultsNewWorld();
   }, [newworldResults]);
 
+  useEffect(() => {
+    async function displayResultsPaknSave() {
+      if (paknsaveResults !== undefined) {
+        let searchTermArray = searchTerm.split(" ");
+        paknsaveResults.forEach((product, index) => {
+          const productName: string = product["brand"]
+            ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
+            : CapitalizeFirstLetter(product["name"]);
+          if (
+            searchTermArray.some((e) =>
+              productName.toLowerCase().replace("-", " ").includes(e)
+            )
+          ) {
+            const store = "Pak n Save";
+            const productPrice: any = (
+              product["singlePrice"]["price"] / 100
+            ).toFixed(2);
+
+            const productSpecialPrice: number = product["promotions"]
+              ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+              : productPrice;
+            const productSku: string = product["productId"];
+
+            const productCupPrice: any = product["singlePrice"][
+              "comparativePrice"
+            ]
+              ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
+              : "";
+
+            const productCupUnit = product["singlePrice"]["comparativePrice"]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
+              : "";
+            const productCupMeasure: string = product["singlePrice"][
+              "comparativePrice"
+            ]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
+              : "";
+
+            const ratio =
+              productCupMeasure &&
+              `$${(productCupPrice / 100).toFixed(
+                2
+              )} / ${productCupUnit} ${productCupMeasure
+                ?.replace("l", "L")
+                ?.replace("mL", "ml")}`;
+            const displayName: string = product["displayName"];
+            const productPackage: string = `${displayName
+              ?.replace("l", "L")
+              ?.replace("mL", "ml")}`;
+            const productURL: string = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+              "-",
+              "_"
+            )}`;
+            const onSpecial = product["promotions"] ? true : false;
+
+            handleHistoricalLow();
+
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      price: productSpecialPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: productURL,
+                    },
+                    { merge: true }
+                  );
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+              }
+              rows.push(
+                createData(
+                  index,
+                  productSku,
+                  productName,
+                  onSpecial,
+                  favProduct,
+                  productSpecialPrice,
+                  "",
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  productURL
+                )
+              );
+              setMycoolrows([...mycoolrows, rows]);
+            }
+          }
+        });
+      }
+    }
+    displayResultsPaknSave();
+  }, [paknsaveResults]);
   useEffect(() => {
     if (countdownresults.length !== 0) {
       countdownresults.forEach((product, index) => {
@@ -629,113 +790,6 @@ export default function EnhancedTable() {
     }
   }, [countdownresults]);
 
-  useEffect(() => {
-    if (paknsaveResults.length !== 0) {
-      paknsaveResults.forEach((product, index) => {
-        const productName = product["brand"]
-          ? `${CapitalizeFirstLetter(product["brand"])} ${CapitalizeFirstLetter(
-              product["name"]
-            )}`
-          : CapitalizeFirstLetter(product["name"]);
-        if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-          const store = "Pak n Save";
-          const productPrice: any = (product["price"] / 100).toFixed(2);
-
-          const productSku = product["productId"];
-
-          const productCupPrice: any = product["comparativePricePerUnit"]
-            ? product["comparativePricePerUnit"]
-            : "";
-          const productCupUnit = product["comparativeUnitQuantity"]
-            ? product["comparativeUnitQuantity"]
-            : "";
-          const productCupMeasure = product["comparativeUnitQuantityUoM"]
-            ? product["comparativeUnitQuantityUoM"]
-            : "";
-          const ratio = productCupMeasure
-            ? `$${(productCupPrice / 100).toFixed(
-                2
-              )} / ${productCupUnit} ${productCupMeasure
-                ?.replace("l", "L")
-                ?.replace("mL", "ml")}`
-            : "*";
-
-          const productPackage = `${product["displayName"]
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`;
-          const productURL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-            "-",
-            "_"
-          )}`;
-          const onSpecial = product["promotions"] ? true : false;
-          handleHistoricalLow();
-
-          async function handleHistoricalLow() {
-            const docRef = doc(db, store, productSku);
-            const docSnap = await getDoc(docRef);
-            let existingHistoricalLow = await docSnap.data()?.historicalLow;
-
-            if (!existingHistoricalLow) {
-              try {
-                await setDoc(
-                  doc(db, store, productSku),
-                  {
-                    name: productName,
-                    onSpecial: onSpecial,
-                    price: productPrice,
-                    historicalLow: productPrice,
-                    productPackage: productPackage,
-                    ratio: ratio,
-                    store: store,
-                    URL: productURL,
-                  },
-                  { merge: true }
-                );
-
-                console.log("SKU added: ", productSku);
-              } catch (e) {
-                console.error("Error adding document: ", e);
-              }
-              existingHistoricalLow = productPrice;
-            } else if (productPrice < existingHistoricalLow) {
-              console.log("New Special Price!");
-              try {
-                const docRef: any = await setDoc(
-                  doc(db, store, productSku),
-                  {
-                    historicalLow: productPrice,
-                  },
-                  { merge: true }
-                );
-                existingHistoricalLow = productPrice;
-                console.log("Document written with ID: ", docRef?.id);
-              } catch (e) {
-                console.error("Error adding document: ", e);
-              }
-            }
-            rows.push(
-              createData(
-                index,
-                productSku,
-                productName,
-                onSpecial,
-                favProduct,
-                productPrice,
-                "",
-                existingHistoricalLow,
-                productPackage,
-                ratio,
-                store,
-                productURL
-              )
-            );
-            setMycoolrows([...mycoolrows, rows]);
-          }
-        }
-      });
-    }
-  }, [paknsaveResults]);
-
   async function GetSupermarketPrices() {
     setSelected([]);
     rows = [];
@@ -745,8 +799,8 @@ export default function EnhancedTable() {
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
-      getSKUs();
-      async function getSKUs() {
+      getSKUsNewWorld();
+      async function getSKUsNewWorld() {
         const fetchNewWorldSkus: Response = await fetch(
           `https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
           {
@@ -781,22 +835,54 @@ export default function EnhancedTable() {
     }
 
     async function paknsave() {
-      const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-      const fetchPaknSaveData = await fetch(
-        `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
-        {
-          method: "get",
-          headers: new Headers({
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
-          }),
-        }
-      );
-      const paknsaveResponse = await fetchPaknSaveData.json();
-      setpaknsaveResults(paknsaveResponse.data.products);
+      const storeID: string = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+      getSKUsPaknSave();
+      async function getSKUsPaknSave() {
+        const fetchPaknSaveDataSkus: Response = await fetch(
+          `https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
+          {
+            method: "post",
+            headers: new Headers({
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+              Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+              "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({
+              algoliaQuery: {
+                attributesToRetrieve: ["productID", "Type", "sponsored"],
+                filters: `stores:${storeID}`,
+                query: searchTerm,
+              },
+            }),
+          }
+        );
+
+        const paknsaveResponse = await fetchPaknSaveDataSkus.json();
+        setPaknsaveProductSKUs(paknsaveResponse.hits);
+      }
     }
   }
+
+  // old API
+  //   async function paknsave() {
+  //     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+  //     const fetchPaknSaveData = await fetch(
+  //       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
+  //       {
+  //         method: "get",
+  //         headers: new Headers({
+  //           "User-Agent":
+  //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  //           Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+  //         }),
+  //       }
+  //     );
+  //     const paknsaveResponse = await fetchPaknSaveData.json();
+  //     console.log(paknsaveResponse);
+  //     setpaknsaveResults(paknsaveResponse.data.products);
+  //   }
+  // }
 
   let searchTermArray = searchTerm.split(" ");
 
