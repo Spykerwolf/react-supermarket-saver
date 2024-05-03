@@ -20,7 +20,6 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { Button, ButtonGroup } from "@mui/material";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
 import { getComparator, stableSort } from "./functions/sortTable";
-import { NEW_WORLD_SECRET, PAK_N_SAVE_SECRET } from "../auth/auth";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -31,8 +30,10 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import GoogleIcon from "@mui/icons-material/Google";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
+import ArticleIcon from "@mui/icons-material/Article";
+import StarsIcon from "@mui/icons-material/Stars";
+import Tooltip from "@mui/material/Tooltip";
 
 let rows: any[] = [];
 
@@ -43,11 +44,12 @@ interface Data {
   onSpecial: boolean;
   isFavourite: boolean;
   price: number;
+  historicalIcon: string;
   historicalLow: number;
   productPackage: string;
   ratio: string;
   store: string;
-  URL: string;
+  productURL: string;
 }
 
 export function createData(
@@ -57,25 +59,26 @@ export function createData(
   onSpecial: boolean,
   isFavourite: boolean,
   price: number,
+  historicalIcon: string,
   historicalLow: number,
   productPackage: string,
   ratio: string,
   store: string,
-  URL: string
+  productURL: string
 ): Data {
   return {
     index,
     sku,
     name,
     onSpecial,
-
     isFavourite,
     price,
+    historicalIcon,
     historicalLow,
     productPackage,
     ratio,
     store,
-    URL,
+    productURL,
   };
 }
 
@@ -102,12 +105,18 @@ const headCells: readonly HeadCell[] = [
     numeric: false,
     label: "",
   },
+
   {
     id: "price",
     numeric: false,
     label: "Price",
   },
 
+  {
+    id: "historicalIcon",
+    numeric: false,
+    label: "",
+  },
   {
     id: "historicalLow",
     numeric: false,
@@ -130,7 +139,7 @@ const headCells: readonly HeadCell[] = [
     label: "Store",
   },
   {
-    id: "URL",
+    id: "productURL",
     numeric: false,
     label: "URL",
   },
@@ -149,7 +158,7 @@ interface EnhancedTableProps {
   numSelected: number;
 }
 
-function EnhancedTableHead(props: EnhancedTableProps) {
+export function EnhancedTableHead(props: EnhancedTableProps) {
   const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
@@ -157,32 +166,36 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     };
 
   return (
-    <TableHead sx={{ margin: 1 }}>
-      <TableRow sx={{ bgcolor: "lightgrey" }}>
-        <TableCell padding="checkbox"></TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={Math.random()}
-            align={headCell.numeric ? "right" : "left"}
-            padding={"normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
+    <>
+      <TableHead sx={{ margin: 1 }}>
+        <TableRow sx={{ bgcolor: "lightgrey" }}>
+          <TableCell padding="checkbox"></TableCell>
+          {headCells.map((headCell) => (
+            <TableCell
+              key={Math.random()}
+              align={headCell.numeric ? "right" : "left"}
+              padding={"normal"}
+              sortDirection={orderBy === headCell.id ? order : false}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+    </>
   );
 }
 
@@ -194,125 +207,138 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { numSelected } = props;
 
   return (
-    <Toolbar
-      id="mainToolbar"
-      sx={{
-        display: "flex",
-        pl: { sm: 0 },
-        pr: { sm: 0 },
-        height: "60px",
-        padding: 0,
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Button
-          variant="contained"
-          color="error"
-          size="small"
-          endIcon={<ShoppingCartIcon />}
-          type="button"
+    <>
+      <Box justifyContent="center" display={"flex"}>
+        <Toolbar
+          id="mainToolbar"
           sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
+            width: "100%",
+            display: "flex",
+            height: "60px",
+            padding: 0,
+            ...(numSelected > 0 && {
+              bgcolor: (theme) =>
+                alpha(
+                  theme.palette.primary.main,
+                  theme.palette.action.activatedOpacity
+                ),
+            }),
           }}
         >
-          Add to list
-        </Button>
-      ) : (
-        <Button
-          disabled
-          variant="contained"
-          color="error"
-          size="small"
-          endIcon={<ShoppingCartIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-        >
-          Add to list
-        </Button>
-      )}
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%", paddingLeft: 1 }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        ></Typography>
-      )}
-      {numSelected > 0 ? (
-        <Button
-          onClick={() => {
-            open("https://keep.google.com/", "_blank", "noopener,noreferrer");
-          }}
-          onMouseDown={(e) => {
-            if (e.button === 1) {
-              open("https://keep.google.com/", "_blank", "noopener,noreferrer");
-            }
-          }}
-          variant="contained"
-          color="warning"
-          size="small"
-          endIcon={<GoogleIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-        >
-          Open Keep
-        </Button>
-      ) : (
-        <Button
-          disabled
-          variant="contained"
-          color="warning"
-          size="small"
-          endIcon={<GoogleIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-        >
-          Open Keep
-        </Button>
-      )}
-    </Toolbar>
+          {numSelected > 0 ? (
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Add to list
+            </Button>
+          ) : (
+            <Button
+              disabled
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Add to list
+            </Button>
+          )}
+          {numSelected > 0 ? (
+            <Typography
+              sx={{ flex: "1 1 100%", paddingLeft: 3 }}
+              color="inherit"
+              variant="subtitle1"
+              component="div"
+            >
+              {numSelected} selected
+            </Typography>
+          ) : (
+            <Typography
+              sx={{ flex: "1 1 100%" }}
+              variant="h6"
+              id="tableTitle"
+              component="div"
+            ></Typography>
+          )}
+          {numSelected > 0 ? (
+            <Button
+              onClick={() => {
+                open(
+                  "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
+              onMouseDown={(e) => {
+                if (e.button === 1) {
+                  open(
+                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }
+              }}
+              variant="contained"
+              color="warning"
+              size="small"
+              endIcon={<ArticleIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
+          ) : (
+            <Button
+              disabled
+              variant="contained"
+              color="warning"
+              size="small"
+              endIcon={<ArticleIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
+          )}
+        </Toolbar>
+      </Box>
+    </>
   );
 }
 export default function EnhancedTable() {
   const [order, setOrder] = useState<Order>("asc");
-
   const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
   const [newworldResults, setnewworldResults] = useState([]);
+
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
+  const [paknsaveProductSKUs, setPaknsaveProductSKUs] = useState([]);
+
   const [filterSearchText, setFilterSearchText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -321,27 +347,44 @@ export default function EnhancedTable() {
   const [searchHelperText, setSearchHelperText] = useState("");
   const [tags, setTags] = useState<any[]>([]);
   const [mycoolrows, setMycoolrows] = useState([] as any);
-  const productIdTogether: string[] = [];
+  const productIdTogetherNewWorld: string[] = [];
   const [favProduct, setFavProduct] = useState(false);
+  const productIdTogetherPaknsave: string[] = [];
+
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [rowCount, setRowCount] = useState(0);
   const [sendItemToKeep, setSendItemToKeep] = useState([]);
 
   useEffect(() => {
-    async function extractSKUs() {
+    getTokenNewWorld();
+    getTokenPakNSave();
+  }, []);
+
+  useEffect(() => {
+    async function extractSKUsNewWorld() {
       newworldProductSKUs.forEach((product) => {
-        productIdTogether.push(product["productID"]);
+        productIdTogetherNewWorld.push(product["productID"]);
       });
     }
 
-    newworldProductSKUs !== undefined && extractSKUs();
+    newworldProductSKUs !== undefined && extractSKUsNewWorld();
   }, [newworldProductSKUs]);
+
+  useEffect(() => {
+    async function extractSKUsPaknSave() {
+      paknsaveProductSKUs.forEach((product) => {
+        productIdTogetherPaknsave.push(product["productID"]);
+      });
+    }
+
+    paknsaveProductSKUs !== undefined && extractSKUsPaknSave();
+  }, [paknsaveProductSKUs]);
 
   useEffect(() => {
     sendItemToKeep.length > 0 && console.log(sendItemToKeep);
   }, [sendItemToKeep]);
   useEffect(() => {
-    async function getData() {
+    async function getDataNewWorld() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
         {
@@ -349,21 +392,43 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: NEW_WORLD_SECRET,
+            Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
             "Content-Type": "application/json",
           }),
-          body: JSON.stringify({ productIds: productIdTogether }),
+          body: JSON.stringify({ productIds: productIdTogetherNewWorld }),
         }
       );
       const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
       setnewworldResults(newworldSKUsJSON.products);
     }
 
-    productIdTogether.length !== 0 && getData();
-  }, [productIdTogether]);
+    productIdTogetherNewWorld.length !== 0 && getDataNewWorld();
+  }, [productIdTogetherNewWorld]);
 
   useEffect(() => {
-    async function displayResults() {
+    async function getDataPaknSave() {
+      const combinePaknSaveSKUsWithProducts: Response = await fetch(
+        `https://api-prod.newworld.co.nz/v1/edge/store/64eab5b1-8d79-45f4-94f1-02b8cf8b6202/decorateProducts`,
+        {
+          method: "post",
+          headers: new Headers({
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ productIds: productIdTogetherPaknsave }),
+        }
+      );
+      const paknsaveSKUsJSON = await combinePaknSaveSKUsWithProducts.json();
+      setpaknsaveResults(paknsaveSKUsJSON.products);
+    }
+
+    productIdTogetherPaknsave.length !== 0 && getDataPaknSave();
+  }, [productIdTogetherPaknsave]);
+
+  useEffect(() => {
+    async function displayResultsNewWorld() {
       if (newworldResults !== undefined) {
         let searchTermArray = searchTerm.split(" ");
         newworldResults.forEach((product, index) => {
@@ -411,7 +476,7 @@ export default function EnhancedTable() {
             const productPackage: string = `${displayName
               ?.replace("l", "L")
               ?.replace("mL", "ml")}`;
-            const URL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+            const productURL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
               "-",
               "_"
             )}`;
@@ -436,7 +501,7 @@ export default function EnhancedTable() {
                       productPackage: productPackage,
                       ratio: ratio,
                       store: store,
-                      URL: URL,
+                      URL: productURL,
                     },
                     { merge: true }
                   );
@@ -457,10 +522,6 @@ export default function EnhancedTable() {
                     { merge: true }
                   );
                   existingHistoricalLow = productSpecialPrice;
-                  console.log(rows);
-                  rows.forEach((e) => {
-                    console.log(e.historicalLow);
-                  });
                   console.log("Document written with ID: ", docRef?.id);
                 } catch (e) {
                   console.error("Error adding document: ", e);
@@ -471,14 +532,15 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
-                  favProduct,
                   onSpecial,
+                  favProduct,
                   productSpecialPrice,
+                  "",
                   existingHistoricalLow,
                   productPackage,
                   ratio,
                   store,
-                  URL
+                  productURL
                 )
               );
               setMycoolrows([...mycoolrows, rows]);
@@ -487,9 +549,133 @@ export default function EnhancedTable() {
         });
       }
     }
-    displayResults();
+    displayResultsNewWorld();
   }, [newworldResults]);
 
+  useEffect(() => {
+    async function displayResultsPaknSave() {
+      if (paknsaveResults !== undefined) {
+        let searchTermArray = searchTerm.split(" ");
+        paknsaveResults.forEach((product, index) => {
+          const productName: string = product["brand"]
+            ? `${CapitalizeFirstLetter(product["brand"])} ${product["name"]}`
+            : CapitalizeFirstLetter(product["name"]);
+          if (
+            searchTermArray.some((e) =>
+              productName.toLowerCase().replace("-", " ").includes(e)
+            )
+          ) {
+            const store = "Pak n Save";
+            const productPrice: any = (
+              product["singlePrice"]["price"] / 100
+            ).toFixed(2);
+
+            const productSpecialPrice: number = product["promotions"]
+              ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
+              : productPrice;
+            const productSku: string = product["productId"];
+
+            const productCupPrice: any = product["singlePrice"][
+              "comparativePrice"
+            ]
+              ? product["singlePrice"]["comparativePrice"]["pricePerUnit"]
+              : "";
+
+            const productCupUnit = product["singlePrice"]["comparativePrice"]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantity"]
+              : "";
+            const productCupMeasure: string = product["singlePrice"][
+              "comparativePrice"
+            ]
+              ? product["singlePrice"]["comparativePrice"]["unitQuantityUom"]
+              : "";
+
+            const ratio =
+              productCupMeasure &&
+              `$${(productCupPrice / 100).toFixed(
+                2
+              )} / ${productCupUnit} ${productCupMeasure
+                ?.replace("l", "L")
+                ?.replace("mL", "ml")}`;
+            const displayName: string = product["displayName"];
+            const productPackage: string = `${displayName
+              ?.replace("l", "L")
+              ?.replace("mL", "ml")}`;
+            const productURL: string = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+              "-",
+              "_"
+            )}`;
+            const onSpecial = product["promotions"] ? true : false;
+
+            handleHistoricalLow();
+
+            async function handleHistoricalLow() {
+              const docRef = doc(db, store, productSku);
+              const docSnap = await getDoc(docRef);
+              let existingHistoricalLow = await docSnap.data()?.historicalLow;
+
+              if (!existingHistoricalLow) {
+                try {
+                  await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      name: productName,
+                      onSpecial: onSpecial,
+                      price: productSpecialPrice,
+                      historicalLow: productSpecialPrice,
+                      productPackage: productPackage,
+                      ratio: ratio,
+                      store: store,
+                      URL: productURL,
+                    },
+                    { merge: true }
+                  );
+
+                  console.log("SKU added: ", productSku);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+                existingHistoricalLow = productSpecialPrice;
+              } else if (productSpecialPrice < existingHistoricalLow) {
+                console.log("New Special Price!");
+                try {
+                  const docRef: any = await setDoc(
+                    doc(db, store, productSku),
+                    {
+                      historicalLow: productSpecialPrice,
+                    },
+                    { merge: true }
+                  );
+                  existingHistoricalLow = productSpecialPrice;
+                  console.log("Document written with ID: ", docRef?.id);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+              }
+              rows.push(
+                createData(
+                  index,
+                  productSku,
+                  productName,
+                  onSpecial,
+                  favProduct,
+                  productSpecialPrice,
+                  "",
+                  existingHistoricalLow,
+                  productPackage,
+                  ratio,
+                  store,
+                  productURL
+                )
+              );
+              setMycoolrows([...mycoolrows, rows]);
+            }
+          }
+        });
+      }
+    }
+    displayResultsPaknSave();
+  }, [paknsaveResults]);
   useEffect(() => {
     if (countdownresults.length !== 0) {
       countdownresults.forEach((product, index) => {
@@ -512,14 +698,17 @@ export default function EnhancedTable() {
               : "";
             const ratio = productCupMeasure
               ? `$${productCupPrice} / ${productCupMeasure}`
-              : "*";
-            const productVolumeSize: string = product["size"]["volumeSize"];
+              : "";
+            const productVolumeSize: string =
+              product["size"]["volumeSize"] != null
+                ? product["size"]["volumeSize"]
+                : "";
             const productPackage = `${productVolumeSize?.replace("mL", "ml")} ${
-              product["size"]["packageType"] != null
+              product["size"]["packageType"] !== null
                 ? product["size"]["packageType"]
                 : ""
             }`;
-            const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+            const productURL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
             const onSpecial = product["price"]["isSpecial"] ? true : false;
 
             const productSpecialPrice: number = onSpecial
@@ -547,7 +736,7 @@ export default function EnhancedTable() {
                       productPackage: productPackage,
                       ratio: ratio,
                       store: store,
-                      URL: URL,
+                      URL: productURL,
                     },
                     { merge: true }
                   );
@@ -582,14 +771,15 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
-                  favProduct,
                   onSpecial,
+                  favProduct,
                   productSpecialPrice,
+                  "",
                   existingHistoricalLow,
                   productPackage,
                   ratio,
                   store,
-                  URL
+                  productURL
                 )
               );
               setMycoolrows([...mycoolrows, rows]);
@@ -600,112 +790,6 @@ export default function EnhancedTable() {
     }
   }, [countdownresults]);
 
-  useEffect(() => {
-    if (paknsaveResults.length !== 0) {
-      paknsaveResults.forEach((product, index) => {
-        const productName = product["brand"]
-          ? `${CapitalizeFirstLetter(product["brand"])} ${CapitalizeFirstLetter(
-              product["name"]
-            )}`
-          : CapitalizeFirstLetter(product["name"]);
-        if (productName.toLowerCase().includes(searchTerm.toLowerCase())) {
-          const store = "Pak n Save";
-          const productPrice: any = (product["price"] / 100).toFixed(2);
-
-          const productSku = product["productId"];
-
-          const productCupPrice: any = product["comparativePricePerUnit"]
-            ? product["comparativePricePerUnit"]
-            : "";
-          const productCupUnit = product["comparativeUnitQuantity"]
-            ? product["comparativeUnitQuantity"]
-            : "";
-          const productCupMeasure = product["comparativeUnitQuantityUoM"]
-            ? product["comparativeUnitQuantityUoM"]
-            : "";
-          const ratio = productCupMeasure
-            ? `$${(productCupPrice / 100).toFixed(
-                2
-              )} / ${productCupUnit} ${productCupMeasure
-                ?.replace("l", "L")
-                ?.replace("mL", "ml")}`
-            : "*";
-
-          const productPackage = `${product["displayName"]
-            ?.replace("l", "L")
-            ?.replace("mL", "ml")}`;
-          const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
-            "-",
-            "_"
-          )}`;
-          const onSpecial = product["promotions"] ? true : false;
-          handleHistoricalLow();
-
-          async function handleHistoricalLow() {
-            const docRef = doc(db, store, productSku);
-            const docSnap = await getDoc(docRef);
-            let existingHistoricalLow = await docSnap.data()?.historicalLow;
-
-            if (!existingHistoricalLow) {
-              try {
-                await setDoc(
-                  doc(db, store, productSku),
-                  {
-                    name: productName,
-                    onSpecial: onSpecial,
-                    price: productPrice,
-                    historicalLow: productPrice,
-                    productPackage: productPackage,
-                    ratio: ratio,
-                    store: store,
-                    URL: URL,
-                  },
-                  { merge: true }
-                );
-
-                console.log("SKU added: ", productSku);
-              } catch (e) {
-                console.error("Error adding document: ", e);
-              }
-              existingHistoricalLow = productPrice;
-            } else if (productPrice < existingHistoricalLow) {
-              console.log("New Special Price!");
-              try {
-                const docRef: any = await setDoc(
-                  doc(db, store, productSku),
-                  {
-                    historicalLow: productPrice,
-                  },
-                  { merge: true }
-                );
-                existingHistoricalLow = productPrice;
-                console.log("Document written with ID: ", docRef?.id);
-              } catch (e) {
-                console.error("Error adding document: ", e);
-              }
-            }
-            rows.push(
-              createData(
-                index,
-                productSku,
-                productName,
-                favProduct,
-                onSpecial,
-                productPrice,
-                existingHistoricalLow,
-                productPackage,
-                ratio,
-                store,
-                URL
-              )
-            );
-            setMycoolrows([...mycoolrows, rows]);
-          }
-        }
-      });
-    }
-  }, [paknsaveResults]);
-
   async function GetSupermarketPrices() {
     setSelected([]);
     rows = [];
@@ -715,8 +799,8 @@ export default function EnhancedTable() {
 
     async function newworld() {
       const storeID: string = "0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5"; // Orewa
-      getSKUs();
-      async function getSKUs() {
+      getSKUsNewWorld();
+      async function getSKUsNewWorld() {
         const fetchNewWorldSkus: Response = await fetch(
           `https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
           {
@@ -724,7 +808,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: NEW_WORLD_SECRET,
+              Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -737,9 +821,6 @@ export default function EnhancedTable() {
           }
         );
 
-        !fetchNewWorldSkus.ok &&
-          console.log("New World API key needs refreshing");
-        getTokenNewWorld();
         const newworldResponse = await fetchNewWorldSkus.json();
         setNewworldProductSKUs(newworldResponse.hits);
       }
@@ -749,32 +830,59 @@ export default function EnhancedTable() {
       const fetchCountDownData = await fetch(
         `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
-      !fetchCountDownData.ok &&
-        console.log("Countdown API key needs refreshing");
       const countdownResponse = await fetchCountDownData.json();
       setCountdownresults(countdownResponse.products.items);
     }
 
     async function paknsave() {
-      const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-      const fetchPaknSaveData = await fetch(
-        `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
-        {
-          method: "get",
-          headers: new Headers({
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: PAK_N_SAVE_SECRET,
-          }),
-        }
-      );
-      !fetchPaknSaveData.ok &&
-        console.log("Pak n Save API key needs refreshing");
-      getTokenPakNSave();
-      const paknsaveResponse = await fetchPaknSaveData.json();
-      setpaknsaveResults(paknsaveResponse.data.products);
+      const storeID: string = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+      getSKUsPaknSave();
+      async function getSKUsPaknSave() {
+        const fetchPaknSaveDataSkus: Response = await fetch(
+          `https://api-prod.newworld.co.nz/v1/edge/search/products/query/index/products-index-popularity-asc`,
+          {
+            method: "post",
+            headers: new Headers({
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+              Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+              "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({
+              algoliaQuery: {
+                attributesToRetrieve: ["productID", "Type", "sponsored"],
+                filters: `stores:${storeID}`,
+                query: searchTerm,
+              },
+            }),
+          }
+        );
+
+        const paknsaveResponse = await fetchPaknSaveDataSkus.json();
+        setPaknsaveProductSKUs(paknsaveResponse.hits);
+      }
     }
   }
+
+  // old API
+  //   async function paknsave() {
+  //     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
+  //     const fetchPaknSaveData = await fetch(
+  //       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
+  //       {
+  //         method: "get",
+  //         headers: new Headers({
+  //           "User-Agent":
+  //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  //           Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+  //         }),
+  //       }
+  //     );
+  //     const paknsaveResponse = await fetchPaknSaveData.json();
+  //     console.log(paknsaveResponse);
+  //     setpaknsaveResults(paknsaveResponse.data.products);
+  //   }
+  // }
 
   let searchTermArray = searchTerm.split(" ");
 
@@ -836,7 +944,6 @@ export default function EnhancedTable() {
   }));
 
   const handleDelete = (tagToDelete: string) => () => {
-    console.log(`Deleted ${tagToDelete}`);
     setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
   };
 
@@ -1015,16 +1122,11 @@ export default function EnhancedTable() {
           )}
         </Box>
       </Box>
-      <Box paddingLeft={"5%"} paddingRight={"5%"}>
+
+      <Box>
         <EnhancedTableToolbar numSelected={selected.length} />
       </Box>
-      <Box
-        justifyContent="center"
-        display={"flex"}
-        width={"100%"}
-        paddingLeft={"5%"}
-        paddingRight={"5%"}
-      >
+      <Box justifyContent="center" display={"flex"} width={"100%"}>
         <TableContainer>
           <Table
             sx={{ minWidth: "250" }}
@@ -1135,27 +1237,49 @@ export default function EnhancedTable() {
 
                       <TableCell align="right">
                         {row.onSpecial && (
-                          <IconButton>
-                            <SellIcon color="info" />
-                          </IconButton>
+                          <Tooltip title="On Special" placement="left">
+                            <IconButton>
+                              <SellIcon color="info" />
+                            </IconButton>
+                          </Tooltip>
                         )}
                       </TableCell>
 
                       <TableCell align="left">{`$${row.price}`}</TableCell>
+                      <TableCell align="right">
+                        {row.historicalLow < row.price && (
+                          <Tooltip
+                            title="Historical price is lower"
+                            placement="left"
+                          >
+                            <IconButton>
+                              <StarsIcon color="info" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+
                       <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
 
                       <TableCell align="left">{row.productPackage}</TableCell>
-
                       <TableCell align="left">{row.ratio}</TableCell>
                       <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
                           onClick={() => {
-                            open(row.URL, "_blank", "noopener,noreferrer");
+                            open(
+                              row.productURL,
+                              "_blank",
+                              "noopener,noreferrer"
+                            );
                           }}
                           onMouseDown={(e) => {
                             if (e.button === 1) {
-                              open(row.URL, "_blank", "noopener,noreferrer");
+                              open(
+                                row.productURL,
+                                "_blank",
+                                "noopener,noreferrer"
+                              );
                             }
                           }}
                         >

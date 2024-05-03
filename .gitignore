@@ -37,3 +37,4 @@ src/firebase.tsx
 /blob-report/
 /playwright/.cache/
 src/auth/firebase.tsx
+src/auth/ticktick.tsx
