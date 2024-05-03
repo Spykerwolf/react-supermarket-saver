@@ -433,7 +433,6 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] ? true : false;
-            console.log(onSpecial + productName + productURL);
 
             handleHistoricalLow();
 
@@ -526,10 +525,13 @@ export default function EnhancedTable() {
               : "";
             const ratio = productCupMeasure
               ? `$${productCupPrice} / ${productCupMeasure}`
-              : "*";
-            const productVolumeSize: string = product["size"]["volumeSize"];
+              : "";
+            const productVolumeSize: string =
+              product["size"]["volumeSize"] != null
+                ? product["size"]["volumeSize"]
+                : "";
             const productPackage = `${productVolumeSize?.replace("mL", "ml")} ${
-              product["size"]["packageType"] != null
+              product["size"]["packageType"] !== null
                 ? product["size"]["packageType"]
                 : ""
             }`;
