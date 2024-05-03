@@ -46,7 +46,7 @@ interface Data {
   productPackage: string;
   ratio: string;
   store: string;
-  URL: string;
+  productURL: string;
 }
 
 export function createData(
@@ -60,21 +60,20 @@ export function createData(
   productPackage: string,
   ratio: string,
   store: string,
-  URL: string
+  productURL: string
 ): Data {
   return {
     index,
     sku,
     name,
     onSpecial,
-
     isFavourite,
     price,
     historicalLow,
     productPackage,
     ratio,
     store,
-    URL,
+    productURL,
   };
 }
 
@@ -129,7 +128,7 @@ const headCells: readonly HeadCell[] = [
     label: "Store",
   },
   {
-    id: "URL",
+    id: "productURL",
     numeric: false,
     label: "URL",
   },
@@ -374,7 +373,6 @@ export default function EnhancedTable() {
         }
       );
       const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
-      console.log(newworldSKUsJSON);
       setnewworldResults(newworldSKUsJSON.products);
     }
 
@@ -430,12 +428,12 @@ export default function EnhancedTable() {
             const productPackage: string = `${displayName
               ?.replace("l", "L")
               ?.replace("mL", "ml")}`;
-            const URL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
+            const productURL: string = `https://www.newworld.co.nz/shop/product/${productSku?.replace(
               "-",
               "_"
             )}`;
             const onSpecial = product["promotions"] ? true : false;
-            console.log(onSpecial);
+            console.log(onSpecial + productName + productURL);
 
             handleHistoricalLow();
 
@@ -456,7 +454,7 @@ export default function EnhancedTable() {
                       productPackage: productPackage,
                       ratio: ratio,
                       store: store,
-                      URL: URL,
+                      URL: productURL,
                     },
                     { merge: true }
                   );
@@ -487,14 +485,14 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
-                  favProduct,
                   onSpecial,
+                  favProduct,
                   productSpecialPrice,
                   existingHistoricalLow,
                   productPackage,
                   ratio,
                   store,
-                  URL
+                  productURL
                 )
               );
               setMycoolrows([...mycoolrows, rows]);
@@ -535,9 +533,8 @@ export default function EnhancedTable() {
                 ? product["size"]["packageType"]
                 : ""
             }`;
-            const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
+            const productURL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
             const onSpecial = product["price"]["isSpecial"] ? true : false;
-            onSpecial && console.log(`${onSpecial} - ${productName} - ${URL}`);
 
             const productSpecialPrice: number = onSpecial
               ? product["price"]["salePrice"].toLocaleString("en", {
@@ -564,7 +561,7 @@ export default function EnhancedTable() {
                       productPackage: productPackage,
                       ratio: ratio,
                       store: store,
-                      URL: URL,
+                      URL: productURL,
                     },
                     { merge: true }
                   );
@@ -599,14 +596,14 @@ export default function EnhancedTable() {
                   index,
                   productSku,
                   productName,
-                  favProduct,
                   onSpecial,
+                  favProduct,
                   productSpecialPrice,
                   existingHistoricalLow,
                   productPackage,
                   ratio,
                   store,
-                  URL
+                  productURL
                 )
               );
               setMycoolrows([...mycoolrows, rows]);
@@ -651,12 +648,11 @@ export default function EnhancedTable() {
           const productPackage = `${product["displayName"]
             ?.replace("l", "L")
             ?.replace("mL", "ml")}`;
-          const URL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
+          const productURL = `https://www.paknsave.co.nz/shop/product/${productSku?.replace(
             "-",
             "_"
           )}`;
           const onSpecial = product["promotions"] ? true : false;
-          console.log(onSpecial);
           handleHistoricalLow();
 
           async function handleHistoricalLow() {
@@ -676,7 +672,7 @@ export default function EnhancedTable() {
                     productPackage: productPackage,
                     ratio: ratio,
                     store: store,
-                    URL: URL,
+                    URL: productURL,
                   },
                   { merge: true }
                 );
@@ -707,14 +703,14 @@ export default function EnhancedTable() {
                 index,
                 productSku,
                 productName,
-                favProduct,
                 onSpecial,
+                favProduct,
                 productPrice,
                 existingHistoricalLow,
                 productPackage,
                 ratio,
                 store,
-                URL
+                productURL
               )
             );
             setMycoolrows([...mycoolrows, rows]);
@@ -1153,19 +1149,25 @@ export default function EnhancedTable() {
 
                       <TableCell align="left">{`$${row.price}`}</TableCell>
                       <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
-
                       <TableCell align="left">{row.productPackage}</TableCell>
-
                       <TableCell align="left">{row.ratio}</TableCell>
                       <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
                           onClick={() => {
-                            open(row.URL, "_blank", "noopener,noreferrer");
+                            open(
+                              row.productURL,
+                              "_blank",
+                              "noopener,noreferrer"
+                            );
                           }}
                           onMouseDown={(e) => {
                             if (e.button === 1) {
-                              open(row.URL, "_blank", "noopener,noreferrer");
+                              open(
+                                row.productURL,
+                                "_blank",
+                                "noopener,noreferrer"
+                              );
                             }
                           }}
                         >
