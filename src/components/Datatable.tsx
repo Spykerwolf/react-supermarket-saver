@@ -32,10 +32,6 @@ import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
 import ArticleIcon from "@mui/icons-material/Article";
-import {
-  AuthenticateTickTick,
-  GetTickTick_access_token,
-} from "../auth/ticktick";
 
 let rows: any[] = [];
 
@@ -152,7 +148,7 @@ interface EnhancedTableProps {
   numSelected: number;
 }
 
-function EnhancedTableHead(props: EnhancedTableProps) {
+export function EnhancedTableHead(props: EnhancedTableProps) {
   const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
@@ -160,32 +156,36 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     };
 
   return (
-    <TableHead sx={{ margin: 1 }}>
-      <TableRow sx={{ bgcolor: "lightgrey" }}>
-        <TableCell padding="checkbox"></TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={Math.random()}
-            align={headCell.numeric ? "right" : "left"}
-            padding={"normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
+    <>
+      <TableHead sx={{ margin: 1 }}>
+        <TableRow sx={{ bgcolor: "lightgrey" }}>
+          <TableCell padding="checkbox"></TableCell>
+          {headCells.map((headCell) => (
+            <TableCell
+              key={Math.random()}
+              align={headCell.numeric ? "right" : "left"}
+              padding={"normal"}
+              sortDirection={orderBy === headCell.id ? order : false}
             >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+    </>
   );
 }
 
@@ -197,122 +197,124 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { numSelected } = props;
 
   return (
-    <Toolbar
-      id="mainToolbar"
-      sx={{
-        display: "flex",
-        pl: { sm: 0 },
-        pr: { sm: 0 },
-        height: "60px",
-        padding: 0,
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity
-            ),
-        }),
-      }}
-    >
-      {numSelected > 0 ? (
-        <Button
-          variant="contained"
-          color="error"
-          size="small"
-          endIcon={<ShoppingCartIcon />}
-          type="button"
+    <>
+      <Box justifyContent="center" display={"flex"}>
+        <Toolbar
+          id="mainToolbar"
           sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-          onClick={AuthenticateTickTick}
-        >
-          Add to list
-        </Button>
-      ) : (
-        <Button
-          disabled
-          variant="contained"
-          color="error"
-          size="small"
-          endIcon={<ShoppingCartIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
+            width: "100%",
+            display: "flex",
+            height: "60px",
+            padding: 0,
+            ...(numSelected > 0 && {
+              bgcolor: (theme) =>
+                alpha(
+                  theme.palette.primary.main,
+                  theme.palette.action.activatedOpacity
+                ),
+            }),
           }}
         >
-          Add to list
-        </Button>
-      )}
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%", paddingLeft: 1 }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        ></Typography>
-      )}
-      {numSelected > 0 ? (
-        <Button
-          onClick={() => {
-            open(
-              "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-              "_blank",
-              "noopener,noreferrer"
-            );
-          }}
-          onMouseDown={(e) => {
-            if (e.button === 1) {
-              open(
-                "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                "_blank",
-                "noopener,noreferrer"
-              );
-            }
-          }}
-          variant="contained"
-          color="warning"
-          size="small"
-          endIcon={<ArticleIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-        >
-          Open List
-        </Button>
-      ) : (
-        <Button
-          disabled
-          variant="contained"
-          color="warning"
-          size="small"
-          endIcon={<ArticleIcon />}
-          type="button"
-          sx={{
-            minHeight: "40px",
-            minWidth: "128px",
-            width: "fit-content",
-          }}
-        >
-          Open List
-        </Button>
-      )}
-    </Toolbar>
+          {numSelected > 0 ? (
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Add to list
+            </Button>
+          ) : (
+            <Button
+              disabled
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Add to list
+            </Button>
+          )}
+          {numSelected > 0 ? (
+            <Typography
+              sx={{ flex: "1 1 100%", paddingLeft: 3 }}
+              color="inherit"
+              variant="subtitle1"
+              component="div"
+            >
+              {numSelected} selected
+            </Typography>
+          ) : (
+            <Typography
+              sx={{ flex: "1 1 100%" }}
+              variant="h6"
+              id="tableTitle"
+              component="div"
+            ></Typography>
+          )}
+          {numSelected > 0 ? (
+            <Button
+              onClick={() => {
+                open(
+                  "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
+              onMouseDown={(e) => {
+                if (e.button === 1) {
+                  open(
+                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }
+              }}
+              variant="contained"
+              color="warning"
+              size="small"
+              endIcon={<ArticleIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
+          ) : (
+            <Button
+              disabled
+              variant="contained"
+              color="warning"
+              size="small"
+              endIcon={<ArticleIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
+          )}
+        </Toolbar>
+      </Box>
+    </>
   );
 }
 export default function EnhancedTable() {
@@ -372,6 +374,7 @@ export default function EnhancedTable() {
         }
       );
       const newworldSKUsJSON = await combineNewworldSKUsWithProducts.json();
+      console.log(newworldSKUsJSON);
       setnewworldResults(newworldSKUsJSON.products);
     }
 
@@ -432,6 +435,7 @@ export default function EnhancedTable() {
               "_"
             )}`;
             const onSpecial = product["promotions"] ? true : false;
+            console.log(onSpecial);
 
             handleHistoricalLow();
 
@@ -533,6 +537,7 @@ export default function EnhancedTable() {
             }`;
             const URL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
             const onSpecial = product["price"]["isSpecial"] ? true : false;
+            onSpecial && console.log(`${onSpecial} - ${productName} - ${URL}`);
 
             const productSpecialPrice: number = onSpecial
               ? product["price"]["salePrice"].toLocaleString("en", {
@@ -651,6 +656,7 @@ export default function EnhancedTable() {
             "_"
           )}`;
           const onSpecial = product["promotions"] ? true : false;
+          console.log(onSpecial);
           handleHistoricalLow();
 
           async function handleHistoricalLow() {
@@ -989,9 +995,6 @@ export default function EnhancedTable() {
               Filter
             </Button>
           </ButtonGroup>
-          <br></br>
-          <Button onClick={AuthenticateTickTick}>FirstStep</Button>
-          <Button onClick={GetTickTick_access_token}>SecondStep</Button>
 
           {tags.length > 0 && (
             <Box
@@ -1021,15 +1024,16 @@ export default function EnhancedTable() {
           )}
         </Box>
       </Box>
-      <Box paddingLeft={"5%"} paddingRight={"5%"}>
+
+      <Box>
         <EnhancedTableToolbar numSelected={selected.length} />
       </Box>
       <Box
         justifyContent="center"
         display={"flex"}
         width={"100%"}
-        paddingLeft={"5%"}
-        paddingRight={"5%"}
+        // paddingLeft={"0%"}
+        // paddingRight={"0%"}
       >
         <TableContainer>
           <Table
