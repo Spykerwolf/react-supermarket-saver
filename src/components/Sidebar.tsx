@@ -81,7 +81,7 @@ export default function ToggleDrawerLeft() {
 
   return (
     <Box>
-      <AppBar position="relative" open={open}>
+      <AppBar position="static" open={open} variant="outlined" color="info">
         <Toolbar>
           <IconButton
             color="inherit"
@@ -97,7 +97,7 @@ export default function ToggleDrawerLeft() {
       <Drawer
         PaperProps={{
           sx: {
-            backgroundColor: "#e2e5d7",
+            backgroundColor: "#fdd8d8",
           },
         }}
         sx={{
