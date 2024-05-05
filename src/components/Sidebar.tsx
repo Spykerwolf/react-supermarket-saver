@@ -126,7 +126,6 @@ export default function ToggleDrawerLeft() {
           <ListItem>
             <ListItemButton>
               <ListItemText>Search</ListItemText>
-
               <ListItemIcon>
                 <ShoppingBasketIcon />
               </ListItemIcon>
