@@ -17,7 +17,8 @@ import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
 import { Link, Outlet } from "react-router-dom";
-import { TopBar } from "./TopBar";
+import SearchPage from "../pages/SearchPage";
+import { Button } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -135,19 +136,16 @@ export default function Sidebar() {
               <ListItemIcon>
                 <ReceiptLongSharpIcon />
               </ListItemIcon>
-              <ListItemText primary="List">
-                <Link to={"/list"}>Link</Link>
-              </ListItemText>
+              <ListItemText primary="List" />
             </ListItemButton>
           </ListItem>
         </List>
         <Divider />
       </Drawer>
-      <div>
-        <Outlet />
-      </div>
+      <Outlet />
+
       <Main open={open}></Main>
-      <TopBar />
+      <SearchPage />
     </Box>
   );
 }
