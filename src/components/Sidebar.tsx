@@ -123,20 +123,23 @@ export default function ToggleDrawerLeft() {
         </DrawerHeader>
         <Divider />
         <List>
-          {["Search", "List"].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? (
-                    <ShoppingBasketIcon />
-                  ) : (
-                    <ReceiptLongSharpIcon />
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          <ListItem>
+            <ListItemButton>
+              <ListItemText>Search</ListItemText>
+
+              <ListItemIcon>
+                <ShoppingBasketIcon />
+              </ListItemIcon>
+            </ListItemButton>
+            {/* <ListItemButton> */}
+            {/* <ListItemText primary={text} /> */}
+
+            {/* <ListItemIcon> */}
+            {/* <ReceiptLongSharpIcon /> */}
+            {/* </ListItemIcon> */}
+            {/* </ListItemButton> */}
+            {/* </ListItemButton> */}
+          </ListItem>
         </List>
         <Divider />
       </Drawer>
