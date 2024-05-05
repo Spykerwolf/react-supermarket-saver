@@ -125,10 +125,10 @@ export default function ToggleDrawerLeft() {
         <List>
           <ListItem>
             <ListItemButton>
-              <ListItemText>Search</ListItemText>
               <ListItemIcon>
                 <ShoppingBasketIcon />
               </ListItemIcon>
+              <ListItemText>Search</ListItemText>
             </ListItemButton>
             {/* <ListItemButton> */}
             {/* <ListItemText primary={text} /> */}
