@@ -16,7 +16,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
+import { TopBar } from "./TopBar";
 
 const drawerWidth = 240;
 
@@ -68,7 +69,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
-export default function ToggleDrawerLeft() {
+export default function Sidebar() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -142,7 +143,11 @@ export default function ToggleDrawerLeft() {
         </List>
         <Divider />
       </Drawer>
+      <div>
+        <Outlet />
+      </div>
       <Main open={open}></Main>
+      <TopBar />
     </Box>
   );
 }

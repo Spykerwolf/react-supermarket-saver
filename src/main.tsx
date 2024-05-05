@@ -4,17 +4,28 @@ import SearchPage from "./pages/SearchPage.tsx";
 import ListPage from "./pages/ListPage.tsx";
 import PageNotFound from "./pages/PageNotFound.tsx";
 import { ThemeContextProvider } from "./components/theme/ThemeContextProvider.tsx";
+import Sidebar from "./components/Sidebar.tsx";
+import { TopBar } from "./components/TopBar.tsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <SearchPage />,
+    element: <Sidebar />,
     errorElement: <PageNotFound />,
-  },
-
-  {
-    path: "/list",
-    element: <ListPage />,
+    children: [
+      {
+        path: "/topbar",
+        element: <TopBar />,
+      },
+      {
+        path: "/search",
+        element: <SearchPage />,
+      },
+      {
+        path: "/list",
+        element: <ListPage />,
+      },
+    ],
   },
 ]);
 
