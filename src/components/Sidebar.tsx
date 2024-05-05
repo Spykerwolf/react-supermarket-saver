@@ -16,6 +16,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
+import { Link } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -71,12 +72,8 @@ export default function ToggleDrawerLeft() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen);
   };
 
   return (
@@ -86,7 +83,7 @@ export default function ToggleDrawerLeft() {
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={toggleDrawer(true)}
             edge="start"
             sx={{ mr: 2, ...(open && { display: "none" }) }}
           >
@@ -95,6 +92,7 @@ export default function ToggleDrawerLeft() {
         </Toolbar>
       </AppBar>
       <Drawer
+        onClose={toggleDrawer(false)}
         PaperProps={{
           sx: {
             backgroundColor: "#fdd8d8",
@@ -108,12 +106,12 @@ export default function ToggleDrawerLeft() {
             boxSizing: "border-box",
           },
         }}
-        variant="persistent"
+        variant="temporary"
         anchor="left"
         open={open}
       >
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={toggleDrawer(false)}>
             {theme.direction === "ltr" ? (
               <ChevronLeftIcon />
             ) : (
@@ -123,21 +121,23 @@ export default function ToggleDrawerLeft() {
         </DrawerHeader>
         <Divider />
         <List>
-          <ListItem>
+          <ListItem disablePadding>
             <ListItemButton>
               <ListItemIcon>
                 <ShoppingBasketIcon />
               </ListItemIcon>
-              <ListItemText>Search</ListItemText>
+              <ListItemText primary="Search" />
             </ListItemButton>
-            {/* <ListItemButton> */}
-            {/* <ListItemText primary={text} /> */}
-
-            {/* <ListItemIcon> */}
-            {/* <ReceiptLongSharpIcon /> */}
-            {/* </ListItemIcon> */}
-            {/* </ListItemButton> */}
-            {/* </ListItemButton> */}
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <ReceiptLongSharpIcon />
+              </ListItemIcon>
+              <ListItemText primary="List">
+                <Link to={"/list"}>Link</Link>
+              </ListItemText>
+            </ListItemButton>
           </ListItem>
         </List>
         <Divider />

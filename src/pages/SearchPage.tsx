@@ -1,10 +1,10 @@
-import EnhancedTable from "./components/Datatable";
+import EnhancedTable from "../components/Datatable.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { TopBar } from "./components/TopBar.tsx";
-import { useThemeContext } from "./components/theme/ThemeContextProvider.tsx";
-import ToggleDrawerLeft from "./components/Sidebar.tsx";
+import { TopBar } from "../components/TopBar.tsx";
+import { useThemeContext } from "../components/theme/ThemeContextProvider.tsx";
+import ToggleDrawerLeft from "../components/Sidebar.tsx";
 
-function App() {
+export default function SearchPage() {
   const { theme } = useThemeContext();
 
   return (
@@ -18,5 +18,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
