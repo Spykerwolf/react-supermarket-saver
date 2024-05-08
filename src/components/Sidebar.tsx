@@ -16,6 +16,9 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
+import { Link, Outlet } from "react-router-dom";
+import SearchPage from "../pages/SearchPage";
+import { Button } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -67,26 +70,22 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end",
 }));
 
-export default function ToggleDrawerLeft() {
+export default function Sidebar() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen);
   };
 
   return (
     <Box>
-      <AppBar position="relative" open={open}>
+      <AppBar position="static" open={open} variant="outlined" color="info">
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            onClick={toggleDrawer(true)}
             edge="start"
             sx={{ mr: 2, ...(open && { display: "none" }) }}
           >
@@ -95,9 +94,10 @@ export default function ToggleDrawerLeft() {
         </Toolbar>
       </AppBar>
       <Drawer
+        onClose={toggleDrawer(false)}
         PaperProps={{
           sx: {
-            backgroundColor: "#e2e5d7",
+            backgroundColor: "#fdd8d8",
           },
         }}
         sx={{
@@ -108,12 +108,12 @@ export default function ToggleDrawerLeft() {
             boxSizing: "border-box",
           },
         }}
-        variant="persistent"
+        variant="temporary"
         anchor="left"
         open={open}
       >
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={toggleDrawer(false)}>
             {theme.direction === "ltr" ? (
               <ChevronLeftIcon />
             ) : (
@@ -123,24 +123,29 @@ export default function ToggleDrawerLeft() {
         </DrawerHeader>
         <Divider />
         <List>
-          {["Search", "List"].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? (
-                    <ShoppingBasketIcon />
-                  ) : (
-                    <ReceiptLongSharpIcon />
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <ShoppingBasketIcon />
+              </ListItemIcon>
+              <ListItemText primary="Search" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ListItemIcon>
+                <ReceiptLongSharpIcon />
+              </ListItemIcon>
+              <ListItemText primary="List" />
+            </ListItemButton>
+          </ListItem>
         </List>
         <Divider />
       </Drawer>
+      <Outlet />
+
       <Main open={open}></Main>
+      <SearchPage />
     </Box>
   );
 }
