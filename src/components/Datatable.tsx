@@ -981,6 +981,30 @@ export default function EnhancedTable() {
     }
   }
 
+  function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (
+      (e.key === "," || e.key === "Enter") &&
+      (e.target as HTMLInputElement).value.length > 0
+    ) {
+      if (!existingTag) {
+        setTags([...tags, filterSearchText]);
+        setFilterSearchText("");
+        e.preventDefault;
+      } else if (existingTag) {
+        setFilterSearchText("");
+        e.preventDefault;
+      }
+    }
+  }
+
+  function handleFilter(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value !== " ") {
+      e.preventDefault;
+      e.target.value !== "," &&
+        setFilterSearchText(e.target.value.toLowerCase().replace(",", ""));
+    }
+  }
+
   return (
     <>
       <Box justifyContent="center" display={"flex"}>
@@ -1035,30 +1059,8 @@ export default function EnhancedTable() {
               sx={{ width: "485px", flex: 1 }}
               placeholder="Filter a product"
               value={filterSearchText.replace(",", "")}
-              onKeyDown={(e) => {
-                if (
-                  (e.key === "," || e.key === "Enter") &&
-                  (e.target as HTMLInputElement).value.length > 0
-                ) {
-                  if (!existingTag) {
-                    setTags([...tags, filterSearchText]);
-                    setFilterSearchText("");
-                    e.preventDefault;
-                  } else if (existingTag) {
-                    setFilterSearchText("");
-                    e.preventDefault;
-                  }
-                }
-              }}
-              onChange={(e) => {
-                if (e.target.value !== " ") {
-                  e.preventDefault;
-                  e.target.value !== "," &&
-                    setFilterSearchText(
-                      e.target.value.toLowerCase().replace(",", "")
-                    );
-                }
-              }}
+              onKeyDown={handleFilterCommaOrEnterKey}
+              onChange={handleFilter}
             />
             <Button
               id="filterButton"
