@@ -862,26 +862,6 @@ export default function EnhancedTable() {
     }
   }
 
-  // old API
-  //   async function paknsave() {
-  //     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-  //     const fetchPaknSaveData = await fetch(
-  //       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
-  //       {
-  //         method: "get",
-  //         headers: new Headers({
-  //           "User-Agent":
-  //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  //           Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
-  //         }),
-  //       }
-  //     );
-  //     const paknsaveResponse = await fetchPaknSaveData.json();
-  //     console.log(paknsaveResponse);
-  //     setpaknsaveResults(paknsaveResponse.data.products);
-  //   }
-  // }
-
   let searchTermArray = searchTerm.split(" ");
 
   const handleRequestSort = (
