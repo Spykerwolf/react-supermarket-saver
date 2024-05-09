@@ -353,7 +353,6 @@ export default function EnhancedTable() {
 
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [rowCount, setRowCount] = useState(0);
-  const [sendItemToKeep, setSendItemToKeep] = useState([]);
 
   useEffect(() => {
     getTokenNewWorld();
@@ -381,9 +380,6 @@ export default function EnhancedTable() {
   }, [paknsaveProductSKUs]);
 
   useEffect(() => {
-    sendItemToKeep.length > 0 && console.log(sendItemToKeep);
-  }, [sendItemToKeep]);
-  useEffect(() => {
     async function getDataNewWorld() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
@@ -392,7 +388,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
+            Authorization: localStorage.getItem("NEW_WORLD_SECRET") as string,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogetherNewWorld }),
@@ -414,7 +410,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET") as string,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogetherPaknsave }),
@@ -808,7 +804,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
+              Authorization: localStorage.getItem("NEW_WORLD_SECRET") as string,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -845,7 +841,9 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+              Authorization: localStorage.getItem(
+                "PAK_N_SAVE_SECRET"
+              ) as string,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -863,26 +861,6 @@ export default function EnhancedTable() {
       }
     }
   }
-
-  // old API
-  //   async function paknsave() {
-  //     const paknsaveStoreId = "64eab5b1-8d79-45f4-94f1-02b8cf8b6202"; // Silverdale
-  //     const fetchPaknSaveData = await fetch(
-  //       `http://localhost:8585/https://www.paknsave.co.nz/next/api/products/search?q=${searchTerm}&s=popularity&pg=1&storeId=${paknsaveStoreId}&publish=true&ps=50`,
-  //       {
-  //         method: "get",
-  //         headers: new Headers({
-  //           "User-Agent":
-  //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  //           Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
-  //         }),
-  //       }
-  //     );
-  //     const paknsaveResponse = await fetchPaknSaveData.json();
-  //     console.log(paknsaveResponse);
-  //     setpaknsaveResults(paknsaveResponse.data.products);
-  //   }
-  // }
 
   let searchTermArray = searchTerm.split(" ");
 
@@ -962,6 +940,88 @@ export default function EnhancedTable() {
 
   React.useMemo(() => setRowCount(filteredVisibleRows), [filteredVisibleRows]);
 
+  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value === "") {
+      setSearchHelperText("");
+    }
+
+    if (e.target.value.length >= 0) {
+      setSearchTerm(e.target.value);
+      setSearchHelperText("");
+    }
+  }
+
+  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if ((e.target as HTMLInputElement).value === "") {
+        setSearchHelperText("Please search for something");
+        setTimeout(() => {
+          setSearchHelperText("");
+        }, 1500);
+      } else {
+        e.preventDefault();
+        setTags([]);
+        searchTerm != "" && GetSupermarketPrices();
+        setSearchTerm("");
+        setSearchPlaceholderText("Search for a product");
+        setSearchHelperText("");
+      }
+    }
+  }
+
+  function handleSearchButton() {
+    if (searchTerm === "") {
+      setSearchHelperText("Please search for something");
+    } else {
+      setTags([]);
+      GetSupermarketPrices();
+      setSearchPlaceholderText(searchTerm);
+      setSearchHelperText("");
+    }
+  }
+
+  function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (
+      (e.key === "," || e.key === "Enter") &&
+      (e.target as HTMLInputElement).value.length > 0
+    ) {
+      if (!existingTag) {
+        setTags([...tags, filterSearchText]);
+        setFilterSearchText("");
+        e.preventDefault;
+      } else if (existingTag) {
+        setFilterSearchText("");
+        e.preventDefault;
+      }
+    }
+  }
+
+  function handleFilterButtonClick(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
+    if (!existingTag) {
+      setTags([...tags, filterSearchText]);
+      setFilterSearchText("");
+      e.preventDefault;
+    } else if (existingTag) {
+      setFilterSearchText("");
+      e.preventDefault;
+    }
+  }
+
+  function handleSetFilterSearchText(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value !== " ") {
+      e.preventDefault;
+      e.target.value !== "," &&
+        setFilterSearchText(e.target.value.toLowerCase().replace(",", ""));
+    }
+  }
+
+  function handleOpenURL(URL: string) {
+    open(URL, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <>
       <Box justifyContent="center" display={"flex"}>
@@ -983,50 +1043,15 @@ export default function EnhancedTable() {
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
             value={searchTerm}
-            onChange={(e) => {
-              if (e.target.value === "") {
-                setSearchHelperText("");
-              }
-
-              if (e.target.value.length >= 0) {
-                setSearchTerm(e.target.value);
-                setSearchHelperText("");
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                if ((e.target as HTMLInputElement).value === "") {
-                  setSearchHelperText("Please search for something");
-                  setTimeout(() => {
-                    setSearchHelperText("");
-                  }, 1500);
-                } else {
-                  e.preventDefault();
-                  setTags([]);
-                  searchTerm != "" && GetSupermarketPrices();
-                  setSearchTerm("");
-                  setSearchPlaceholderText("Search for a product");
-                  setSearchHelperText("");
-                }
-              }
-            }}
+            onChange={handleSearchInputChange}
+            onKeyDown={handleSearchEnterKey}
           />
           <Button
             variant="contained"
             color="warning"
             size="small"
             endIcon={<SearchIcon />}
-            onClick={() => {
-              if (searchTerm === "") {
-                setSearchHelperText("Please search for something");
-              } else {
-                setTags([]);
-                GetSupermarketPrices();
-                setSearchPlaceholderText(searchTerm);
-                setSearchHelperText("");
-              }
-            }}
+            onClick={handleSearchButton}
             type="button"
             sx={{
               marginBottom: "5px",
@@ -1051,47 +1076,27 @@ export default function EnhancedTable() {
               sx={{ width: "485px", flex: 1 }}
               placeholder="Filter a product"
               value={filterSearchText.replace(",", "")}
-              onKeyDown={(e) => {
-                if (
-                  (e.key === "," || e.key === "Enter") &&
-                  (e.target as HTMLInputElement).value.length > 0
-                ) {
-                  if (!existingTag) {
-                    setTags([...tags, filterSearchText]);
-                    setFilterSearchText("");
-                    e.preventDefault;
-                  } else if (existingTag) {
-                    setFilterSearchText("");
-                    e.preventDefault;
-                  }
-                }
-              }}
-              onChange={(e) => {
-                if (e.target.value !== " ") {
-                  e.preventDefault;
-                  e.target.value !== "," &&
-                    setFilterSearchText(
-                      e.target.value.toLowerCase().replace(",", "")
-                    );
-                }
-              }}
+              onKeyDown={handleFilterCommaOrEnterKey}
+              onChange={handleSetFilterSearchText}
             />
-            <Button
-              id="filterButton"
-              variant="contained"
-              size="small"
-              endIcon={<RemoveIcon />}
-              onClick={() => setFilterSearchText("")}
-              type="button"
-              sx={{
-                marginBottom: "5px",
-                paddingRight: "20px",
-                height: "42px",
-              }}
-              aria-label="search"
-            >
-              Filter
-            </Button>
+            <Tooltip title="Filter with comma or enter">
+              <Button
+                id="filterButton"
+                variant="contained"
+                size="small"
+                endIcon={<RemoveIcon />}
+                onClick={handleFilterButtonClick}
+                type="button"
+                sx={{
+                  marginBottom: "5px",
+                  paddingRight: "20px",
+                  height: "42px",
+                }}
+                aria-label="search"
+              >
+                Filter
+              </Button>
+            </Tooltip>
           </ButtonGroup>
 
           {tags.length > 0 && (
@@ -1157,6 +1162,15 @@ export default function EnhancedTable() {
                   const isItemSelected = isSelected(row.sku);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
+                  function handleAddFavourite(sku: string, name: string) {
+                    if (localStorage.getItem(sku)) {
+                      localStorage.removeItem(sku);
+                    } else {
+                      localStorage.setItem(sku, name);
+                    }
+                    setFavProduct(!favProduct);
+                  }
+
                   return (
                     <TableRow
                       style={{
@@ -1177,32 +1191,7 @@ export default function EnhancedTable() {
                           sx={{ paddingRight: 1 }}
                           color="info"
                           size="small"
-                          onClick={() => {
-                            if (
-                              !sendItemToKeep.some((item) =>
-                                row.sku.includes(item)
-                              )
-                            ) {
-                              console.log(`Added ${row.name}`);
-
-                              setSendItemToKeep([
-                                ...sendItemToKeep,
-                                `${row.sku}`,
-                              ]);
-                            }
-                            if (
-                              sendItemToKeep.some((item) =>
-                                row.sku.includes(item)
-                              )
-                            ) {
-                              console.log(`Deleted ${row.name}`);
-                              setSendItemToKeep((items) =>
-                                items.filter((item) => item !== `${row.sku}`)
-                              );
-                            }
-
-                            handleClick(row.sku);
-                          }}
+                          onClick={() => handleClick(row.sku)}
                           key={row.sku}
                           checked={isItemSelected}
                         />
@@ -1214,14 +1203,7 @@ export default function EnhancedTable() {
                           checkedIcon={<StarIcon />}
                           color="secondary"
                           checked={localStorage.getItem(row.sku) ? true : false}
-                          onChange={() => {
-                            if (localStorage.getItem(row.sku)) {
-                              localStorage.removeItem(row.sku);
-                            } else {
-                              localStorage.setItem(row.sku, row.name);
-                            }
-                            setFavProduct(!favProduct);
-                          }}
+                          onChange={() => handleAddFavourite(row.sku, row.name)}
                         />
                       </TableCell>
                       <TableCell
@@ -1260,27 +1242,16 @@ export default function EnhancedTable() {
                       </TableCell>
 
                       <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
-
                       <TableCell align="left">{row.productPackage}</TableCell>
                       <TableCell align="left">{row.ratio}</TableCell>
                       <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
                           onClick={() => {
-                            open(
-                              row.productURL,
-                              "_blank",
-                              "noopener,noreferrer"
-                            );
+                            handleOpenURL(row.productURL);
                           }}
-                          onMouseDown={(e) => {
-                            if (e.button === 1) {
-                              open(
-                                row.productURL,
-                                "_blank",
-                                "noopener,noreferrer"
-                              );
-                            }
+                          onMouseDown={() => {
+                            handleOpenURL(row.productURL);
                           }}
                         >
                           <OpenInNewIcon />
