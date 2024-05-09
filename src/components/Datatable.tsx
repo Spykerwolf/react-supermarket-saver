@@ -353,7 +353,6 @@ export default function EnhancedTable() {
 
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [rowCount, setRowCount] = useState(0);
-  const [sendItemToKeep, setSendItemToKeep] = useState([]);
 
   useEffect(() => {
     getTokenNewWorld();
@@ -381,9 +380,6 @@ export default function EnhancedTable() {
   }, [paknsaveProductSKUs]);
 
   useEffect(() => {
-    sendItemToKeep.length > 0 && console.log(sendItemToKeep);
-  }, [sendItemToKeep]);
-  useEffect(() => {
     async function getDataNewWorld() {
       const combineNewworldSKUsWithProducts: Response = await fetch(
         `https://api-prod.newworld.co.nz/v1/edge/store/0f82d3fe-acd0-4e98-b3e7-fbabbf8b8ef5/decorateProducts`,
@@ -392,7 +388,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
+            Authorization: localStorage.getItem("NEW_WORLD_SECRET") as string,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogetherNewWorld }),
@@ -414,7 +410,7 @@ export default function EnhancedTable() {
           headers: new Headers({
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+            Authorization: localStorage.getItem("PAK_N_SAVE_SECRET") as string,
             "Content-Type": "application/json",
           }),
           body: JSON.stringify({ productIds: productIdTogetherPaknsave }),
@@ -808,7 +804,7 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: localStorage.getItem("NEW_WORLD_SECRET"),
+              Authorization: localStorage.getItem("NEW_WORLD_SECRET") as string,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -845,7 +841,9 @@ export default function EnhancedTable() {
             headers: new Headers({
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-              Authorization: localStorage.getItem("PAK_N_SAVE_SECRET"),
+              Authorization: localStorage.getItem(
+                "PAK_N_SAVE_SECRET"
+              ) as string,
               "Content-Type": "application/json",
             }),
             body: JSON.stringify({
@@ -1178,29 +1176,6 @@ export default function EnhancedTable() {
                           color="info"
                           size="small"
                           onClick={() => {
-                            if (
-                              !sendItemToKeep.some((item) =>
-                                row.sku.includes(item)
-                              )
-                            ) {
-                              console.log(`Added ${row.name}`);
-
-                              setSendItemToKeep([
-                                ...sendItemToKeep,
-                                `${row.sku}`,
-                              ]);
-                            }
-                            if (
-                              sendItemToKeep.some((item) =>
-                                row.sku.includes(item)
-                              )
-                            ) {
-                              console.log(`Deleted ${row.name}`);
-                              setSendItemToKeep((items) =>
-                                items.filter((item) => item !== `${row.sku}`)
-                              );
-                            }
-
                             handleClick(row.sku);
                           }}
                           key={row.sku}
