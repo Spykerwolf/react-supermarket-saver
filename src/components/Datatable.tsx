@@ -940,6 +940,47 @@ export default function EnhancedTable() {
 
   React.useMemo(() => setRowCount(filteredVisibleRows), [filteredVisibleRows]);
 
+  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value === "") {
+      setSearchHelperText("");
+    }
+
+    if (e.target.value.length >= 0) {
+      setSearchTerm(e.target.value);
+      setSearchHelperText("");
+    }
+  }
+
+  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if ((e.target as HTMLInputElement).value === "") {
+        setSearchHelperText("Please search for something");
+        setTimeout(() => {
+          setSearchHelperText("");
+        }, 1500);
+      } else {
+        e.preventDefault();
+        setTags([]);
+        searchTerm != "" && GetSupermarketPrices();
+        setSearchTerm("");
+        setSearchPlaceholderText("Search for a product");
+        setSearchHelperText("");
+      }
+    }
+  }
+
+  function handleSearchButton() {
+    if (searchTerm === "") {
+      setSearchHelperText("Please search for something");
+    } else {
+      setTags([]);
+      GetSupermarketPrices();
+      setSearchPlaceholderText(searchTerm);
+      setSearchHelperText("");
+    }
+  }
+
   return (
     <>
       <Box justifyContent="center" display={"flex"}>
@@ -961,50 +1002,15 @@ export default function EnhancedTable() {
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
             value={searchTerm}
-            onChange={(e) => {
-              if (e.target.value === "") {
-                setSearchHelperText("");
-              }
-
-              if (e.target.value.length >= 0) {
-                setSearchTerm(e.target.value);
-                setSearchHelperText("");
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                if ((e.target as HTMLInputElement).value === "") {
-                  setSearchHelperText("Please search for something");
-                  setTimeout(() => {
-                    setSearchHelperText("");
-                  }, 1500);
-                } else {
-                  e.preventDefault();
-                  setTags([]);
-                  searchTerm != "" && GetSupermarketPrices();
-                  setSearchTerm("");
-                  setSearchPlaceholderText("Search for a product");
-                  setSearchHelperText("");
-                }
-              }
-            }}
+            onChange={handleSearchInputChange}
+            onKeyDown={handleSearchEnterKey}
           />
           <Button
             variant="contained"
             color="warning"
             size="small"
             endIcon={<SearchIcon />}
-            onClick={() => {
-              if (searchTerm === "") {
-                setSearchHelperText("Please search for something");
-              } else {
-                setTags([]);
-                GetSupermarketPrices();
-                setSearchPlaceholderText(searchTerm);
-                setSearchHelperText("");
-              }
-            }}
+            onClick={handleSearchButton}
             type="button"
             sx={{
               marginBottom: "5px",
