@@ -1018,6 +1018,10 @@ export default function EnhancedTable() {
     }
   }
 
+  function handleOpenURL(URL: string) {
+    open(URL, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <>
       <Box justifyContent="center" display={"flex"}>
@@ -1158,6 +1162,15 @@ export default function EnhancedTable() {
                   const isItemSelected = isSelected(row.sku);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
+                  function handleAddFavourite(sku: string, name: string) {
+                    if (localStorage.getItem(sku)) {
+                      localStorage.removeItem(sku);
+                    } else {
+                      localStorage.setItem(sku, name);
+                    }
+                    setFavProduct(!favProduct);
+                  }
+
                   return (
                     <TableRow
                       style={{
@@ -1178,9 +1191,7 @@ export default function EnhancedTable() {
                           sx={{ paddingRight: 1 }}
                           color="info"
                           size="small"
-                          onClick={() => {
-                            handleClick(row.sku);
-                          }}
+                          onClick={() => handleClick(row.sku)}
                           key={row.sku}
                           checked={isItemSelected}
                         />
@@ -1192,14 +1203,7 @@ export default function EnhancedTable() {
                           checkedIcon={<StarIcon />}
                           color="secondary"
                           checked={localStorage.getItem(row.sku) ? true : false}
-                          onChange={() => {
-                            if (localStorage.getItem(row.sku)) {
-                              localStorage.removeItem(row.sku);
-                            } else {
-                              localStorage.setItem(row.sku, row.name);
-                            }
-                            setFavProduct(!favProduct);
-                          }}
+                          onChange={() => handleAddFavourite(row.sku, row.name)}
                         />
                       </TableCell>
                       <TableCell
@@ -1238,27 +1242,16 @@ export default function EnhancedTable() {
                       </TableCell>
 
                       <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
-
                       <TableCell align="left">{row.productPackage}</TableCell>
                       <TableCell align="left">{row.ratio}</TableCell>
                       <TableCell align="left">{row.store}</TableCell>
                       <TableCell align="left">
                         <IconButton
                           onClick={() => {
-                            open(
-                              row.productURL,
-                              "_blank",
-                              "noopener,noreferrer"
-                            );
+                            handleOpenURL(row.productURL);
                           }}
-                          onMouseDown={(e) => {
-                            if (e.button === 1) {
-                              open(
-                                row.productURL,
-                                "_blank",
-                                "noopener,noreferrer"
-                              );
-                            }
+                          onMouseDown={() => {
+                            handleOpenURL(row.productURL);
                           }}
                         >
                           <OpenInNewIcon />
