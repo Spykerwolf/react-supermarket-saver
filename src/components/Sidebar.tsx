@@ -16,9 +16,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import SearchPage from "../pages/SearchPage";
-import { Button } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -80,7 +79,13 @@ export default function Sidebar() {
 
   return (
     <Box>
-      <AppBar position="static" open={open} variant="outlined" color="info">
+      <AppBar
+        position="static"
+        open={open}
+        variant="outlined"
+        color="info"
+        elevation={0}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
