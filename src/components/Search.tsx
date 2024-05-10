@@ -210,8 +210,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -335,8 +333,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -381,6 +377,7 @@ export function Search(props: SearchProps) {
     }
     displayResultsPaknSave();
   }, [paknsaveResults]);
+
   useEffect(() => {
     if (countdownresults.length !== 0) {
       countdownresults.forEach((product, index) => {
@@ -445,8 +442,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -495,27 +490,32 @@ export function Search(props: SearchProps) {
     }
   }, [countdownresults]);
 
+  useEffect(() => {
+    if (searchTerm != "") {
+      setTags([]);
+      GetSupermarketPrices();
+      setSearchTerm("");
+      setSearchPlaceholderText("Search for a product");
+    }
+  }, [searchTerm]);
   let searchTermArray = searchTerm.split(" ");
 
-  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+  // maybe problem
+  async function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      if ((e.target as HTMLInputElement).value === "") {
+      if ((e.target as HTMLInputElement).value.length === 0) {
         setSearchHelperText("Please search for something");
         setTimeout(() => {
           setSearchHelperText("");
         }, 1500);
-      } else {
-        e.preventDefault();
-        setTags([]);
-        searchTerm != "" && GetSupermarketPrices();
-        setSearchTerm("");
-        setSearchPlaceholderText("Search for a product");
+      } else if ((e.target as HTMLInputElement).value.length > 0) {
+        setSearchTerm((e.target as HTMLInputElement).value);
       }
     }
   }
 
-  function handleSearchButton() {
+  async function handleSearchButton() {
     if (searchTerm === "") {
       setSearchHelperText("Please search for something");
       setTimeout(() => {
@@ -528,13 +528,18 @@ export function Search(props: SearchProps) {
     }
   }
 
-  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value === "") {
+  async function handleSearchInputChange(
+    e: React.KeyboardEvent<HTMLDivElement>
+  ) {
+    if ((e.target as HTMLInputElement).value === "") {
+      console.log("Showing helper text");
       setSearchHelperText("");
     }
 
-    if (e.target.value.length >= 0) {
-      setSearchTerm(e.target.value);
+    if ((e.target as HTMLInputElement).value.length >= 0) {
+      if (e.key === "Enter") {
+        setSearchTerm(e.target as HTMLInputElement).value;
+      }
     }
   }
 
@@ -625,7 +630,7 @@ export function Search(props: SearchProps) {
               },
             }}
             multiline={false}
-            autoComplete="off"
+            autoComplete="on"
             sx={{
               width: "485px",
               flex: 1,
@@ -634,8 +639,6 @@ export function Search(props: SearchProps) {
             id="outlined-error-helper-text"
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
-            value={searchTerm}
-            onChange={handleSearchInputChange}
             onKeyDown={handleSearchEnterKey}
           />
           <Button
