@@ -44,3 +44,29 @@ export interface HeadCell {
 }
 
 export type Order = "asc" | "desc";
+
+export interface EnhancedTableProps {
+  selected: readonly number[];
+  setSelected: Dispatch<SetStateAction<readonly number[]>>;
+  favProduct: boolean;
+  setFavProduct: Dispatch<SetStateAction<boolean>>;
+  mycoolrows: Dispatch<any>;
+  setMycoolrows: Dispatch<any>;
+  setTags: CallableFunction;
+  tags: string[];
+}
+
+export interface EnhancedTableHeadProps {
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof TableRowProps
+  ) => void;
+
+  order: Order;
+  orderBy: string;
+  numSelected: number;
+}
+
+export interface EnhancedTableToolbarProps {
+  numSelected: number;
+}

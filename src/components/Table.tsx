@@ -1,5 +1,4 @@
 import * as React from "react";
-import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -12,17 +11,14 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { rows } from "./Search";
-import { TableRowProps, HeadCell, Order } from "../types/types";
-
 import { Button } from "@mui/material";
 import { getComparator, stableSort } from "./functions/sortTable";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
-
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
@@ -30,6 +26,14 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ArticleIcon from "@mui/icons-material/Article";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
+import {
+  TableRowProps,
+  HeadCell,
+  Order,
+  EnhancedTableProps,
+  EnhancedTableHeadProps,
+  EnhancedTableToolbarProps,
+} from "../types/types";
 
 const headCells: readonly HeadCell[] = [
   {
@@ -88,26 +92,7 @@ const headCells: readonly HeadCell[] = [
   },
 ];
 
-interface EnhancedTableProps {
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof TableRowProps
-  ) => void;
-
-  order: Order;
-  orderBy: string;
-  numSelected: number;
-  selected: readonly number[];
-  setSelected: Dispatch<SetStateAction<readonly number[]>>;
-  favProduct: boolean;
-  setFavProduct: Dispatch<SetStateAction<boolean>>;
-  mycoolrows: Dispatch<any>;
-  setMycoolrows: Dispatch<any>;
-  setTags: CallableFunction;
-  tags: any[];
-}
-
-export function EnhancedTableHead(props: EnhancedTableProps) {
+export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: keyof TableRowProps) => (event: React.MouseEvent<unknown>) => {
@@ -146,10 +131,6 @@ export function EnhancedTableHead(props: EnhancedTableProps) {
       </TableHead>
     </>
   );
-}
-
-interface EnhancedTableToolbarProps {
-  numSelected: number;
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -283,9 +264,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
-
   const [rowCount, setRowCount] = useState(0);
-
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof TableRowProps
@@ -338,10 +317,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
       ),
     [order, orderBy, page, rowsPerPage, mycoolrows, favProduct]
   );
-
-  const ListItem = styled("li")(({ theme }) => ({
-    margin: theme.spacing(0.5),
-  }));
 
   const filteredVisibleRows = visibleRows.filter((row) => {
     const tagInRowName = tags.some((item) =>
@@ -438,7 +413,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           icon={<StarBorderIcon />}
                           checkedIcon={<StarIcon />}
                           color="secondary"
-                          checked={localStorage.getItem(row.sku) && true}
+                          checked={localStorage.getItem(row.sku) ? true : false}
                           key={row.sku}
                           onChange={() => handleAddFavourite(row.sku, row.name)}
                         />

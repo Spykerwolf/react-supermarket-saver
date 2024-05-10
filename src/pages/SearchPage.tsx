@@ -1,6 +1,6 @@
 import EnhancedTable from "../components/Table.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { TopBar } from "../components/TopBar.tsx";
+import { MainLogo } from "../components/MainLogo.tsx";
 import { useThemeContext } from "../components/theme/ThemeContextProvider.tsx";
 import { Search } from "../components/Search.tsx";
 import { useState } from "react";
@@ -21,7 +21,7 @@ export default function SearchPage() {
   return (
     <div>
       <ThemeProvider theme={theme}>
-        <TopBar />
+        <MainLogo />
         <CssBaseline />
         <Search
           searchTerm={searchTerm}

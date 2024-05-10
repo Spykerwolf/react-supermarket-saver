@@ -5,13 +5,16 @@ import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { styled } from "@mui/material/styles";
 import { FilterProps } from "../types/types";
-import ListItem from "@mui/material/ListItem";
 import { useState } from "react";
 
 export function Filter(props: FilterProps) {
   const { tags, setTags } = props;
   const [filterSearchText, setFilterSearchText] = useState("");
+  const ListItem = styled("li")(({ theme }) => ({
+    margin: theme.spacing(0.5),
+  }));
 
   function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (
