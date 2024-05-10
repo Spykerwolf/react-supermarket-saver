@@ -1,7 +1,7 @@
 import EnhancedTable from "../components/Table.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { MainLogo } from "../components/MainLogo.tsx";
-import { useThemeContext } from "../components/theme/ThemeContextProvider.tsx";
+import { useThemeContext } from "../theme/ThemeContextProvider.tsx";
 import { Search } from "../components/Search.tsx";
 import { useState } from "react";
 import { Filter } from "../components/Filter.tsx";

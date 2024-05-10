@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
-import { CapitalizeFirstLetter } from "./functions/sharedFunctions";
+import { CapitalizeFirstLetter } from "../functions/sharedFunctions";
 import { db } from "../auth/firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 export let rows: any[] = [];
@@ -62,6 +62,7 @@ export function Search(props: SearchProps) {
   const [paknsaveProductSKUs, setPaknsaveProductSKUs] = useState([]);
   const productIdTogetherPaknsave: string[] = [];
   const productIdTogetherNewWorld: string[] = [];
+  const [searchvalue, setSearchvalue] = useState("");
 
   useEffect(() => {
     getTokenNewWorld();
@@ -210,8 +211,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -335,8 +334,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -381,6 +378,7 @@ export function Search(props: SearchProps) {
     }
     displayResultsPaknSave();
   }, [paknsaveResults]);
+
   useEffect(() => {
     if (countdownresults.length !== 0) {
       countdownresults.forEach((product, index) => {
@@ -445,8 +443,6 @@ export function Search(props: SearchProps) {
                     },
                     { merge: true }
                   );
-
-                  console.log("SKU added: ", productSku);
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
@@ -495,46 +491,55 @@ export function Search(props: SearchProps) {
     }
   }, [countdownresults]);
 
+  useEffect(() => {
+    if (searchTerm != "") {
+      setTags([]);
+      GetSupermarketPrices();
+      setSearchTerm("");
+      setSearchPlaceholderText("Search for a product");
+      setSearchvalue("");
+    }
+  }, [searchTerm]);
   let searchTermArray = searchTerm.split(" ");
 
-  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+  // maybe problem
+  async function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      if ((e.target as HTMLInputElement).value === "") {
+      if ((e.target as HTMLInputElement).value.length === 0) {
         setSearchHelperText("Please search for something");
         setTimeout(() => {
           setSearchHelperText("");
         }, 1500);
-      } else {
-        e.preventDefault();
-        setTags([]);
-        searchTerm != "" && GetSupermarketPrices();
-        setSearchTerm("");
-        setSearchPlaceholderText("Search for a product");
+      } else if ((e.target as HTMLInputElement).value.length > 0) {
+        setSearchTerm((e.target as HTMLInputElement).value);
       }
     }
   }
 
-  function handleSearchButton() {
-    if (searchTerm === "") {
+  async function handleSearchButton() {
+    if (searchvalue === "") {
       setSearchHelperText("Please search for something");
       setTimeout(() => {
         setSearchHelperText("");
       }, 1500);
     } else {
+      setSearchTerm(searchvalue);
       setTags([]);
       GetSupermarketPrices();
       setSearchPlaceholderText(searchTerm);
     }
   }
 
-  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleSearchInputChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
     if (e.target.value === "") {
       setSearchHelperText("");
     }
 
-    if (e.target.value.length >= 0) {
-      setSearchTerm(e.target.value);
+    if (e.target.value.length >= 0 || e.target.value === "Enter") {
+      setSearchvalue(e.target.value);
     }
   }
 
@@ -625,18 +630,18 @@ export function Search(props: SearchProps) {
               },
             }}
             multiline={false}
-            autoComplete="off"
+            autoComplete="on"
             sx={{
               width: "485px",
               flex: 1,
             }}
             variant="outlined"
+            value={searchvalue}
             id="outlined-error-helper-text"
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
-            value={searchTerm}
-            onChange={handleSearchInputChange}
             onKeyDown={handleSearchEnterKey}
+            onChange={handleSearchInputChange}
           />
           <Button
             variant="contained"
