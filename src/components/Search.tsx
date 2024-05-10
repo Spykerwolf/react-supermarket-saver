@@ -1,56 +1,15 @@
-import * as React from "react";
-import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import IconButton from "@mui/material/IconButton";
-import { visuallyHidden } from "@mui/utils";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useEffect, useState } from "react";
-import Chip from "@mui/material/Chip";
-import SearchIcon from "@mui/icons-material/Search";
+import Button from "@mui/material/Button";
+import ButtonGroup from "@mui/material/ButtonGroup";
 import TextField from "@mui/material/TextField";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { Button, ButtonGroup } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { useEffect, useState } from "react";
+import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
 import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
-import { getComparator, stableSort } from "./functions/sortTable";
-import SellIcon from "@mui/icons-material/Sell";
-import StarIcon from "@mui/icons-material/Star";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import Checkbox from "@mui/material/Checkbox";
 import { db } from "../auth/firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import { alpha } from "@mui/material/styles";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
-import ArticleIcon from "@mui/icons-material/Article";
-import StarsIcon from "@mui/icons-material/Stars";
-import Tooltip from "@mui/material/Tooltip";
-
-let rows: any[] = [];
-
-interface Data {
-  index: number;
-  sku: string | number;
-  name: string;
-  onSpecial: boolean;
-  isFavourite: boolean;
-  price: number;
-  historicalIcon: string;
-  historicalLow: number;
-  productPackage: string;
-  ratio: string;
-  store: string;
-  productURL: string;
-}
+export let rows: any[] = [];
+import { SearchProps, TableRowProps } from "../types/types";
 
 export function createData(
   index: number,
@@ -65,7 +24,7 @@ export function createData(
   ratio: string,
   store: string,
   productURL: string
-): Data {
+): TableRowProps {
   return {
     index,
     sku,
@@ -81,278 +40,29 @@ export function createData(
     productURL,
   };
 }
+export function Search(props: SearchProps) {
+  const {
+    searchTerm,
+    setSearchTerm,
+    searchPlaceholderText,
+    setSearchPlaceholderText,
+    searchHelperText,
+    setSearchHelperText,
+    setTags,
+    tags,
+    setSelected,
+    mycoolrows,
+    setMycoolrows,
+    favProduct,
+  } = props;
 
-interface HeadCell {
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
-
-const headCells: readonly HeadCell[] = [
-  {
-    id: "isFavourite",
-    numeric: false,
-    label: "",
-  },
-  {
-    id: "name",
-    numeric: false,
-    label: "Name",
-  },
-
-  {
-    id: "onSpecial",
-    numeric: false,
-    label: "",
-  },
-
-  {
-    id: "price",
-    numeric: false,
-    label: "Price",
-  },
-
-  {
-    id: "historicalIcon",
-    numeric: false,
-    label: "",
-  },
-  {
-    id: "historicalLow",
-    numeric: false,
-    label: "Historical Low",
-  },
-
-  {
-    id: "productPackage",
-    numeric: false,
-    label: "Packaging",
-  },
-  {
-    id: "ratio",
-    numeric: false,
-    label: "Ratio",
-  },
-  {
-    id: "store",
-    numeric: false,
-    label: "Store",
-  },
-  {
-    id: "productURL",
-    numeric: false,
-    label: "URL",
-  },
-];
-
-type Order = "asc" | "desc";
-
-interface EnhancedTableProps {
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Data
-  ) => void;
-
-  order: Order;
-  orderBy: string;
-  numSelected: number;
-}
-
-export function EnhancedTableHead(props: EnhancedTableProps) {
-  const { order, orderBy, onRequestSort } = props;
-  const createSortHandler =
-    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
-
-  return (
-    <>
-      <TableHead sx={{ margin: 1 }}>
-        <TableRow sx={{ bgcolor: "lightgrey" }}>
-          <TableCell padding="checkbox"></TableCell>
-          {headCells.map((headCell) => (
-            <TableCell
-              key={Math.random()}
-              align={headCell.numeric ? "right" : "left"}
-              padding={"normal"}
-              sortDirection={orderBy === headCell.id ? order : false}
-            >
-              <TableSortLabel
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : "asc"}
-                onClick={createSortHandler(headCell.id)}
-              >
-                {headCell.label}
-                {orderBy === headCell.id ? (
-                  <Box component="span" sx={visuallyHidden}>
-                    {order === "desc"
-                      ? "sorted descending"
-                      : "sorted ascending"}
-                  </Box>
-                ) : null}
-              </TableSortLabel>
-            </TableCell>
-          ))}
-        </TableRow>
-      </TableHead>
-    </>
-  );
-}
-
-interface EnhancedTableToolbarProps {
-  numSelected: number;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
-
-  return (
-    <>
-      <Box justifyContent="center" display={"flex"}>
-        <Toolbar
-          id="mainToolbar"
-          sx={{
-            width: "100%",
-            display: "flex",
-            height: "60px",
-            padding: 0,
-            ...(numSelected > 0 && {
-              bgcolor: (theme) =>
-                alpha(
-                  theme.palette.primary.main,
-                  theme.palette.action.activatedOpacity
-                ),
-            }),
-          }}
-        >
-          {numSelected > 0 ? (
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          )}
-          {numSelected > 0 ? (
-            <Typography
-              sx={{ flex: "1 1 100%", paddingLeft: 3 }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
-            >
-              {numSelected} selected
-            </Typography>
-          ) : (
-            <Typography
-              sx={{ flex: "1 1 100%" }}
-              variant="h6"
-              id="tableTitle"
-              component="div"
-            ></Typography>
-          )}
-          {numSelected > 0 ? (
-            <Button
-              onClick={() => {
-                open(
-                  "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                  "_blank",
-                  "noopener,noreferrer"
-                );
-              }}
-              onMouseDown={(e) => {
-                if (e.button === 1) {
-                  open(
-                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }
-              }}
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          )}
-        </Toolbar>
-      </Box>
-    </>
-  );
-}
-export default function EnhancedTable() {
-  const [order, setOrder] = useState<Order>("asc");
-  const [orderBy, setOrderBy] = useState<keyof Data>("ratio");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [countdownresults, setCountdownresults] = useState<any[]>([]);
   const [newworldResults, setnewworldResults] = useState([]);
-
   const [newworldProductSKUs, setNewworldProductSKUs] = useState([]);
   const [paknsaveResults, setpaknsaveResults] = useState<any[]>([]);
   const [paknsaveProductSKUs, setPaknsaveProductSKUs] = useState([]);
-
-  const [filterSearchText, setFilterSearchText] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchPlaceholderText, setSearchPlaceholderText] = useState(
-    "Search for a product"
-  );
-  const [searchHelperText, setSearchHelperText] = useState("");
-  const [tags, setTags] = useState<any[]>([]);
-  const [mycoolrows, setMycoolrows] = useState([] as any);
-  const productIdTogetherNewWorld: string[] = [];
-  const [favProduct, setFavProduct] = useState(false);
   const productIdTogetherPaknsave: string[] = [];
-
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
-  const [rowCount, setRowCount] = useState(0);
+  const productIdTogetherNewWorld: string[] = [];
 
   useEffect(() => {
     getTokenNewWorld();
@@ -786,6 +496,49 @@ export default function EnhancedTable() {
     }
   }, [countdownresults]);
 
+  let searchTermArray = searchTerm.split(" ");
+
+  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if ((e.target as HTMLInputElement).value === "") {
+        setSearchHelperText("Please search for something");
+        setTimeout(() => {
+          setSearchHelperText("");
+        }, 1500);
+      } else {
+        e.preventDefault();
+        setTags([]);
+        searchTerm != "" && GetSupermarketPrices();
+        setSearchTerm("");
+        setSearchPlaceholderText("Search for a product");
+      }
+    }
+  }
+
+  function handleSearchButton() {
+    if (searchTerm === "") {
+      setSearchHelperText("Please search for something");
+      setTimeout(() => {
+        setSearchHelperText("");
+      }, 1500);
+    } else {
+      setTags([]);
+      GetSupermarketPrices();
+      setSearchPlaceholderText(searchTerm);
+    }
+  }
+
+  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value === "") {
+      setSearchHelperText("");
+    }
+
+    if (e.target.value.length >= 0) {
+      setSearchTerm(e.target.value);
+    }
+  }
+
   async function GetSupermarketPrices() {
     setSelected([]);
     rows = [];
@@ -862,166 +615,6 @@ export default function EnhancedTable() {
     }
   }
 
-  let searchTermArray = searchTerm.split(" ");
-
-  const handleRequestSort = (
-    _event: React.MouseEvent<unknown>,
-    property: keyof Data
-  ) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const handleClick = (sku: number) => {
-    const selectedIndex = selected.indexOf(sku);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, sku);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
-
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const isSelected = (sku: number) => selected.indexOf(sku) !== -1;
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-
-  const visibleRows: any[] = React.useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      ),
-    [order, orderBy, page, rowsPerPage, mycoolrows, favProduct]
-  );
-
-  const ListItem = styled("li")(({ theme }) => ({
-    margin: theme.spacing(0.5),
-  }));
-
-  const handleDelete = (tagToDelete: string) => () => {
-    setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
-  };
-
-  const existingTag = tags.some((tag) => filterSearchText.includes(tag));
-
-  const filteredVisibleRows = visibleRows.filter((row) => {
-    const tagInRowName = tags.some((item) =>
-      row.name.toLowerCase().includes(item.toLowerCase())
-    );
-    if (tags.length === 0) {
-      return row;
-    } else if (!tagInRowName) {
-      return row;
-    }
-  }).length;
-
-  React.useMemo(() => setRowCount(filteredVisibleRows), [filteredVisibleRows]);
-
-  function handleSearchInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value === "") {
-      setSearchHelperText("");
-    }
-
-    if (e.target.value.length >= 0) {
-      setSearchTerm(e.target.value);
-      setSearchHelperText("");
-    }
-  }
-
-  function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if ((e.target as HTMLInputElement).value === "") {
-        setSearchHelperText("Please search for something");
-        setTimeout(() => {
-          setSearchHelperText("");
-        }, 1500);
-      } else {
-        e.preventDefault();
-        setTags([]);
-        searchTerm != "" && GetSupermarketPrices();
-        setSearchTerm("");
-        setSearchPlaceholderText("Search for a product");
-        setSearchHelperText("");
-      }
-    }
-  }
-
-  function handleSearchButton() {
-    if (searchTerm === "") {
-      setSearchHelperText("Please search for something");
-    } else {
-      setTags([]);
-      GetSupermarketPrices();
-      setSearchPlaceholderText(searchTerm);
-      setSearchHelperText("");
-    }
-  }
-
-  function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (
-      (e.key === "," || e.key === "Enter") &&
-      (e.target as HTMLInputElement).value.length > 0
-    ) {
-      if (!existingTag) {
-        setTags([...tags, filterSearchText]);
-        setFilterSearchText("");
-        e.preventDefault;
-      } else if (existingTag) {
-        setFilterSearchText("");
-        e.preventDefault;
-      }
-    }
-  }
-
-  function handleFilterButtonClick(
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) {
-    if (!existingTag) {
-      setTags([...tags, filterSearchText]);
-      setFilterSearchText("");
-      e.preventDefault;
-    } else if (existingTag) {
-      setFilterSearchText("");
-      e.preventDefault;
-    }
-  }
-
-  function handleSetFilterSearchText(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.value !== " ") {
-      e.preventDefault;
-      e.target.value !== "," &&
-        setFilterSearchText(e.target.value.toLowerCase().replace(",", ""));
-    }
-  }
-
-  function handleOpenURL(URL: string) {
-    open(URL, "_blank", "noopener,noreferrer");
-  }
-
   return (
     <>
       <Box justifyContent="center" display={"flex"}>
@@ -1061,228 +654,6 @@ export default function EnhancedTable() {
             Search
           </Button>
         </ButtonGroup>
-      </Box>
-      <Box justifyContent="center" display={"flex"}>
-        <Box>
-          <ButtonGroup>
-            <TextField
-              id="filterInput"
-              inputProps={{
-                style: {
-                  padding: 10,
-                },
-              }}
-              autoComplete="off"
-              sx={{ width: "485px", flex: 1 }}
-              placeholder="Filter a product"
-              value={filterSearchText.replace(",", "")}
-              onKeyDown={handleFilterCommaOrEnterKey}
-              onChange={handleSetFilterSearchText}
-            />
-            <Tooltip title="Filter with comma or enter">
-              <Button
-                id="filterButton"
-                variant="contained"
-                size="small"
-                endIcon={<RemoveIcon />}
-                onClick={handleFilterButtonClick}
-                type="button"
-                sx={{
-                  marginBottom: "5px",
-                  paddingRight: "20px",
-                  height: "42px",
-                }}
-                aria-label="search"
-              >
-                Filter
-              </Button>
-            </Tooltip>
-          </ButtonGroup>
-
-          {tags.length > 0 && (
-            <Box
-              margin={"auto"}
-              id="tagsBox"
-              sx={{
-                padding: 0,
-                marginTop: 0,
-                marginBottom: 0,
-                listStyle: "none",
-              }}
-              component="ul"
-              key={Math.random()}
-            >
-              <Box display={"flex"}>
-                {tags.map((data) => {
-                  return (
-                    <>
-                      <ListItem>
-                        <Chip label={data} onDelete={handleDelete(data)} />
-                      </ListItem>
-                    </>
-                  );
-                })}
-              </Box>
-            </Box>
-          )}
-        </Box>
-      </Box>
-
-      <Box>
-        <EnhancedTableToolbar numSelected={selected.length} />
-      </Box>
-      <Box justifyContent="center" display={"flex"} width={"100%"}>
-        <TableContainer>
-          <Table
-            sx={{ minWidth: "250" }}
-            aria-labelledby="tableTitle"
-            size={"small"}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-            />
-
-            <TableBody>
-              {visibleRows
-                .filter((row) => {
-                  const tagInRowName = tags.some((item) =>
-                    row.name.toLowerCase().includes(item.toLowerCase())
-                  );
-                  if (tags.length === 0) {
-                    return row;
-                  } else if (!tagInRowName) {
-                    return row;
-                  }
-                })
-
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.sku);
-                  const labelId = `enhanced-table-checkbox-${index}`;
-
-                  function handleAddFavourite(sku: string, name: string) {
-                    if (localStorage.getItem(sku)) {
-                      localStorage.removeItem(sku);
-                    } else {
-                      localStorage.setItem(sku, name);
-                    }
-                    setFavProduct(!favProduct);
-                  }
-
-                  return (
-                    <TableRow
-                      style={{
-                        height: 33 * emptyRows,
-                      }}
-                      hover
-                      tabIndex={-1}
-                      key={Math.random()}
-                      sx={{
-                        cursor: "pointer",
-                        backgroundColor: "#00000008",
-                        paddingBottom: 0,
-                      }}
-                    >
-                      <TableCell padding="none">
-                        <Checkbox
-                          id="addtolistCheckbox"
-                          sx={{ paddingRight: 1 }}
-                          color="info"
-                          size="small"
-                          onClick={() => handleClick(row.sku)}
-                          key={row.sku}
-                          checked={isItemSelected}
-                        />
-                      </TableCell>
-                      <TableCell padding="none" align="left">
-                        <Checkbox
-                          id="favouriteCheckbox"
-                          icon={<StarBorderIcon />}
-                          checkedIcon={<StarIcon />}
-                          color="secondary"
-                          checked={localStorage.getItem(row.sku) ? true : false}
-                          onChange={() => handleAddFavourite(row.sku, row.name)}
-                        />
-                      </TableCell>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        key={row.index}
-                        align="left"
-                        color="white"
-                      >
-                        {row.name}
-                      </TableCell>
-
-                      <TableCell align="right">
-                        {row.onSpecial && (
-                          <Tooltip title="On Special" placement="left">
-                            <IconButton>
-                              <SellIcon color="info" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </TableCell>
-
-                      <TableCell align="left">{`$${row.price}`}</TableCell>
-                      <TableCell align="right">
-                        {row.historicalLow < row.price && (
-                          <Tooltip
-                            title="Historical price is lower"
-                            placement="left"
-                          >
-                            <IconButton>
-                              <StarsIcon color="info" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </TableCell>
-
-                      <TableCell align="left">{`$${row.historicalLow}`}</TableCell>
-                      <TableCell align="left">{row.productPackage}</TableCell>
-                      <TableCell align="left">{row.ratio}</TableCell>
-                      <TableCell align="left">{row.store}</TableCell>
-                      <TableCell align="left">
-                        <IconButton
-                          onClick={() => {
-                            handleOpenURL(row.productURL);
-                          }}
-                          onMouseDown={() => {
-                            handleOpenURL(row.productURL);
-                          }}
-                        >
-                          <OpenInNewIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 33 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
-      <Box paddingLeft={"5%"} paddingRight={"5%"}>
-        <TablePagination
-          rowsPerPageOptions={[5, 25, 50, 75, { value: -1, label: "All" }]}
-          component="div"
-          count={rowCount}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
       </Box>
     </>
   );
