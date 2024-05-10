@@ -62,6 +62,7 @@ export function Search(props: SearchProps) {
   const [paknsaveProductSKUs, setPaknsaveProductSKUs] = useState([]);
   const productIdTogetherPaknsave: string[] = [];
   const productIdTogetherNewWorld: string[] = [];
+  const [searchvalue, setSearchvalue] = useState("");
 
   useEffect(() => {
     getTokenNewWorld();
@@ -496,6 +497,7 @@ export function Search(props: SearchProps) {
       GetSupermarketPrices();
       setSearchTerm("");
       setSearchPlaceholderText("Search for a product");
+      setSearchvalue("");
     }
   }, [searchTerm]);
   let searchTermArray = searchTerm.split(" ");
@@ -516,12 +518,13 @@ export function Search(props: SearchProps) {
   }
 
   async function handleSearchButton() {
-    if (searchTerm === "") {
+    if (searchvalue === "") {
       setSearchHelperText("Please search for something");
       setTimeout(() => {
         setSearchHelperText("");
       }, 1500);
     } else {
+      setSearchTerm(searchvalue);
       setTags([]);
       GetSupermarketPrices();
       setSearchPlaceholderText(searchTerm);
@@ -529,17 +532,15 @@ export function Search(props: SearchProps) {
   }
 
   async function handleSearchInputChange(
-    e: React.KeyboardEvent<HTMLDivElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) {
-    if ((e.target as HTMLInputElement).value === "") {
+    if (e.target.value === "") {
       console.log("Showing helper text");
       setSearchHelperText("");
     }
 
-    if ((e.target as HTMLInputElement).value.length >= 0) {
-      if (e.key === "Enter") {
-        setSearchTerm(e.target as HTMLInputElement).value;
-      }
+    if (e.target.value.length >= 0 || e.target.value === "Enter") {
+      setSearchvalue(e.target.value);
     }
   }
 
@@ -636,10 +637,12 @@ export function Search(props: SearchProps) {
               flex: 1,
             }}
             variant="outlined"
+            value={searchvalue}
             id="outlined-error-helper-text"
             helperText={searchHelperText}
             placeholder={searchPlaceholderText}
             onKeyDown={handleSearchEnterKey}
+            onChange={handleSearchInputChange}
           />
           <Button
             variant="contained"
