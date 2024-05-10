@@ -15,9 +15,18 @@ export function Filter(props: FilterProps) {
   const ListItem = styled("li")(({ theme }) => ({
     margin: theme.spacing(0.5),
   }));
+  const [filterHelperText, setFilterHelperText] = useState("");
 
   function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (
+      (e.target as HTMLInputElement).value.length === 0 &&
+      (e.key === "," || e.key === "Enter")
+    ) {
+      setFilterHelperText("Please filter something");
+      setTimeout(() => {
+        setFilterHelperText("");
+      }, 1500);
+    } else if (
       (e.key === "," || e.key === "Enter") &&
       (e.target as HTMLInputElement).value.length > 0
     ) {
@@ -35,10 +44,15 @@ export function Filter(props: FilterProps) {
   function handleFilterButtonClick(
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) {
-    if (!existingTag) {
+    if (!existingTag && (e.target as HTMLInputElement).value.length > 0) {
       setTags([...tags, filterSearchText]);
       setFilterSearchText("");
       e.preventDefault;
+    } else if ((e.target as HTMLInputElement).value.length === 0) {
+      setFilterHelperText("Please filter something");
+      setTimeout(() => {
+        setFilterHelperText("");
+      }, 1500);
     } else if (existingTag) {
       setFilterSearchText("");
       e.preventDefault;
@@ -77,6 +91,7 @@ export function Filter(props: FilterProps) {
               value={filterSearchText.replace(",", "")}
               onKeyDown={handleFilterCommaOrEnterKey}
               onChange={handleSetFilterSearchText}
+              helperText={filterHelperText}
             />
             <Tooltip title="Filter with comma or enter">
               <Button
@@ -100,7 +115,7 @@ export function Filter(props: FilterProps) {
 
           {tags.length > 0 && (
             <Box
-              margin={"auto"}
+              margin="auto"
               id="tagsBox"
               sx={{
                 padding: 0,
@@ -111,7 +126,7 @@ export function Filter(props: FilterProps) {
               component="ul"
               key={Math.random()}
             >
-              <Box display={"flex"}>
+              <Box display="flex" maxWidth={"0px"}>
                 {tags.map((data) => {
                   return (
                     <>

@@ -497,6 +497,7 @@ export function Search(props: SearchProps) {
   }, [countdownresults]);
 
   let searchTermArray = searchTerm.split(" ");
+
   function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -511,7 +512,6 @@ export function Search(props: SearchProps) {
         searchTerm != "" && GetSupermarketPrices();
         setSearchTerm("");
         setSearchPlaceholderText("Search for a product");
-        // setSearchHelperText("");
       }
     }
   }
@@ -519,11 +519,13 @@ export function Search(props: SearchProps) {
   function handleSearchButton() {
     if (searchTerm === "") {
       setSearchHelperText("Please search for something");
+      setTimeout(() => {
+        setSearchHelperText("");
+      }, 1500);
     } else {
       setTags([]);
       GetSupermarketPrices();
       setSearchPlaceholderText(searchTerm);
-      setSearchHelperText("");
     }
   }
 
@@ -534,7 +536,6 @@ export function Search(props: SearchProps) {
 
     if (e.target.value.length >= 0) {
       setSearchTerm(e.target.value);
-      setSearchHelperText("");
     }
   }
 
