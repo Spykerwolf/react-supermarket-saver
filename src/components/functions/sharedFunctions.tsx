@@ -1,4 +1,7 @@
-export default function CapitalizeFirstLetter(name: string) {
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
+
+export function CapitalizeFirstLetter(name: string) {
   const word = name;
   const firstLetter = word?.charAt(0);
   const firstLetterCap = firstLetter?.toUpperCase();

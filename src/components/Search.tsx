@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { getTokenNewWorld, getTokenPakNSave } from "../auth/auth";
-import CapitalizeFirstLetter from "./functions/capitalizeFirstLetter";
+import { CapitalizeFirstLetter } from "./functions/sharedFunctions";
 import { db } from "../auth/firebase";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 export let rows: any[] = [];
@@ -49,7 +49,6 @@ export function Search(props: SearchProps) {
     searchHelperText,
     setSearchHelperText,
     setTags,
-    tags,
     setSelected,
     mycoolrows,
     setMycoolrows,
