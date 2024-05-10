@@ -535,7 +535,6 @@ export function Search(props: SearchProps) {
     e: React.ChangeEvent<HTMLInputElement>
   ) {
     if (e.target.value === "") {
-      console.log("Showing helper text");
       setSearchHelperText("");
     }
 
