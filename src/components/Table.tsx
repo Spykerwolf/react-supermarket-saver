@@ -14,7 +14,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useState } from "react";
 import { rows } from "./Search";
 import { Button } from "@mui/material";
-import { getComparator, stableSort } from "./functions/sortTable";
+import { getComparator, stableSort } from "../functions/sortTable";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
