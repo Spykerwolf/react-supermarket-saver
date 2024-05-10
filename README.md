@@ -1,1 +1,1 @@
-![image](https://github.com/Spykerwolf/react-supermarket-saver/assets/26391619/eb27af62-34c7-4134-b1fc-db7c01107c03)
+![image](https://github.com/Spykerwolf/react-supermarket-saver/assets/26391619/ef5f2027-ba17-48b6-aa24-9f682ca8c397)
