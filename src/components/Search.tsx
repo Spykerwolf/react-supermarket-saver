@@ -630,7 +630,7 @@ export function Search(props: SearchProps) {
               },
             }}
             multiline={false}
-            autoComplete="on"
+            autoComplete="off"
             sx={{
               width: "485px",
               flex: 1,

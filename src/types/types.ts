@@ -70,3 +70,7 @@ export interface EnhancedTableHeadProps {
 export interface EnhancedTableToolbarProps {
   numSelected: number;
 }
+
+export interface SearchPageProps {
+  hideSearchComponent: boolean;
+}
