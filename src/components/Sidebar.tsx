@@ -16,8 +16,10 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import SearchPage from "../pages/SearchPage";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "@mui/material/Button";
 
 const drawerWidth = 240;
 
@@ -133,7 +135,7 @@ export default function Sidebar() {
               <ListItemIcon>
                 <ShoppingBasketIcon />
               </ListItemIcon>
-              <ListItemText primary="Search" />
+              <Link to="/">Search</Link>
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
@@ -141,10 +143,11 @@ export default function Sidebar() {
               <ListItemIcon>
                 <ReceiptLongSharpIcon />
               </ListItemIcon>
-              <ListItemText primary="List" />
+              <Link to="/list">List</Link>
             </ListItemButton>
           </ListItem>
         </List>
+
         <Divider />
       </Drawer>
       <Outlet />
