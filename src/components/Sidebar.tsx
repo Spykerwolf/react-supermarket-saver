@@ -135,7 +135,9 @@ export default function Sidebar() {
               <ListItemIcon>
                 <ShoppingBasketIcon />
               </ListItemIcon>
-              <Link to="/">Search</Link>
+              <Link to="/" onClick={toggleDrawer(false)}>
+                Search
+              </Link>
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
@@ -143,7 +145,9 @@ export default function Sidebar() {
               <ListItemIcon>
                 <ReceiptLongSharpIcon />
               </ListItemIcon>
-              <Link to="/list">List</Link>
+              <Link to="/list" onClick={toggleDrawer(false)}>
+                List
+              </Link>
             </ListItemButton>
           </ListItem>
         </List>
