@@ -1,4 +1,3 @@
-import * as React from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -13,13 +12,15 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
-import { Link, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import SearchPage from "../pages/SearchPage";
-import MenuItem from "@mui/material/MenuItem";
-import Button from "@mui/material/Button";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { useState } from "react";
+import { useThemeContext } from "../theme/ThemeContextProvider";
 
 const drawerWidth = 240;
 
@@ -73,91 +74,120 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 export default function Sidebar() {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [hideSearchComponent, setHideSearchComponent] = useState(false);
+  const { mode, toggleColorMode } = useThemeContext();
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
 
+  function handleLinkToSearch() {
+    setHideSearchComponent(false);
+  }
+
+  function handleLinkToList() {
+    setHideSearchComponent(true);
+  }
+
   return (
-    <Box>
-      <AppBar
-        position="static"
-        open={open}
-        variant="outlined"
-        color="info"
-        elevation={0}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={toggleDrawer(true)}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        onClose={toggleDrawer(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: "#fdd8d8",
-          },
-        }}
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box>
+        <AppBar
+          position="static"
+          open={open}
+          variant="outlined"
+          color="info"
+          elevation={0}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={toggleDrawer(true)}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: "none" }) }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          onClose={toggleDrawer(false)}
+          PaperProps={{
+            sx: {
+              backgroundColor: "#fdd8d8",
+            },
+          }}
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-        variant="temporary"
-        anchor="left"
-        open={open}
-      >
-        <DrawerHeader>
-          <IconButton onClick={toggleDrawer(false)}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                <ShoppingBasketIcon />
-              </ListItemIcon>
-              <Link to="/" onClick={toggleDrawer(false)}>
-                Search
-              </Link>
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                <ReceiptLongSharpIcon />
-              </ListItemIcon>
-              <Link to="/list" onClick={toggleDrawer(false)}>
-                List
-              </Link>
-            </ListItemButton>
-          </ListItem>
-        </List>
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+          variant="temporary"
+          anchor="left"
+          open={open}
+        >
+          <DrawerHeader>
+            <IconButton onClick={toggleDrawer(false)}>
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={toggleDrawer(false)}>
+                <ListItemIcon>
+                  <ShoppingBasketIcon />
+                </ListItemIcon>
+                <NavLink to="/" onClick={handleLinkToSearch}>
+                  Search
+                </NavLink>
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={toggleDrawer(false)}>
+                <ListItemIcon>
+                  <ReceiptLongSharpIcon />
+                </ListItemIcon>
+                <NavLink to="/list" onClick={handleLinkToList}>
+                  List
+                </NavLink>
+              </ListItemButton>
+            </ListItem>
+          </List>
 
-        <Divider />
-      </Drawer>
-      <Outlet />
-
-      <Main open={open}></Main>
-      <SearchPage />
-    </Box>
+          <Divider />
+        </Drawer>
+        <Main open={open}></Main>
+        <Box justifyContent="center" display={"flex"}>
+          <Box display="inline-flex" justifyContent="center">
+            <h1>Supermarket Savings </h1>
+          </Box>
+          <Box display="inline-flex" justifyContent="center">
+            <IconButton
+              sx={{
+                marginLeft: 2,
+                margin: "auto",
+              }}
+              onClick={toggleColorMode}
+              color="inherit"
+            >
+              {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Box>
+        </Box>
+        <SearchPage hideSearchComponent={hideSearchComponent} />
+        <Outlet />
+      </Box>
+    </ThemeProvider>
   );
 }
