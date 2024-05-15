@@ -18,6 +18,7 @@ export default function SearchPage(props: SearchPageProps) {
   const [favProduct, setFavProduct] = useState(false);
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const hideSearchComponent = props.hideSearchComponent;
+  const [addToListItems, setAddToListItems] = useState<any[]>([]);
 
   return (
     hideSearchComponent === false && (
@@ -50,6 +51,8 @@ export default function SearchPage(props: SearchPageProps) {
             setMycoolrows={setMycoolrows}
             setTags={setTags}
             tags={tags}
+            addToListItems={addToListItems}
+            setAddToListItems={setAddToListItems}
           />
         </ThemeProvider>
       </div>

@@ -8,7 +8,7 @@ export interface SearchProps {
   searchHelperText: string;
   setSearchHelperText: CallableFunction;
   setTags: CallableFunction;
-  tags: any[];
+  tags: string[];
   setSelected: Dispatch<SetStateAction<readonly number[]>>;
   selected: readonly number[];
   favProduct: boolean;
@@ -54,6 +54,9 @@ export interface EnhancedTableProps {
   setMycoolrows: Dispatch<any>;
   setTags: CallableFunction;
   tags: string[];
+  addToListItems: string[];
+  setAddToListItems: CallableFunction;
+  numSelected: number;
 }
 
 export interface EnhancedTableHeadProps {
@@ -64,10 +67,6 @@ export interface EnhancedTableHeadProps {
 
   order: Order;
   orderBy: string;
-  numSelected: number;
-}
-
-export interface EnhancedTableToolbarProps {
   numSelected: number;
 }
 

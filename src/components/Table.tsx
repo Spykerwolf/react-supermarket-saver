@@ -32,7 +32,6 @@ import {
   Order,
   EnhancedTableProps,
   EnhancedTableHeadProps,
-  EnhancedTableToolbarProps,
 } from "../types/types";
 
 const headCells: readonly HeadCell[] = [
@@ -133,133 +132,11 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   );
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
-
-  return (
-    <>
-      <Box justifyContent="center" display={"flex"}>
-        <Toolbar
-          id="mainToolbar"
-          sx={{
-            width: "100%",
-            display: "flex",
-            height: "60px",
-            padding: 0,
-            ...(numSelected > 0 && {
-              bgcolor: (theme) =>
-                alpha(
-                  theme.palette.primary.main,
-                  theme.palette.action.activatedOpacity
-                ),
-            }),
-          }}
-        >
-          {numSelected > 0 ? (
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          )}
-          {numSelected > 0 ? (
-            <Typography
-              sx={{ flex: "1 1 100%", paddingLeft: 3 }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
-            >
-              {numSelected} selected
-            </Typography>
-          ) : (
-            <Typography
-              sx={{ flex: "1 1 100%" }}
-              variant="h6"
-              id="tableTitle"
-              component="div"
-            ></Typography>
-          )}
-          {numSelected > 0 ? (
-            <Button
-              onClick={() => {
-                open(
-                  "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                  "_blank",
-                  "noopener,noreferrer"
-                );
-              }}
-              onMouseDown={(e) => {
-                if (e.button === 1) {
-                  open(
-                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }
-              }}
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          )}
-        </Toolbar>
-      </Box>
-    </>
-  );
-}
 export default function EnhancedTable(props: EnhancedTableProps) {
   const { favProduct, setFavProduct, selected, setSelected, mycoolrows, tags } =
     props;
+  const numSelected = selected.length;
+
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
@@ -339,7 +216,122 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   return (
     <>
       <Box>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <Box justifyContent="center" display={"flex"}>
+          <Toolbar
+            id="mainToolbar"
+            sx={{
+              width: "100%",
+              display: "flex",
+              height: "60px",
+              padding: 0,
+              ...(numSelected > 0 && {
+                bgcolor: (theme) =>
+                  alpha(
+                    theme.palette.primary.main,
+                    theme.palette.action.activatedOpacity
+                  ),
+              }),
+            }}
+          >
+            {numSelected > 0 ? (
+              <Button
+                variant="contained"
+                color="error"
+                size="small"
+                endIcon={<ShoppingCartIcon />}
+                type="button"
+                sx={{
+                  minHeight: "40px",
+                  minWidth: "128px",
+                  width: "fit-content",
+                }}
+              >
+                Add to list
+              </Button>
+            ) : (
+              <Button
+                disabled
+                variant="contained"
+                color="error"
+                size="small"
+                endIcon={<ShoppingCartIcon />}
+                type="button"
+                sx={{
+                  minHeight: "40px",
+                  minWidth: "128px",
+                  width: "fit-content",
+                }}
+              >
+                Add to list
+              </Button>
+            )}
+            {numSelected > 0 ? (
+              <Typography
+                sx={{ flex: "1 1 100%", paddingLeft: 3 }}
+                color="inherit"
+                variant="subtitle1"
+                component="div"
+              >
+                {numSelected} selected
+              </Typography>
+            ) : (
+              <Typography
+                sx={{ flex: "1 1 100%" }}
+                variant="h6"
+                id="tableTitle"
+                component="div"
+              ></Typography>
+            )}
+            {numSelected > 0 ? (
+              <Button
+                onClick={() => {
+                  open(
+                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }}
+                onMouseDown={(e) => {
+                  if (e.button === 1) {
+                    open(
+                      "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
+                  }
+                }}
+                variant="contained"
+                color="warning"
+                size="small"
+                endIcon={<ArticleIcon />}
+                type="button"
+                sx={{
+                  minHeight: "40px",
+                  minWidth: "128px",
+                  width: "fit-content",
+                }}
+              >
+                Open List
+              </Button>
+            ) : (
+              <Button
+                disabled
+                variant="contained"
+                color="warning"
+                size="small"
+                endIcon={<ArticleIcon />}
+                type="button"
+                sx={{
+                  minHeight: "40px",
+                  minWidth: "128px",
+                  width: "fit-content",
+                }}
+              >
+                Open List
+              </Button>
+            )}
+          </Toolbar>
+        </Box>
       </Box>
       <Box justifyContent="center" display={"flex"} width={"100%"}>
         <TableContainer>
