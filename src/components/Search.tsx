@@ -357,7 +357,7 @@ export function Search(props: SearchProps) {
               rows.push(
                 createData(
                   index,
-                  productSku,
+                  `${productSku}-PnS`,
                   productName,
                   onSpecial,
                   favProduct,

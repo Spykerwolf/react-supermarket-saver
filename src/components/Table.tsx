@@ -11,7 +11,7 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { rows } from "./Search";
 import { Button } from "@mui/material";
 import { getComparator, stableSort } from "../functions/sortTable";
@@ -133,10 +133,17 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
 }
 
 export default function EnhancedTable(props: EnhancedTableProps) {
-  const { favProduct, setFavProduct, selected, setSelected, mycoolrows, tags } =
-    props;
+  const {
+    favProduct,
+    setFavProduct,
+    selected,
+    setSelected,
+    mycoolrows,
+    tags,
+    setAddToListItems,
+    addToListItems,
+  } = props;
   const numSelected = selected.length;
-
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
@@ -151,6 +158,15 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setOrderBy(property);
   };
 
+  const [listArray, setListArray] = useState<string[]>([]);
+
+  // useEffect(() => {
+  //   listArray.length > 0 && console.log(listArray);
+  // }, [listArray]);
+
+  useEffect(() => {
+    addToListItems.length > 0 && console.log(addToListItems);
+  }, [addToListItems]);
   const handleClick = (sku: number) => {
     const selectedIndex = selected.indexOf(sku);
     let newSelected: readonly number[] = [];
@@ -181,7 +197,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setPage(0);
   };
 
-  const isSelected = (sku: number) => selected.indexOf(sku) !== -1;
+  const isSelected = (index: number) => selected.indexOf(index) !== -1;
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -213,6 +229,9 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     open(URL, "_blank", "noopener,noreferrer");
   }
 
+  function handleAddToList() {
+    setAddToListItems([listArray]);
+  }
   return (
     <>
       <Box>
@@ -235,6 +254,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
           >
             {numSelected > 0 ? (
               <Button
+                onClick={handleAddToList}
                 variant="contained"
                 color="error"
                 size="small"
@@ -360,9 +380,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                   }
                 })
 
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.sku);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+                .map((row) => {
+                  const itemNotSelected = isSelected(row.sku);
 
                   function handleAddFavourite(sku: string, name: string) {
                     if (localStorage.getItem(sku)) {
@@ -371,6 +390,32 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       localStorage.setItem(sku, name);
                     }
                     setFavProduct(!favProduct);
+                  }
+
+                  function handleCheckboxChange(
+                    store: string,
+                    name: string,
+                    packaging: string,
+                    price: number
+                  ) {
+                    const product = `${store} - ${name} ${packaging} - $${price}`;
+                    const productExists = listArray.some((item) =>
+                      product.includes(item)
+                    );
+
+                    function handleProductDelete(productToDelete: string) {
+                      console.log(`Deleted ${name}`);
+                      setListArray((products: string[]) =>
+                        products.filter((prod) => prod !== productToDelete)
+                      );
+                    }
+
+                    if (!itemNotSelected && !productExists) {
+                      console.log(`Adding new item - ${product}`);
+                      setListArray([...listArray, product]);
+                    } else if (itemNotSelected && productExists) {
+                      handleProductDelete(product);
+                    }
                   }
 
                   return (
@@ -395,8 +440,16 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           color="info"
                           size="small"
                           onClick={() => handleClick(row.sku)}
-                          key={row.sku}
-                          checked={isItemSelected}
+                          key={row.index}
+                          checked={itemNotSelected}
+                          onChange={() =>
+                            handleCheckboxChange(
+                              row.store,
+                              row.name,
+                              row.productPackage,
+                              row.price
+                            )
+                          }
                         />
                       </TableCell>
                       <TableCell padding="none" align="left">
@@ -412,9 +465,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       </TableCell>
                       <TableCell
                         component="th"
-                        id={labelId}
                         scope="row"
-                        key={row.index}
+                        key={row.store}
                         align="left"
                         color="white"
                       >
