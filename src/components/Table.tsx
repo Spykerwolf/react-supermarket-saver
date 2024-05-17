@@ -23,7 +23,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import ArticleIcon from "@mui/icons-material/Article";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
 import {
@@ -230,7 +229,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   }
 
   function handleAddToList() {
-    setAddToListItems([listArray]);
+    setAddToListItems(listArray);
   }
   return (
     <>
@@ -301,54 +300,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                 id="tableTitle"
                 component="div"
               ></Typography>
-            )}
-            {numSelected > 0 ? (
-              <Button
-                onClick={() => {
-                  open(
-                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }}
-                onMouseDown={(e) => {
-                  if (e.button === 1) {
-                    open(
-                      "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                      "_blank",
-                      "noopener,noreferrer"
-                    );
-                  }
-                }}
-                variant="contained"
-                color="warning"
-                size="small"
-                endIcon={<ArticleIcon />}
-                type="button"
-                sx={{
-                  minHeight: "40px",
-                  minWidth: "128px",
-                  width: "fit-content",
-                }}
-              >
-                Open List
-              </Button>
-            ) : (
-              <Button
-                disabled
-                variant="contained"
-                color="warning"
-                size="small"
-                endIcon={<ArticleIcon />}
-                type="button"
-                sx={{
-                  minHeight: "40px",
-                  minWidth: "128px",
-                  width: "fit-content",
-                }}
-              >
-                Open List
-              </Button>
             )}
           </Toolbar>
         </Box>

@@ -57,8 +57,13 @@ export interface EnhancedTableProps {
   addToListItems: string[];
   setAddToListItems: CallableFunction;
   numSelected: number;
+  hideSearchComponent?: boolean;
 }
 
+export interface CheckboxListProps {
+  addToListItems: string[];
+  setHideSearchComponent: React.SetStateAction<boolean>;
+}
 export interface EnhancedTableHeadProps {
   onRequestSort: (
     event: React.MouseEvent<unknown>,
@@ -68,8 +73,4 @@ export interface EnhancedTableHeadProps {
   order: Order;
   orderBy: string;
   numSelected: number;
-}
-
-export interface SearchPageProps {
-  hideSearchComponent: boolean;
 }

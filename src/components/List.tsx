@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -7,59 +7,75 @@ import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
+import { useOutletContext } from "react-router-dom";
+import { CheckboxListProps } from "../types/types";
 
 export default function CheckboxList() {
-  const [checked, setChecked] = React.useState([0]);
+  const { addToListItems, setHideSearchComponent }: CheckboxListProps =
+    useOutletContext();
+  // const [checked, setChecked] = useState([0]);
+  useEffect(() => {
+    setHideSearchComponent(true);
+  }, []);
 
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+  // const handleToggle = (value: number) => () => {
+  //   const currentIndex = checked.indexOf(value);
+  //   const newChecked = [...checked];
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
+  //   if (currentIndex === -1) {
+  //     newChecked.push(value);
+  //   } else {
+  //     newChecked.splice(currentIndex, 1);
+  //   }
 
-    setChecked(newChecked);
-  };
+  //   setChecked(newChecked);
+  // };
+
+  // function handleChecked(name: string) {
+  //   console.log(name);
+  // }
 
   return (
-    <Box justifyContent={"center"} display={"flex"}>
-      <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
-        <List
-          sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
-        >
-          {[0, 1, 2, 3].map((value) => {
-            const labelId = `checkbox-list-label-${value}`;
+    <>
+      <Box justifyContent={"center"} display={"flex"}>
+        <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
+          <List
+            sx={{
+              width: "100%",
+              maxWidth: "100%",
+              bgcolor: "background.paper",
+            }}
+          >
+            {addToListItems.map((item) => {
+              const labelId = `checkbox-list-label-${item}`;
 
-            return (
-              <ListItem key={value} disablePadding>
-                <ListItemButton
-                  role={undefined}
-                  onClick={handleToggle(value)}
-                  dense
-                >
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={checked.indexOf(value) !== -1}
-                      tabIndex={-1}
-                      disableRipple
-                      inputProps={{ "aria-labelledby": labelId }}
-                      color="info"
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    id={labelId}
-                    primary={`Line item ${value + 1}`}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Paper>
-    </Box>
+              return (
+                <ListItem disablePadding sx={{ p: 0 }}>
+                  <ListItemButton
+                    dense="true"
+                    disableRipple="true"
+                    role={undefined}
+                    // onClick={handleToggle()}
+                  >
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        // checked={checked.indexOf() !== -1}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{ "aria-labelledby": labelId }}
+                        color="info"
+                        onChange={() => handleChecked(item)}
+                      />
+                    </ListItemIcon>
+                    <ListItemText id={labelId} primary={item} />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Paper>
+      </Box>
+    </>
   );
 }
