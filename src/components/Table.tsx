@@ -25,6 +25,8 @@ import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import {
   TableRowProps,
   HeadCell,
@@ -230,6 +232,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   function handleAddToList() {
     setAddToListItems(listArray);
+    setSelected([]);
   }
   return (
     <>
@@ -388,7 +391,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                         <Checkbox
                           id="addtolistCheckbox"
                           sx={{ paddingRight: 1 }}
-                          color="info"
+                          // checkedIcon={handleCheckboxIconChange}
+                          color="warning"
                           size="small"
                           onClick={() => handleClick(row.sku)}
                           key={row.index}
