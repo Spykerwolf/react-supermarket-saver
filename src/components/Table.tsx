@@ -10,7 +10,6 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useState } from "react";
 import { rows } from "./Search";
 import { Button } from "@mui/material";
@@ -26,7 +25,8 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+
 import {
   TableRowProps,
   HeadCell,
@@ -378,7 +378,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       product.includes(item)
                     );
                     if (productExists) {
-                      return <ShoppingBasketOutlinedIcon />;
+                      return <ShoppingCartIcon />;
                     } else {
                       return <CheckBoxOutlineBlankIcon />;
                     }

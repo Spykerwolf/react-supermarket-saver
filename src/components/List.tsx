@@ -9,6 +9,8 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import { useOutletContext } from "react-router-dom";
 import { CheckboxListProps } from "../types/types";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
 
 export default function CheckboxList() {
   const { addToListItems, setHideSearchComponent }: CheckboxListProps =
@@ -52,13 +54,28 @@ export default function CheckboxList() {
               const labelId = `checkbox-list-label-${index}`;
 
               return (
-                <ListItem disablePadding sx={{ p: 0 }} key={index}>
+                <ListItem
+                  disablePadding
+                  sx={{ p: 0 }}
+                  key={index}
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="delete">
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                >
                   <ListItemButton
+                    style={{
+                      backgroundColor:
+                        itemsAlreadyOnList.some((prod) =>
+                          prod.includes(item)
+                        ) && "#c1c1c1",
+                    }}
                     dense="true"
                     disableRipple="true"
                     role={undefined}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon onClick={handleToggle(item)}>
                       <Checkbox
                         edge="start"
                         tabIndex={-1}
