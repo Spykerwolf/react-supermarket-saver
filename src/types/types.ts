@@ -58,6 +58,8 @@ export interface EnhancedTableProps {
   setAddToListItems: CallableFunction;
   numSelected: number;
   hideSearchComponent?: boolean;
+  listArray: string[];
+  setListArray: CallableFunction;
 }
 
 export interface CheckboxListProps {

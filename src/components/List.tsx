@@ -13,27 +13,29 @@ import { CheckboxListProps } from "../types/types";
 export default function CheckboxList() {
   const { addToListItems, setHideSearchComponent }: CheckboxListProps =
     useOutletContext();
-  // const [checked, setChecked] = useState([0]);
+  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState([]);
+
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
 
-  // const handleToggle = (value: number) => () => {
-  //   const currentIndex = checked.indexOf(value);
-  //   const newChecked = [...checked];
+  useEffect(() => {
+    console.log(itemsAlreadyOnList);
+  }, [itemsAlreadyOnList]);
 
-  //   if (currentIndex === -1) {
-  //     newChecked.push(value);
-  //   } else {
-  //     newChecked.splice(currentIndex, 1);
-  //   }
-
-  //   setChecked(newChecked);
-  // };
-
-  // function handleChecked(name: string) {
-  //   console.log(name);
-  // }
+  const handleToggle = (name: string) => () => {
+    const productExists = itemsAlreadyOnList.some((item) =>
+      name.includes(item)
+    );
+    function handleProductDelete(productToDelete: string) {
+      setItemsAlreadyOnList((products: string[]) =>
+        products.filter((prod) => prod !== productToDelete)
+      );
+    }
+    productExists
+      ? handleProductDelete(name)
+      : setItemsAlreadyOnList([...itemsAlreadyOnList, name]);
+  };
 
   return (
     <>
@@ -46,29 +48,37 @@ export default function CheckboxList() {
               bgcolor: "background.paper",
             }}
           >
-            {addToListItems.map((item) => {
-              const labelId = `checkbox-list-label-${item}`;
+            {addToListItems.map((item, index) => {
+              const labelId = `checkbox-list-label-${index}`;
 
               return (
-                <ListItem disablePadding sx={{ p: 0 }}>
+                <ListItem disablePadding sx={{ p: 0 }} key={index}>
                   <ListItemButton
                     dense="true"
                     disableRipple="true"
                     role={undefined}
-                    // onClick={handleToggle()}
                   >
                     <ListItemIcon>
                       <Checkbox
                         edge="start"
-                        // checked={checked.indexOf() !== -1}
                         tabIndex={-1}
                         disableRipple
                         inputProps={{ "aria-labelledby": labelId }}
                         color="info"
-                        onChange={() => handleChecked(item)}
+                        onChange={handleToggle(item)}
                       />
                     </ListItemIcon>
-                    <ListItemText id={labelId} primary={item} />
+                    <ListItemText
+                      id={labelId}
+                      primary={item}
+                      style={{
+                        textDecoration: itemsAlreadyOnList.some((prod) =>
+                          prod.includes(item)
+                        )
+                          ? "line-through"
+                          : "none",
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
               );

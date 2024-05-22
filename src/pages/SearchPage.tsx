@@ -15,9 +15,11 @@ export default function SearchPage(props: EnhancedTableProps) {
   const [searchHelperText, setSearchHelperText] = useState("");
   const [tags, setTags] = useState<any[]>([]);
   const [selected, setSelected] = useState<readonly number[]>([]);
+
   const [favProduct, setFavProduct] = useState(false);
   const [mycoolrows, setMycoolrows] = useState([] as any);
   const { hideSearchComponent, setAddToListItems, addToListItems } = props;
+  const [listArray, setListArray] = useState<string[]>([]);
 
   return (
     hideSearchComponent === false && (
@@ -52,6 +54,8 @@ export default function SearchPage(props: EnhancedTableProps) {
             tags={tags}
             addToListItems={addToListItems}
             setAddToListItems={setAddToListItems}
+            listArray={listArray}
+            setListArray={setListArray}
           />
         </ThemeProvider>
       </div>
