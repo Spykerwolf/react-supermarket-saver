@@ -195,7 +195,13 @@ export default function Sidebar() {
           addToListItems={addToListItems}
           setAddToListItems={setAddToListItems}
         />
-        <Outlet context={{ addToListItems, setHideSearchComponent }} />
+        <Outlet
+          context={{
+            addToListItems,
+            setAddToListItems,
+            setHideSearchComponent,
+          }}
+        />
       </Box>
     </ThemeProvider>
   );

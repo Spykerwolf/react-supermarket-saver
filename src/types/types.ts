@@ -64,6 +64,7 @@ export interface EnhancedTableProps {
 
 export interface CheckboxListProps {
   addToListItems: string[];
+  setAddToListItems: CallableFunction;
   setHideSearchComponent: React.SetStateAction<boolean>;
 }
 export interface EnhancedTableHeadProps {

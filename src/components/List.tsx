@@ -13,8 +13,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 
 export default function CheckboxList() {
-  const { addToListItems, setHideSearchComponent }: CheckboxListProps =
-    useOutletContext();
+  const {
+    addToListItems,
+    setAddToListItems,
+    setHideSearchComponent,
+  }: CheckboxListProps = useOutletContext();
   const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState([]);
 
   useEffect(() => {
@@ -22,7 +25,11 @@ export default function CheckboxList() {
   }, []);
 
   useEffect(() => {
-    console.log(itemsAlreadyOnList);
+    console.log("addToListItems", addToListItems);
+  }, [addToListItems]);
+
+  useEffect(() => {
+    console.log("itemsAlreadyOnList", itemsAlreadyOnList);
   }, [itemsAlreadyOnList]);
 
   const handleToggle = (name: string) => () => {
@@ -38,6 +45,12 @@ export default function CheckboxList() {
       ? handleProductDelete(name)
       : setItemsAlreadyOnList([...itemsAlreadyOnList, name]);
   };
+
+  function handleProductDelete(productToDelete: string) {
+    setAddToListItems((products: string[]) =>
+      products.filter((prod) => prod !== productToDelete)
+    );
+  }
 
   return (
     <>
@@ -59,7 +72,11 @@ export default function CheckboxList() {
                   sx={{ p: 0 }}
                   key={index}
                   secondaryAction={
-                    <IconButton edge="end" aria-label="delete">
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleProductDelete(item)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   }
