@@ -18,7 +18,7 @@ export default function CheckboxList() {
     setAddToListItems,
     setHideSearchComponent,
   }: CheckboxListProps = useOutletContext();
-  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState([]);
+  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState<string[]>([]);
 
   useEffect(() => {
     setHideSearchComponent(true);
@@ -83,13 +83,14 @@ export default function CheckboxList() {
                 >
                   <ListItemButton
                     style={{
-                      backgroundColor:
-                        itemsAlreadyOnList.some((prod) =>
-                          prod.includes(item)
-                        ) && "#c1c1c1",
+                      backgroundColor: itemsAlreadyOnList.some((prod) =>
+                        prod.includes(item)
+                      )
+                        ? "#c1c1c1"
+                        : "white",
                     }}
-                    dense="true"
-                    disableRipple="true"
+                    dense={true}
+                    disableRipple={true}
                     role={undefined}
                   >
                     <ListItemIcon onClick={handleToggle(item)}>
