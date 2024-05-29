@@ -6,10 +6,8 @@ export default function ListPage() {
   const { theme } = useThemeContext();
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <CheckboxList />
-      </ThemeProvider>
-    </>
+    <ThemeProvider theme={theme}>
+      <CheckboxList />
+    </ThemeProvider>
   );
 }

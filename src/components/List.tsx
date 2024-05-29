@@ -11,6 +11,7 @@ import { useOutletContext } from "react-router-dom";
 import { CheckboxListProps } from "../types/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function CheckboxList() {
   const {
@@ -52,75 +53,95 @@ export default function CheckboxList() {
     );
   }
 
+  function showAnimation() {
+    return (
+      <div style={{ justifyContent: "center", display: "flex" }}>
+        <DotLottieReact
+          style={{
+            width: "40%",
+            height: "40%",
+          }}
+          src="src\lotties\shoppyLotty.json"
+          loop
+          autoplay
+        />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Box justifyContent={"center"} display={"flex"}>
-        <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
-          <List
-            sx={{
-              width: "100%",
-              maxWidth: "100%",
-              bgcolor: "background.paper",
-            }}
-          >
-            {addToListItems.map((item, index) => {
-              const labelId = `checkbox-list-label-${index}`;
+      {addToListItems.length === 0 ? (
+        showAnimation()
+      ) : (
+        <Box justifyContent={"center"} display={"flex"}>
+          <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
+            <List
+              sx={{
+                width: "100%",
+                maxWidth: "100%",
+                bgcolor: "background.paper",
+              }}
+            >
+              {addToListItems.map((item, index) => {
+                const labelId = `checkbox-list-label-${index}`;
 
-              return (
-                <ListItem
-                  disablePadding
-                  sx={{ p: 0 }}
-                  key={index}
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleProductDelete(item)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                >
-                  <ListItemButton
-                    style={{
-                      backgroundColor: itemsAlreadyOnList.some((prod) =>
-                        prod.includes(item)
-                      )
-                        ? "#c1c1c1"
-                        : "white",
-                    }}
-                    dense={true}
-                    disableRipple={true}
-                    role={undefined}
+                return (
+                  <ListItem
+                    disablePadding
+                    sx={{ p: 0 }}
+                    key={index}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => handleProductDelete(item)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
                   >
-                    <ListItemIcon onClick={handleToggle(item)}>
-                      <Checkbox
-                        edge="start"
-                        tabIndex={-1}
-                        disableRipple
-                        inputProps={{ "aria-labelledby": labelId }}
-                        color="info"
-                        onChange={handleToggle(item)}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      id={labelId}
-                      primary={item}
+                    <ListItemButton
                       style={{
-                        textDecoration: itemsAlreadyOnList.some((prod) =>
+                        backgroundColor: itemsAlreadyOnList.some((prod) =>
                           prod.includes(item)
                         )
-                          ? "line-through"
-                          : "none",
+                          ? "#c1c1c1"
+                          : "white",
                       }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Paper>
-      </Box>
+                      dense={true}
+                      disableRipple={true}
+                      role={undefined}
+                    >
+                      <ListItemIcon onClick={handleToggle(item)}>
+                        <Checkbox
+                          edge="start"
+                          tabIndex={-1}
+                          disableRipple
+                          inputProps={{ "aria-labelledby": labelId }}
+                          color="info"
+                          onChange={handleToggle(item)}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        id={labelId}
+                        primary={item}
+                        style={{
+                          textDecoration: itemsAlreadyOnList.some((prod) =>
+                            prod.includes(item)
+                          )
+                            ? "line-through"
+                            : "none",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Paper>
+        </Box>
+      )}
     </>
   );
 }
