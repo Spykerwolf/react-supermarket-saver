@@ -384,6 +384,11 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     }
                   }
 
+                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
+                  const productExists = addToListItems.some((item) =>
+                    product.includes(item)
+                  );
+
                   return (
                     <TableRow
                       key={row.id}
@@ -401,7 +406,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     >
                       <TableCell padding="none">
                         <Tooltip
-                          title="On list, click to remove"
+                          title={productExists && "Remove from list"}
                           placement="left"
                         >
                           <Checkbox
@@ -432,9 +437,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       <TableCell padding="none" align="left">
                         <Tooltip
                           title={
-                            localStorage.getItem(row.sku)
-                              ? "Remove from Favourites"
-                              : "Add to Favourites"
+                            localStorage.getItem(row.sku) &&
+                            "Remove from Favourites"
                           }
                           placement="right"
                         >
