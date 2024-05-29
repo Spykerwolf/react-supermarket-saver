@@ -412,12 +412,13 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           <Checkbox
                             id="addtolistCheckbox"
                             sx={{ paddingRight: 1 }}
-                            icon={handleCheckboxIconChange(
-                              row.store,
-                              row.name,
-                              row.productPackage,
-                              row.price
-                            )}
+                            icon={
+                              productExists ? (
+                                <ShoppingCartIcon />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon />
+                              )
+                            }
                             color="warning"
                             size="small"
                             onClick={() => handleClick(row.sku)}
