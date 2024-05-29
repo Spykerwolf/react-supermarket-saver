@@ -19,13 +19,13 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 
 import {
   TableRowProps,
@@ -143,8 +143,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     tags,
     setAddToListItems,
     addToListItems,
-    listArray,
-    setListArray,
   } = props;
   const numSelected = selected.length;
   const [order, setOrder] = useState<Order>("asc");
@@ -161,25 +159,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setOrderBy(property);
   };
 
-  const handleClick = (sku: number) => {
-    const selectedIndex = selected.indexOf(sku);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, sku);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -190,8 +169,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const isSelected = (index: number) => selected.indexOf(index) !== -1;
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -223,10 +200,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     open(URL, "_blank", "noopener,noreferrer");
   }
 
-  function handleAddToList() {
-    setAddToListItems(listArray);
-    setSelected([]);
-  }
   return (
     <>
       <Box>
@@ -247,60 +220,21 @@ export default function EnhancedTable(props: EnhancedTableProps) {
               }),
             }}
           >
-            {numSelected > 0 ? (
-              <Button
-                onClick={handleAddToList}
-                variant="contained"
-                color="error"
-                size="small"
-                endIcon={<ShoppingCartIcon />}
-                type="button"
-                sx={{
-                  minHeight: "40px",
-                  minWidth: "128px",
-                  width: "fit-content",
-                }}
-              >
-                Add to list
-              </Button>
-            ) : (
-              <Tooltip title="Select an item first" placement="top">
-                <Box>
-                  <Button
-                    disabled
-                    variant="contained"
-                    color="error"
-                    size="small"
-                    endIcon={<ShoppingCartIcon />}
-                    type="button"
-                    sx={{
-                      minHeight: "40px",
-                      minWidth: "128px",
-                      width: "fit-content",
-                    }}
-                  >
-                    Add to list
-                  </Button>
-                </Box>
-              </Tooltip>
-            )}
-            {numSelected > 0 ? (
-              <Typography
-                sx={{ flex: "1 1 100%", paddingLeft: 3 }}
-                color="inherit"
-                variant="subtitle1"
-                component="div"
-              >
-                {numSelected} selected
-              </Typography>
-            ) : (
-              <Typography
-                sx={{ flex: "1 1 100%" }}
-                variant="h6"
-                id="tableTitle"
-                component="div"
-              ></Typography>
-            )}
+            <Button
+              disabled
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
           </Toolbar>
         </Box>
       </Box>
@@ -332,7 +266,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                 })
 
                 .map((row) => {
-                  const itemNotSelected = isSelected(row.sku);
                   const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
                   const productExists = addToListItems.some((item) =>
                     product.includes(item)
@@ -347,18 +280,13 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     setFavProduct(!favProduct);
                   }
 
-                  function handleCheckboxChange() {
-                    !itemNotSelected &&
-                      !productExists &&
-                      setListArray([...listArray, product]);
+                  function handleAddToList() {
+                    setAddToListItems([...addToListItems, product]);
+                    setSelected([]);
                   }
 
                   function handleDeleteFromList() {
                     function handleProductDelete(productToDelete: string) {
-                      console.log("Setting");
-                      setListArray((products: string[]) =>
-                        products.filter((prod) => prod !== productToDelete)
-                      );
                       setAddToListItems((products: string[]) =>
                         products.filter((prod) => prod !== productToDelete)
                       );
@@ -387,27 +315,22 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           title={productExists && "Remove from list"}
                           placement="left"
                         >
-                          <Checkbox
-                            id="addtolistCheckbox"
-                            sx={{ paddingRight: 1 }}
-                            icon={
-                              productExists ? (
-                                <ShoppingCartIcon />
-                              ) : (
-                                <CheckBoxOutlineBlankIcon />
-                              )
-                            }
-                            color="warning"
-                            size="small"
+                          <IconButton
+                            id="addtolist"
+                            color={productExists ? "warning" : "default"}
+                            size="medium"
                             onClick={() =>
                               productExists
                                 ? handleDeleteFromList()
-                                : handleClick(row.sku)
+                                : handleAddToList()
                             }
-                            key={row.index}
-                            checked={itemNotSelected}
-                            onChange={() => handleCheckboxChange()}
-                          />
+                          >
+                            {productExists ? (
+                              <ShoppingCartOutlinedIcon />
+                            ) : (
+                              <AddOutlinedIcon />
+                            )}
+                          </IconButton>
                         </Tooltip>
                       </TableCell>
                       <TableCell padding="none" align="left">
