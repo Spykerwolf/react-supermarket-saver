@@ -10,7 +10,6 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useState } from "react";
 import { rows } from "./Search";
 import { Button } from "@mui/material";
@@ -20,19 +19,20 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import ArticleIcon from "@mui/icons-material/Article";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+
 import {
   TableRowProps,
   HeadCell,
   Order,
   EnhancedTableProps,
   EnhancedTableHeadProps,
-  EnhancedTableToolbarProps,
 } from "../types/types";
 
 const headCells: readonly HeadCell[] = [
@@ -133,133 +133,18 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   );
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
-
-  return (
-    <>
-      <Box justifyContent="center" display={"flex"}>
-        <Toolbar
-          id="mainToolbar"
-          sx={{
-            width: "100%",
-            display: "flex",
-            height: "60px",
-            padding: 0,
-            ...(numSelected > 0 && {
-              bgcolor: (theme) =>
-                alpha(
-                  theme.palette.primary.main,
-                  theme.palette.action.activatedOpacity
-                ),
-            }),
-          }}
-        >
-          {numSelected > 0 ? (
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Add to list
-            </Button>
-          )}
-          {numSelected > 0 ? (
-            <Typography
-              sx={{ flex: "1 1 100%", paddingLeft: 3 }}
-              color="inherit"
-              variant="subtitle1"
-              component="div"
-            >
-              {numSelected} selected
-            </Typography>
-          ) : (
-            <Typography
-              sx={{ flex: "1 1 100%" }}
-              variant="h6"
-              id="tableTitle"
-              component="div"
-            ></Typography>
-          )}
-          {numSelected > 0 ? (
-            <Button
-              onClick={() => {
-                open(
-                  "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                  "_blank",
-                  "noopener,noreferrer"
-                );
-              }}
-              onMouseDown={(e) => {
-                if (e.button === 1) {
-                  open(
-                    "https://ticktick.com/webapp/#p/662f1f0c7bb4f9d1f9520059/tasks",
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }
-              }}
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          ) : (
-            <Button
-              disabled
-              variant="contained"
-              color="warning"
-              size="small"
-              endIcon={<ArticleIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          )}
-        </Toolbar>
-      </Box>
-    </>
-  );
-}
 export default function EnhancedTable(props: EnhancedTableProps) {
-  const { favProduct, setFavProduct, selected, setSelected, mycoolrows, tags } =
-    props;
+  const {
+    favProduct,
+    setFavProduct,
+    selected,
+    setSelected,
+    mycoolrows,
+    tags,
+    setAddToListItems,
+    addToListItems,
+  } = props;
+  const numSelected = selected.length;
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
@@ -274,25 +159,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setOrderBy(property);
   };
 
-  const handleClick = (sku: number) => {
-    const selectedIndex = selected.indexOf(sku);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, sku);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -303,8 +169,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const isSelected = (sku: number) => selected.indexOf(sku) !== -1;
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -339,7 +203,40 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   return (
     <>
       <Box>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <Box justifyContent="center" display={"flex"}>
+          <Toolbar
+            id="mainToolbar"
+            sx={{
+              width: "100%",
+              display: "flex",
+              height: "60px",
+              padding: 0,
+              ...(numSelected > 0 && {
+                bgcolor: (theme) =>
+                  alpha(
+                    theme.palette.primary.main,
+                    theme.palette.action.activatedOpacity
+                  ),
+              }),
+            }}
+          >
+            <Button
+              disabled
+              variant="contained"
+              color="error"
+              size="small"
+              endIcon={<ShoppingCartIcon />}
+              type="button"
+              sx={{
+                minHeight: "40px",
+                minWidth: "128px",
+                width: "fit-content",
+              }}
+            >
+              Open List
+            </Button>
+          </Toolbar>
+        </Box>
       </Box>
       <Box justifyContent="center" display={"flex"} width={"100%"}>
         <TableContainer>
@@ -368,9 +265,11 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                   }
                 })
 
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.sku);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+                .map((row) => {
+                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
+                  const productExists = addToListItems.some((item) =>
+                    product.includes(item)
+                  );
 
                   function handleAddFavourite(sku: string, name: string) {
                     if (localStorage.getItem(sku)) {
@@ -381,15 +280,30 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     setFavProduct(!favProduct);
                   }
 
+                  function handleAddToList() {
+                    setAddToListItems([...addToListItems, product]);
+                    setSelected([]);
+                  }
+
+                  function handleDeleteFromList() {
+                    function handleProductDelete(productToDelete: string) {
+                      setAddToListItems((products: string[]) =>
+                        products.filter((prod) => prod !== productToDelete)
+                      );
+                    }
+
+                    productExists && handleProductDelete(product);
+                  }
+
                   return (
                     <TableRow
-                      id="tableRow"
+                      key={row.id}
+                      id={row.id}
                       style={{
                         height: 33 * emptyRows,
                       }}
                       hover
                       tabIndex={-1}
-                      key={Math.random()}
                       sx={{
                         cursor: "pointer",
                         backgroundColor: "#00000008",
@@ -397,32 +311,55 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       }}
                     >
                       <TableCell padding="none">
-                        <Checkbox
-                          id="addtolistCheckbox"
-                          sx={{ paddingRight: 1 }}
-                          color="info"
-                          size="small"
-                          onClick={() => handleClick(row.sku)}
-                          key={row.sku}
-                          checked={isItemSelected}
-                        />
+                        <Tooltip
+                          title={productExists && "Remove from list"}
+                          placement="left"
+                        >
+                          <IconButton
+                            id="addtolist"
+                            color={productExists ? "warning" : "default"}
+                            size="medium"
+                            onClick={() =>
+                              productExists
+                                ? handleDeleteFromList()
+                                : handleAddToList()
+                            }
+                          >
+                            {productExists ? (
+                              <ShoppingCartOutlinedIcon />
+                            ) : (
+                              <AddOutlinedIcon />
+                            )}
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                       <TableCell padding="none" align="left">
-                        <Checkbox
-                          id="favouriteCheckbox"
-                          icon={<StarBorderIcon />}
-                          checkedIcon={<StarIcon />}
-                          color="secondary"
-                          checked={localStorage.getItem(row.sku) ? true : false}
-                          key={row.sku}
-                          onChange={() => handleAddFavourite(row.sku, row.name)}
-                        />
+                        <Tooltip
+                          title={
+                            localStorage.getItem(row.sku) &&
+                            "Remove from Favourites"
+                          }
+                          placement="right"
+                        >
+                          <Checkbox
+                            id="favouriteCheckbox"
+                            icon={<StarBorderIcon />}
+                            checkedIcon={<StarIcon />}
+                            color="secondary"
+                            checked={
+                              localStorage.getItem(row.sku) ? true : false
+                            }
+                            key={row.sku}
+                            onChange={() =>
+                              handleAddFavourite(row.sku, row.name)
+                            }
+                          />
+                        </Tooltip>
                       </TableCell>
                       <TableCell
                         component="th"
-                        id={labelId}
                         scope="row"
-                        key={row.index}
+                        key={row.store}
                         align="left"
                         color="white"
                       >

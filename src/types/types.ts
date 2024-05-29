@@ -8,7 +8,7 @@ export interface SearchProps {
   searchHelperText: string;
   setSearchHelperText: CallableFunction;
   setTags: CallableFunction;
-  tags: any[];
+  tags: string[];
   setSelected: Dispatch<SetStateAction<readonly number[]>>;
   selected: readonly number[];
   favProduct: boolean;
@@ -54,8 +54,17 @@ export interface EnhancedTableProps {
   setMycoolrows: Dispatch<any>;
   setTags: CallableFunction;
   tags: string[];
+  addToListItems: string[];
+  setAddToListItems: CallableFunction;
+  numSelected: number;
+  hideSearchComponent?: boolean;
 }
 
+export interface CheckboxListProps {
+  addToListItems: string[];
+  setAddToListItems: CallableFunction;
+  setHideSearchComponent: React.Dispatch<SetStateAction<boolean>>;
+}
 export interface EnhancedTableHeadProps {
   onRequestSort: (
     event: React.MouseEvent<unknown>,
@@ -65,12 +74,4 @@ export interface EnhancedTableHeadProps {
   order: Order;
   orderBy: string;
   numSelected: number;
-}
-
-export interface EnhancedTableToolbarProps {
-  numSelected: number;
-}
-
-export interface SearchPageProps {
-  hideSearchComponent: boolean;
 }

@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -7,59 +7,141 @@ import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
+import { useOutletContext } from "react-router-dom";
+import { CheckboxListProps } from "../types/types";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function CheckboxList() {
-  const [checked, setChecked] = React.useState([0]);
+  const {
+    addToListItems,
+    setAddToListItems,
+    setHideSearchComponent,
+  }: CheckboxListProps = useOutletContext();
+  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState<string[]>([]);
 
-  const handleToggle = (value: number) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+  useEffect(() => {
+    setHideSearchComponent(true);
+  }, []);
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
+  useEffect(() => {
+    console.log("addToListItems", addToListItems);
+  }, [addToListItems]);
+
+  useEffect(() => {
+    console.log("itemsAlreadyOnList", itemsAlreadyOnList);
+  }, [itemsAlreadyOnList]);
+
+  const handleToggle = (name: string) => () => {
+    const productExists = itemsAlreadyOnList.some((item) =>
+      name.includes(item)
+    );
+    function handleProductDelete(productToDelete: string) {
+      setItemsAlreadyOnList((products: string[]) =>
+        products.filter((prod) => prod !== productToDelete)
+      );
     }
-
-    setChecked(newChecked);
+    productExists
+      ? handleProductDelete(name)
+      : setItemsAlreadyOnList([...itemsAlreadyOnList, name]);
   };
 
-  return (
-    <Box justifyContent={"center"} display={"flex"}>
-      <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
-        <List
-          sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
-        >
-          {[0, 1, 2, 3].map((value) => {
-            const labelId = `checkbox-list-label-${value}`;
+  function handleProductDelete(productToDelete: string) {
+    setAddToListItems((products: string[]) =>
+      products.filter((prod) => prod !== productToDelete)
+    );
+  }
 
-            return (
-              <ListItem key={value} disablePadding>
-                <ListItemButton
-                  role={undefined}
-                  onClick={handleToggle(value)}
-                  dense
-                >
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={checked.indexOf(value) !== -1}
-                      tabIndex={-1}
-                      disableRipple
-                      inputProps={{ "aria-labelledby": labelId }}
-                      color="info"
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    id={labelId}
-                    primary={`Line item ${value + 1}`}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Paper>
-    </Box>
+  function showAnimation() {
+    return (
+      <div style={{ justifyContent: "center", display: "flex" }}>
+        <DotLottieReact
+          style={{
+            width: "40%",
+            height: "40%",
+          }}
+          src="src\lotties\shoppyLotty.json"
+          loop
+          autoplay
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {addToListItems.length === 0 ? (
+        showAnimation()
+      ) : (
+        <Box justifyContent={"center"} display={"flex"}>
+          <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
+            <List
+              sx={{
+                width: "100%",
+                maxWidth: "100%",
+                bgcolor: "background.paper",
+              }}
+            >
+              {addToListItems.map((item, index) => {
+                const labelId = `checkbox-list-label-${index}`;
+
+                return (
+                  <ListItem
+                    disablePadding
+                    sx={{ p: 0 }}
+                    key={index}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => handleProductDelete(item)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemButton
+                      style={{
+                        backgroundColor: itemsAlreadyOnList.some((prod) =>
+                          prod.includes(item)
+                        )
+                          ? "#c1c1c1"
+                          : "white",
+                      }}
+                      dense={true}
+                      disableRipple={true}
+                      role={undefined}
+                    >
+                      <ListItemIcon onClick={handleToggle(item)}>
+                        <Checkbox
+                          edge="start"
+                          tabIndex={-1}
+                          disableRipple
+                          inputProps={{ "aria-labelledby": labelId }}
+                          color="info"
+                          onChange={handleToggle(item)}
+                        />
+                      </ListItemIcon>
+                      <ListItemText
+                        id={labelId}
+                        primary={item}
+                        style={{
+                          textDecoration: itemsAlreadyOnList.some((prod) =>
+                            prod.includes(item)
+                          )
+                            ? "line-through"
+                            : "none",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Paper>
+        </Box>
+      )}
+    </>
   );
 }

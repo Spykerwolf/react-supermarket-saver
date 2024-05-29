@@ -77,6 +77,7 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
+  const [addToListItems, setAddToListItems] = useState<any[]>([]);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -158,7 +159,11 @@ export default function Sidebar() {
                 <ListItemIcon>
                   <ReceiptLongSharpIcon />
                 </ListItemIcon>
-                <NavLink to="/list" onClick={handleLinkToList}>
+                <NavLink
+                  to="/list"
+                  onClick={handleLinkToList}
+                  state={addToListItems}
+                >
                   List
                 </NavLink>
               </ListItemButton>
@@ -185,8 +190,18 @@ export default function Sidebar() {
             </IconButton>
           </Box>
         </Box>
-        <SearchPage hideSearchComponent={hideSearchComponent} />
-        <Outlet />
+        <SearchPage
+          hideSearchComponent={hideSearchComponent}
+          addToListItems={addToListItems}
+          setAddToListItems={setAddToListItems}
+        />
+        <Outlet
+          context={{
+            addToListItems,
+            setAddToListItems,
+            setHideSearchComponent,
+          }}
+        />
       </Box>
     </ThemeProvider>
   );

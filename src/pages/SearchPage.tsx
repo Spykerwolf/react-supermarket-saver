@@ -4,9 +4,9 @@ import { useThemeContext } from "../theme/ThemeContextProvider.tsx";
 import { Search } from "../components/Search.tsx";
 import { useState } from "react";
 import { Filter } from "../components/Filter.tsx";
-import { SearchPageProps } from "../types/types.ts";
+import { EnhancedTableProps } from "../types/types.ts";
 
-export default function SearchPage(props: SearchPageProps) {
+export default function SearchPage(props: EnhancedTableProps) {
   const { theme } = useThemeContext();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchPlaceholderText, setSearchPlaceholderText] = useState(
@@ -15,9 +15,11 @@ export default function SearchPage(props: SearchPageProps) {
   const [searchHelperText, setSearchHelperText] = useState("");
   const [tags, setTags] = useState<any[]>([]);
   const [selected, setSelected] = useState<readonly number[]>([]);
+
   const [favProduct, setFavProduct] = useState(false);
   const [mycoolrows, setMycoolrows] = useState([] as any);
-  const hideSearchComponent = props.hideSearchComponent;
+  const { hideSearchComponent, setAddToListItems, addToListItems } = props;
+  const [listArray, setListArray] = useState<string[]>([]);
 
   return (
     hideSearchComponent === false && (
@@ -50,6 +52,10 @@ export default function SearchPage(props: SearchPageProps) {
             setMycoolrows={setMycoolrows}
             setTags={setTags}
             tags={tags}
+            addToListItems={addToListItems}
+            setAddToListItems={setAddToListItems}
+            listArray={listArray}
+            setListArray={setListArray}
           />
         </ThemeProvider>
       </div>
