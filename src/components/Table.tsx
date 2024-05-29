@@ -12,18 +12,14 @@ import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
 import { useState } from "react";
 import { rows } from "./Search";
-import { Button } from "@mui/material";
 import { getComparator, stableSort } from "../functions/sortTable";
 import SellIcon from "@mui/icons-material/Sell";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import Checkbox from "@mui/material/Checkbox";
-import Toolbar from "@mui/material/Toolbar";
-import { alpha } from "@mui/material/styles";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 
@@ -144,7 +140,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setAddToListItems,
     addToListItems,
   } = props;
-  const numSelected = selected.length;
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
@@ -202,42 +197,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   return (
     <>
-      <Box>
-        <Box justifyContent="center" display={"flex"}>
-          <Toolbar
-            id="mainToolbar"
-            sx={{
-              width: "100%",
-              display: "flex",
-              height: "60px",
-              padding: 0,
-              ...(numSelected > 0 && {
-                bgcolor: (theme) =>
-                  alpha(
-                    theme.palette.primary.main,
-                    theme.palette.action.activatedOpacity
-                  ),
-              }),
-            }}
-          >
-            <Button
-              disabled
-              variant="contained"
-              color="error"
-              size="small"
-              endIcon={<ShoppingCartIcon />}
-              type="button"
-              sx={{
-                minHeight: "40px",
-                minWidth: "128px",
-                width: "fit-content",
-              }}
-            >
-              Open List
-            </Button>
-          </Toolbar>
-        </Box>
-      </Box>
       <Box justifyContent="center" display={"flex"} width={"100%"}>
         <TableContainer>
           <Table
