@@ -333,6 +333,10 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
                 .map((row) => {
                   const itemNotSelected = isSelected(row.sku);
+                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
+                  const productExists = addToListItems.some((item) =>
+                    product.includes(item)
+                  );
 
                   function handleAddFavourite(sku: string, name: string) {
                     if (localStorage.getItem(sku)) {
@@ -343,51 +347,25 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     setFavProduct(!favProduct);
                   }
 
-                  function handleCheckboxChange(
-                    store: string,
-                    name: string,
-                    packaging: string,
-                    price: number
-                  ) {
-                    const product = `${store} - ${name} ${packaging} - $${price}`;
-                    const productExists = listArray.some((item) =>
-                      product.includes(item)
-                    );
+                  function handleCheckboxChange() {
+                    !itemNotSelected &&
+                      !productExists &&
+                      setListArray([...listArray, product]);
+                  }
 
+                  function handleDeleteFromList() {
                     function handleProductDelete(productToDelete: string) {
+                      console.log("Setting");
                       setListArray((products: string[]) =>
+                        products.filter((prod) => prod !== productToDelete)
+                      );
+                      setAddToListItems((products: string[]) =>
                         products.filter((prod) => prod !== productToDelete)
                       );
                     }
 
-                    if (!itemNotSelected && !productExists) {
-                      setListArray([...listArray, product]);
-                    } else if (itemNotSelected && productExists) {
-                      handleProductDelete(product);
-                    }
+                    productExists && handleProductDelete(product);
                   }
-
-                  function handleCheckboxIconChange(
-                    store: string,
-                    name: string,
-                    packaging: string,
-                    price: number
-                  ) {
-                    const product = `${store} - ${name} ${packaging} - $${price}`;
-                    const productExists = addToListItems.some((item) =>
-                      product.includes(item)
-                    );
-                    if (productExists) {
-                      return <ShoppingCartIcon />;
-                    } else {
-                      return <CheckBoxOutlineBlankIcon />;
-                    }
-                  }
-
-                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
-                  const productExists = addToListItems.some((item) =>
-                    product.includes(item)
-                  );
 
                   return (
                     <TableRow
@@ -421,17 +399,14 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                             }
                             color="warning"
                             size="small"
-                            onClick={() => handleClick(row.sku)}
+                            onClick={() =>
+                              productExists
+                                ? handleDeleteFromList()
+                                : handleClick(row.sku)
+                            }
                             key={row.index}
                             checked={itemNotSelected}
-                            onChange={() =>
-                              handleCheckboxChange(
-                                row.store,
-                                row.name,
-                                row.productPackage,
-                                row.price
-                              )
-                            }
+                            onChange={() => handleCheckboxChange()}
                           />
                         </Tooltip>
                       </TableCell>
