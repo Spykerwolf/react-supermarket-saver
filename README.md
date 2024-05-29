@@ -4,7 +4,7 @@
 ## Filter out results
 ![filter](https://github.com/Spykerwolf/react-supermarket-saver/assets/26391619/3626511f-4bef-4a31-8f21-11e18f16eea8)
 
-## Favourite products, view products on sale & if historical price is lower
+## Favourite products, view products on sale & see if historical price is lower
 ![tableIcons](https://github.com/Spykerwolf/react-supermarket-saver/assets/26391619/e1d81195-a948-42ca-8045-643f0e6cb42d)
 
 ## Add items to and from your grocery list
