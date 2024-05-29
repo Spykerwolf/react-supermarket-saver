@@ -75,7 +75,7 @@ export function Filter(props: FilterProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"}>
+      <Box justifyContent="center" display={"flex"} paddingBottom={"1%"}>
         <Box>
           <ButtonGroup>
             <TextField
