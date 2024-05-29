@@ -430,7 +430,14 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                         </Tooltip>
                       </TableCell>
                       <TableCell padding="none" align="left">
-                        <Tooltip title="Add to favourites" placement="right">
+                        <Tooltip
+                          title={
+                            localStorage.getItem(row.sku)
+                              ? "Remove from Favourites"
+                              : "Add to Favourites"
+                          }
+                          placement="right"
+                        >
                           <Checkbox
                             id="favouriteCheckbox"
                             icon={<StarBorderIcon />}
