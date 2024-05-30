@@ -327,9 +327,12 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
                       <TableCell align="right">
                         {row.onSpecial && (
-                          <Tooltip title="On Special" placement="left">
+                          <Tooltip
+                            title={row.onSpecialTooltip}
+                            placement="left"
+                          >
                             <IconButton>
-                              <SellIcon color="info" />
+                              <SellIcon color={row.onSpecialMultipleIcon} />
                             </IconButton>
                           </Tooltip>
                         )}

@@ -25,14 +25,6 @@ export default function CheckboxList() {
     setHideSearchComponent(true);
   }, []);
 
-  useEffect(() => {
-    console.log("addToListItems", addToListItems);
-  }, [addToListItems]);
-
-  useEffect(() => {
-    console.log("itemsAlreadyOnList", itemsAlreadyOnList);
-  }, [itemsAlreadyOnList]);
-
   const handleToggle = (name: string) => () => {
     const productExists = itemsAlreadyOnList.some((item) =>
       name.includes(item)

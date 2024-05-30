@@ -22,6 +22,8 @@ export interface TableRowProps {
   sku: string | number;
   name: string;
   onSpecial: boolean;
+  onSpecialTooltip: string;
+  onSpecialMultipleIcon: string;
   isFavourite: boolean;
   price: number;
   historicalIcon: string;

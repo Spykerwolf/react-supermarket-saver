@@ -12,7 +12,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
 import { NavLink, Outlet } from "react-router-dom";
 import SearchPage from "../pages/SearchPage";
@@ -22,6 +21,7 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { useState } from "react";
 import { useThemeContext } from "../theme/ThemeContextProvider";
 import SearchIcon from "@mui/icons-material/Search";
+import Badge from "@mui/material/Badge";
 
 const drawerWidth = 240;
 
@@ -158,7 +158,9 @@ export default function Sidebar() {
             <ListItem disablePadding>
               <ListItemButton onClick={toggleDrawer(false)}>
                 <ListItemIcon>
-                  <ReceiptLongSharpIcon />
+                  <Badge badgeContent={addToListItems.length} color="primary">
+                    <ReceiptLongSharpIcon />
+                  </Badge>
                 </ListItemIcon>
                 <NavLink
                   to="/list"
