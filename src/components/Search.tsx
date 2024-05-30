@@ -16,6 +16,8 @@ export function createData(
   sku: string | number,
   name: string,
   onSpecial: boolean,
+  onSpecialTooltip: string,
+  onSpecialMultipleIcon: string,
   isFavourite: boolean,
   price: number,
   historicalIcon: string,
@@ -30,6 +32,8 @@ export function createData(
     sku,
     name,
     onSpecial,
+    onSpecialTooltip,
+    onSpecialMultipleIcon,
     isFavourite,
     price,
     historicalIcon,
@@ -146,6 +150,21 @@ export function Search(props: SearchProps) {
               productName.toLowerCase().replace("-", " ").includes(e)
             )
           ) {
+            const promotion =
+              product["promotions"] !== undefined && product["promotions"][0];
+
+            const onSpecialTooltip =
+              promotion !== false && promotion["threshold"] > 1
+                ? `$${(promotion["rewardValue"] / 100).toFixed(2)} for ${
+                    promotion["threshold"]
+                  }`
+                : "On Special";
+
+            const onSpecialMultipleIcon =
+              promotion !== false && promotion["threshold"] > 1
+                ? "warning"
+                : "info";
+
             const store = "New World";
             const productPrice: any = (
               product["singlePrice"]["price"] / 100
@@ -202,6 +221,8 @@ export function Search(props: SearchProps) {
                     {
                       name: productName,
                       onSpecial: onSpecial,
+                      onSpecialTooltip: onSpecialTooltip,
+                      onSpecialMultipleIcon: onSpecialMultipleIcon,
                       price: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
@@ -237,6 +258,8 @@ export function Search(props: SearchProps) {
                   productSku,
                   productName,
                   onSpecial,
+                  onSpecialTooltip,
+                  onSpecialMultipleIcon,
                   favProduct,
                   productSpecialPrice,
                   "",
@@ -273,6 +296,21 @@ export function Search(props: SearchProps) {
             const productPrice: any = (
               product["singlePrice"]["price"] / 100
             ).toFixed(2);
+
+            const promotion =
+              product["promotions"] !== undefined && product["promotions"][0];
+
+            const onSpecialTooltip =
+              promotion !== false && promotion["threshold"] > 1
+                ? `$${(promotion["rewardValue"] / 100).toFixed(2)} for ${
+                    promotion["threshold"]
+                  }`
+                : "On Special";
+
+            const onSpecialMultipleIcon =
+              promotion !== false && promotion["threshold"] > 1
+                ? `warning`
+                : "info";
 
             const productSpecialPrice: number = product["promotions"]
               ? (product["promotions"][0]["rewardValue"] / 100).toFixed(2)
@@ -325,6 +363,8 @@ export function Search(props: SearchProps) {
                     {
                       name: productName,
                       onSpecial: onSpecial,
+                      onSpecialTooltip: onSpecialTooltip,
+                      onSpecialMultipleIcon: onSpecialMultipleIcon,
                       price: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
@@ -339,7 +379,6 @@ export function Search(props: SearchProps) {
                 }
                 existingHistoricalLow = productSpecialPrice;
               } else if (productSpecialPrice < existingHistoricalLow) {
-                console.log("New Special Price!");
                 try {
                   const docRef: any = await setDoc(
                     doc(db, store, productSku),
@@ -360,6 +399,8 @@ export function Search(props: SearchProps) {
                   `${productSku}-PnS`,
                   productName,
                   onSpecial,
+                  onSpecialTooltip,
+                  onSpecialMultipleIcon,
                   favProduct,
                   productSpecialPrice,
                   "",
@@ -393,6 +434,24 @@ export function Search(props: SearchProps) {
             ].toLocaleString("en", {
               minimumFractionDigits: 2,
             });
+            const onSpecialTooltip =
+              (product["productTag"] && product["productTag"]["multiBuy"]) !==
+              null
+                ? `${
+                    product["productTag"]["multiBuy"]["quantity"]
+                  } for $${product["productTag"]["multiBuy"][
+                    "value"
+                  ].toLocaleString("en", {
+                    minimumFractionDigits: 2,
+                  })}`
+                : "On Special";
+
+            const onSpecialMultipleIcon =
+              (product["productTag"] && product["productTag"]["multiBuy"]) !==
+              null
+                ? "warning"
+                : "info";
+
             const productSku = product["sku"];
             const productCupPrice = product["size"]["cupPrice"];
             const productCup: string = product["size"]["cupMeasure"];
@@ -412,7 +471,10 @@ export function Search(props: SearchProps) {
                 : ""
             }`;
             const productURL = `https://www.countdown.co.nz/shop/productdetails?stockcode=${productSku}`;
-            const onSpecial = product["price"]["isSpecial"] ? true : false;
+            const onSpecial =
+              product["price"]["isSpecial"] || product["productTag"]
+                ? true
+                : false;
 
             const productSpecialPrice: number = onSpecial
               ? product["price"]["salePrice"].toLocaleString("en", {
@@ -434,6 +496,8 @@ export function Search(props: SearchProps) {
                     {
                       name: productName,
                       onSpecial: onSpecial,
+                      onSpecialTooltip: onSpecialTooltip,
+                      onSpecialMultipleIcon: onSpecialMultipleIcon,
                       price: productSpecialPrice,
                       historicalLow: productSpecialPrice,
                       productPackage: productPackage,
@@ -473,6 +537,8 @@ export function Search(props: SearchProps) {
                   productSku,
                   productName,
                   onSpecial,
+                  onSpecialTooltip,
+                  onSpecialMultipleIcon,
                   favProduct,
                   productSpecialPrice,
                   "",
