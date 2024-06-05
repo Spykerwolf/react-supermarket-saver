@@ -20,39 +20,32 @@ export default function CheckboxList() {
     setHideSearchComponent,
   }: CheckboxListProps = useOutletContext();
 
-  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState<string[]>([]);
+  const [itemsChecked, setItemsChecked] = useState<string[]>([]);
   const [selected, setSelected] = useState<readonly number[]>([]);
 
-  useEffect(() => {
-    itemsAlreadyOnList.length > 0 &&
-      console.log("itemsAlreadyOnList.length", itemsAlreadyOnList.length);
-  }, [itemsAlreadyOnList]);
-
-  useEffect(() => {
-    selected.length > 0 && console.log("selected", selected);
-  }, [selected]);
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
 
   const handleToggle = (name: string) => () => {
-    const productExists = itemsAlreadyOnList.some((item) =>
-      name.includes(item)
-    );
+    const productExists = itemsChecked.some((item) => name.includes(item));
     function handleProductDelete(productToDelete: string) {
-      setItemsAlreadyOnList((products: string[]) =>
+      setItemsChecked((products: string[]) =>
         products.filter((prod) => prod !== productToDelete)
       );
     }
     productExists
       ? handleProductDelete(name)
-      : setItemsAlreadyOnList([...itemsAlreadyOnList, name]);
+      : setItemsChecked([...itemsChecked, name]);
   };
 
-  function handleProductDelete(productToDelete: string) {
+  function handleProductDelete() {
     setAddToListItems((products: string[]) =>
-      products.filter((prod) => prod !== productToDelete)
+      products.filter(
+        (prod) => !itemsChecked.some((item) => prod.includes(item))
+      )
     );
+    setItemsChecked([]);
     setSelected([]);
   }
 
@@ -119,7 +112,7 @@ export default function CheckboxList() {
                         <IconButton
                           edge="end"
                           aria-label="delete"
-                          onClick={() => handleProductDelete(item)}
+                          onClick={() => handleProductDelete()}
                         >
                           <DeleteIcon />
                         </IconButton>
