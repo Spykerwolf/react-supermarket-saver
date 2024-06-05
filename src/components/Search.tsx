@@ -647,7 +647,7 @@ export function Search(props: SearchProps) {
 
     async function countdown() {
       const fetchCountDownData = await fetch(
-        `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
+        `http://localhost:8787/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
       const countdownResponse = await fetchCountDownData.json();
       setCountdownresults(countdownResponse.products.items);

@@ -19,8 +19,18 @@ export default function CheckboxList() {
     setAddToListItems,
     setHideSearchComponent,
   }: CheckboxListProps = useOutletContext();
-  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState<string[]>([]);
 
+  const [itemsAlreadyOnList, setItemsAlreadyOnList] = useState<string[]>([]);
+  const [selected, setSelected] = useState<readonly number[]>([]);
+
+  useEffect(() => {
+    itemsAlreadyOnList.length > 0 &&
+      console.log("itemsAlreadyOnList.length", itemsAlreadyOnList.length);
+  }, [itemsAlreadyOnList]);
+
+  useEffect(() => {
+    selected.length > 0 && console.log("selected", selected);
+  }, [selected]);
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
@@ -43,7 +53,27 @@ export default function CheckboxList() {
     setAddToListItems((products: string[]) =>
       products.filter((prod) => prod !== productToDelete)
     );
+    setSelected([]);
   }
+
+  const handleClick = (id: number) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected: readonly number[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
+    }
+    setSelected(newSelected);
+  };
 
   function showAnimation() {
     return (
@@ -76,7 +106,8 @@ export default function CheckboxList() {
               }}
             >
               {addToListItems.map((item, index) => {
-                const labelId = `checkbox-list-label-${index}`;
+                const isSelected = (id: number) => selected.indexOf(id) !== -1;
+                const isItemSelected = isSelected(index);
 
                 return (
                   <ListItem
@@ -84,22 +115,20 @@ export default function CheckboxList() {
                     sx={{ p: 0 }}
                     key={index}
                     secondaryAction={
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => handleProductDelete(item)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      isItemSelected && (
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleProductDelete(item)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )
                     }
                   >
                     <ListItemButton
                       style={{
-                        backgroundColor: itemsAlreadyOnList.some((prod) =>
-                          prod.includes(item)
-                        )
-                          ? "#c1c1c1"
-                          : "white",
+                        backgroundColor: isItemSelected ? "#c1c1c1" : "white",
                       }}
                       dense={true}
                       disableRipple={true}
@@ -107,21 +136,18 @@ export default function CheckboxList() {
                     >
                       <ListItemIcon onClick={handleToggle(item)}>
                         <Checkbox
+                          checked={isItemSelected}
                           edge="start"
                           tabIndex={-1}
                           disableRipple
-                          inputProps={{ "aria-labelledby": labelId }}
                           color="info"
-                          onChange={handleToggle(item)}
+                          onClick={() => handleClick(index)}
                         />
                       </ListItemIcon>
                       <ListItemText
-                        id={labelId}
                         primary={item}
                         style={{
-                          textDecoration: itemsAlreadyOnList.some((prod) =>
-                            prod.includes(item)
-                          )
+                          textDecoration: isItemSelected
                             ? "line-through"
                             : "none",
                         }}
