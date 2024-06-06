@@ -131,7 +131,21 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   );
 }
 
-export default function EnhancedTable(props: EnhancedTableProps) {
+export async function handleAddListToFirebase(listArray: string[]) {
+  try {
+    await setDoc(
+      doc(db, "List items", "List"),
+      {
+        list: listArray,
+      },
+      { merge: true }
+    );
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+export function EnhancedTable(props: EnhancedTableProps) {
   const {
     favProduct,
     setFavProduct,
@@ -152,20 +166,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     addToListItems.length > 0 && handleAddListToFirebase(addToListItems);
     console.log(addToListItems.length);
   }, [addToListItems]);
-
-  async function handleAddListToFirebase(listArray: string[]) {
-    try {
-      await setDoc(
-        doc(db, "List items", "List"),
-        {
-          list: listArray,
-        },
-        { merge: true }
-      );
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  }
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,

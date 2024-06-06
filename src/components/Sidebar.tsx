@@ -23,7 +23,7 @@ import { useThemeContext } from "../theme/ThemeContextProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import Badge from "@mui/material/Badge";
 import { db } from "../auth/firebase";
-import { getDoc, setDoc, doc } from "firebase/firestore";
+import { getDoc, doc } from "firebase/firestore";
 
 const drawerWidth = 240;
 
@@ -96,28 +96,6 @@ export default function Sidebar() {
   useEffect(() => {
     addToListItems.length > 0 && console.log("addToListItems", addToListItems);
   }, [addToListItems]);
-
-  // if (!docExistingListItems) {
-  //   try {
-  //     await setDoc(
-  //       doc(db, store, productSku),
-  //       {
-  //         name: productName,
-  //         onSpecial: onSpecial,
-  //         onSpecialTooltip: onSpecialTooltip,
-  //         onSpecialMultipleIcon: onSpecialMultipleIcon,
-  //         price: productSpecialPrice,
-  //         historicalLow: productSpecialPrice,
-  //         productPackage: productPackage,
-  //         ratio: ratio,
-  //         store: store,
-  //         URL: productURL,
-  //       },
-  //       { merge: true }
-  //     );
-  //   } catch (e) {
-  //     console.error("Error adding document: ", e);
-  //   }}
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);

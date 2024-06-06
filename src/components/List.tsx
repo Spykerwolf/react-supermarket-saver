@@ -12,6 +12,7 @@ import { CheckboxListProps } from "../types/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { handleAddListToFirebase } from "./Table";
 
 export default function CheckboxList() {
   const {
@@ -26,6 +27,11 @@ export default function CheckboxList() {
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
+
+  useEffect(() => {
+    addToListItems.length > 0 && handleAddListToFirebase(addToListItems);
+    console.log(addToListItems.length);
+  }, [addToListItems]);
 
   const handleToggle = (name: string) => () => {
     const productExists = itemsChecked.some((item) => name.includes(item));
