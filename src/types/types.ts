@@ -3,6 +3,8 @@ import { Dispatch, SetStateAction } from "react";
 export interface SearchProps {
   searchTerm: string;
   setSearchTerm: CallableFunction;
+  searchedItem: string;
+  setSearchedItem: CallableFunction;
   searchPlaceholderText: string;
   setSearchPlaceholderText: CallableFunction;
   searchHelperText: string;
@@ -37,6 +39,7 @@ export interface TableRowProps {
 export interface FilterProps {
   setTags: CallableFunction;
   tags: string[];
+  searchedItem: string;
 }
 
 export interface HeadCell {

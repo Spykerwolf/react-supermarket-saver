@@ -7,15 +7,44 @@ import Tooltip from "@mui/material/Tooltip";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { styled } from "@mui/material/styles";
 import { FilterProps } from "../types/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { IconButton } from "@mui/material";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CircleIcon from "@mui/icons-material/Circle";
+import { db } from "../auth/firebase";
+import { setDoc, doc } from "firebase/firestore";
 
 export function Filter(props: FilterProps) {
-  const { tags, setTags } = props;
+  const { tags, setTags, searchedItem } = props;
   const [filterSearchText, setFilterSearchText] = useState("");
   const ListItem = styled("li")(({ theme }) => ({
     margin: theme.spacing(0.5),
   }));
   const [filterHelperText, setFilterHelperText] = useState("");
+  const [filterTooltipText, setFilterTooltipText] = useState(
+    "Save filters for this search"
+  );
+
+  useEffect(() => {
+    tags.length > 0 && console.log("tags.length", tags.length);
+    tags.length > 0 && handleAddFiltersToFirebase(tags);
+  }, [tags]);
+
+  async function handleAddFiltersToFirebase(tagsArray: string[]) {
+    try {
+      await setDoc(
+        doc(db, "Filters", searchedItem),
+        {
+          tags: tagsArray,
+        },
+        { merge: true }
+      );
+      console.log("Done");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
 
   function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (
@@ -136,6 +165,11 @@ export function Filter(props: FilterProps) {
                     </>
                   );
                 })}
+                <Tooltip title={filterTooltipText}>
+                  <IconButton color="primary">
+                    <CheckCircleIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
           )}

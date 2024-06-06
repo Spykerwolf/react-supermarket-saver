@@ -164,7 +164,6 @@ export function EnhancedTable(props: EnhancedTableProps) {
 
   useEffect(() => {
     addToListItems.length > 0 && handleAddListToFirebase(addToListItems);
-    console.log(addToListItems.length);
   }, [addToListItems]);
 
   const handleRequestSort = (

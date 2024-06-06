@@ -48,6 +48,8 @@ export function Search(props: SearchProps) {
   const {
     searchTerm,
     setSearchTerm,
+    searchedItem,
+    setSearchedItem,
     searchPlaceholderText,
     setSearchPlaceholderText,
     searchHelperText,
@@ -73,6 +75,9 @@ export function Search(props: SearchProps) {
     getTokenPakNSave();
   }, []);
 
+  useEffect(() => {
+    searchedItem.length > 0 && console.log(`You searched for ${searchedItem}`);
+  }, [searchedItem]);
   useEffect(() => {
     async function extractSKUsNewWorld() {
       newworldProductSKUs.forEach((product) => {
@@ -568,7 +573,6 @@ export function Search(props: SearchProps) {
   }, [searchTerm]);
   let searchTermArray = searchTerm.split(" ");
 
-  // maybe problem
   async function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -579,6 +583,7 @@ export function Search(props: SearchProps) {
         }, 1500);
       } else if ((e.target as HTMLInputElement).value.length > 0) {
         setSearchTerm((e.target as HTMLInputElement).value);
+        setSearchedItem((e.target as HTMLInputElement).value);
       }
     }
   }
