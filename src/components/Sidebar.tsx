@@ -18,10 +18,12 @@ import SearchPage from "../pages/SearchPage";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useThemeContext } from "../theme/ThemeContextProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import Badge from "@mui/material/Badge";
+import { db } from "../auth/firebase";
+import { getDoc, setDoc, doc } from "firebase/firestore";
 
 const drawerWidth = 240;
 
@@ -79,6 +81,43 @@ export default function Sidebar() {
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
   const [addToListItems, setAddToListItems] = useState<any[]>([]);
+
+  async function getExistingListItems() {
+    const docListItemsRef = doc(db, "List items", "List");
+    const docListItemSnap = await getDoc(docListItemsRef);
+    setAddToListItems(await docListItemSnap.data()?.list);
+    console.log("Done");
+  }
+
+  useEffect(() => {
+    getExistingListItems();
+  }, []);
+
+  useEffect(() => {
+    addToListItems.length > 0 && console.log("addToListItems", addToListItems);
+  }, [addToListItems]);
+
+  // if (!docExistingListItems) {
+  //   try {
+  //     await setDoc(
+  //       doc(db, store, productSku),
+  //       {
+  //         name: productName,
+  //         onSpecial: onSpecial,
+  //         onSpecialTooltip: onSpecialTooltip,
+  //         onSpecialMultipleIcon: onSpecialMultipleIcon,
+  //         price: productSpecialPrice,
+  //         historicalLow: productSpecialPrice,
+  //         productPackage: productPackage,
+  //         ratio: ratio,
+  //         store: store,
+  //         URL: productURL,
+  //       },
+  //       { merge: true }
+  //     );
+  //   } catch (e) {
+  //     console.error("Error adding document: ", e);
+  //   }}
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);

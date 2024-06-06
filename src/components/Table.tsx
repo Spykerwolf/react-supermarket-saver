@@ -10,7 +10,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { rows } from "./Search";
 import { getComparator, stableSort } from "../functions/sortTable";
 import SellIcon from "@mui/icons-material/Sell";
@@ -22,6 +22,8 @@ import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import { db } from "../auth/firebase";
+import { setDoc, doc } from "firebase/firestore";
 
 import {
   TableRowProps,
@@ -145,6 +147,26 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [rowCount, setRowCount] = useState(0);
+
+  useEffect(() => {
+    addToListItems.length > 0 && handleAddListToFirebase(addToListItems);
+    console.log(addToListItems.length);
+  }, [addToListItems]);
+
+  async function handleAddListToFirebase(listArray: string[]) {
+    try {
+      await setDoc(
+        doc(db, "List items", "List"),
+        {
+          list: listArray,
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof TableRowProps
