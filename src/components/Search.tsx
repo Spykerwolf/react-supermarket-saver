@@ -578,10 +578,12 @@ export function Search(props: SearchProps) {
   }, [searchedItem]);
 
   async function handleGetTagsFromFirestore() {
-    const filterdocRef = doc(db, "Filters", searchedItem);
-    const filterdocSnap = await getDoc(filterdocRef);
-    let existingTags = await filterdocSnap.data()?.tags;
-    existingTags !== undefined && setTags(existingTags);
+    if (searchedItem !== "") {
+      const filterdocRef = doc(db, "Filters", searchedItem);
+      const filterdocSnap = await getDoc(filterdocRef);
+      let existingTags = await filterdocSnap.data()?.tags;
+      existingTags !== undefined && setTags(existingTags);
+    }
   }
 
   async function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {

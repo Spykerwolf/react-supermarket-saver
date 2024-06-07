@@ -30,7 +30,6 @@ export default function CheckboxList() {
 
   useEffect(() => {
     addToListItems.length > 0 && handleAddListToFirebase(addToListItems);
-    console.log(addToListItems.length);
   }, [addToListItems]);
 
   const handleToggle = (name: string) => () => {
