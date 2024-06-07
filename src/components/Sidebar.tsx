@@ -86,11 +86,16 @@ export default function Sidebar() {
     const docListItemsRef = doc(db, "List items", "List");
     const docListItemSnap = await getDoc(docListItemsRef);
     setAddToListItems(await docListItemSnap.data()?.list);
+    console.log("Done");
   }
 
   useEffect(() => {
     getExistingListItems();
   }, []);
+
+  useEffect(() => {
+    addToListItems.length > 0 && console.log("addToListItems", addToListItems);
+  }, [addToListItems]);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
