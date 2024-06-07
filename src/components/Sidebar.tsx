@@ -85,7 +85,8 @@ export default function Sidebar() {
   async function getExistingListItems() {
     const docListItemsRef = doc(db, "List items", "List");
     const docListItemSnap = await getDoc(docListItemsRef);
-    setAddToListItems(await docListItemSnap.data()?.list);
+    (await docListItemSnap.data()?.list) &&
+      setAddToListItems(await docListItemSnap.data()?.list);
     console.log("Done");
   }
 
