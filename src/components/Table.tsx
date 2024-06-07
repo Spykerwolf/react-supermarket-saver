@@ -218,7 +218,12 @@ export function EnhancedTable(props: EnhancedTableProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"} width={"100%"}>
+      <Box
+        justifyContent="center"
+        display={"flex"}
+        width={"100%"}
+        paddingTop={"0.5%"}
+      >
         <TableContainer>
           <Table
             sx={{ minWidth: "250" }}

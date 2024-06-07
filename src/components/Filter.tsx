@@ -7,12 +7,15 @@ import Tooltip from "@mui/material/Tooltip";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { styled } from "@mui/material/styles";
 import { FilterProps } from "../types/types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { IconButton } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
+import { IconButton } from "@mui/material";
 import { db } from "../auth/firebase";
 import { getDoc, setDoc, doc } from "firebase/firestore";
+import CircularProgress from "@mui/material/CircularProgress";
+import { blue, red } from "@mui/material/colors";
 
 export function Filter(props: FilterProps) {
   const { tags, setTags, searchedItem } = props;
@@ -22,7 +25,30 @@ export function Filter(props: FilterProps) {
     margin: theme.spacing(0.5),
   }));
 
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [successAdd, setSuccessAdd] = useState(false);
+  const [loadingRemove, setLoadingRemove] = useState(false);
+  const [successRemove, setSuccessRemove] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
   async function handleAddFiltersToFirebase(tagsArray: string[]) {
+    if (!loadingAdd) {
+      setSuccessAdd(false);
+      setLoadingAdd(true);
+      timer.current = setTimeout(() => {
+        setSuccessAdd(true);
+        setLoadingAdd(false);
+      }, 2000);
+      timer.current = setTimeout(() => {
+        setSuccessAdd(false);
+      }, 4000);
+    }
     try {
       await setDoc(
         doc(db, "Filters", searchedItem),
@@ -41,6 +67,17 @@ export function Filter(props: FilterProps) {
     const filterdocSnap = await getDoc(filterdocRef);
     let existingTags = await filterdocSnap.data()?.tags;
     if (existingTags !== undefined) {
+      if (!loadingRemove) {
+        setSuccessRemove(false);
+        setLoadingRemove(true);
+        timer.current = setTimeout(() => {
+          setSuccessRemove(true);
+          setLoadingRemove(false);
+        }, 2000);
+        timer.current = setTimeout(() => {
+          setSuccessRemove(false);
+        }, 4000);
+      }
       try {
         await setDoc(
           doc(db, "Filters", searchedItem),
@@ -113,7 +150,7 @@ export function Filter(props: FilterProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"} paddingBottom={"0.3%"}>
+      <Box justifyContent="center" display={"flex"} paddingBottom={"0.5%"}>
         <Box>
           <ButtonGroup>
             <TextField
@@ -142,14 +179,13 @@ export function Filter(props: FilterProps) {
                 paddingRight: "20px",
                 height: "42px",
               }}
-              aria-label="search"
             >
               Filter
             </Button>
           </ButtonGroup>
         </Box>
       </Box>
-      <Box display={"flex"} justifyContent={"center"} paddingBottom={"0.3%"}>
+      <Box display={"flex"} justifyContent={"center"} paddingBottom={"1%"}>
         {tags.length > 0 && (
           <Box
             margin="auto"
@@ -173,20 +209,61 @@ export function Filter(props: FilterProps) {
                   </>
                 );
               })}
+
               <Tooltip title="Save filters for this search">
                 <IconButton
-                  color="primary"
+                  color="info"
                   onClick={() => handleAddFiltersToFirebase(tags)}
                 >
-                  <CheckCircleIcon />
+                  {successAdd ? <CheckCircleIcon /> : <SaveIcon />}
+                  {loadingAdd && (
+                    <CircularProgress
+                      size={34}
+                      sx={{
+                        color: blue[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                  {successAdd && (
+                    <CircularProgress
+                      variant="determinate"
+                      value={100}
+                      size={32}
+                      sx={{
+                        color: blue[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
                 </IconButton>
               </Tooltip>
               <Tooltip title="Delete saved filters for this search">
                 <IconButton
-                  color="primary"
+                  color="warning"
                   onClick={() => handleRemoveFiltersFromFirestore()}
                 >
-                  <CancelIcon />
+                  {successRemove ? <CheckCircleIcon /> : <CancelIcon />}
+                  {loadingRemove && (
+                    <CircularProgress
+                      size={34}
+                      sx={{
+                        color: red[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                  {successRemove && (
+                    <CircularProgress
+                      variant="determinate"
+                      value={100}
+                      size={32}
+                      sx={{
+                        color: red[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
                 </IconButton>
               </Tooltip>
             </Box>
