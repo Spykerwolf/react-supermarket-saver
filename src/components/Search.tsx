@@ -76,9 +76,6 @@ export function Search(props: SearchProps) {
   }, []);
 
   useEffect(() => {
-    searchedItem.length > 0 && console.log(`You searched for ${searchedItem}`);
-  }, [searchedItem]);
-  useEffect(() => {
     async function extractSKUsNewWorld() {
       newworldProductSKUs.forEach((product) => {
         productIdTogetherNewWorld.push(product["productID"]);

@@ -80,23 +80,36 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
-  const [addToListItems, setAddToListItems] = useState<any[]>([]);
+  const [addToListItemsNewWorld, setAddToListItemsNewWorld] = useState<any[]>(
+    []
+  );
+  const [addToListItemsCountdown, setAddToListItemsCountdown] = useState<any[]>(
+    []
+  );
+  const [addToListItemsPaknSave, setAddToListItemsPaknSave] = useState<any[]>(
+    []
+  );
 
   async function getExistingListItems() {
-    const docListItemsRef = doc(db, "List items", "List");
-    const docListItemSnap = await getDoc(docListItemsRef);
-    (await docListItemSnap.data()?.list) &&
-      setAddToListItems(await docListItemSnap.data()?.list);
-    console.log("Done");
+    const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
+    const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
+    (await docListItemSnapNewWorld.data()?.list) &&
+      setAddToListItemsNewWorld(await docListItemSnapNewWorld.data()?.list);
+
+    const docListItemsRefCountdown = doc(db, "List items", "Countdown");
+    const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
+    (await docListItemSnapCountdown.data()?.list) &&
+      setAddToListItemsCountdown(await docListItemSnapCountdown.data()?.list);
+
+    const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
+    const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
+    (await docListItemSnapPaknSave.data()?.list) &&
+      setAddToListItemsPaknSave(await docListItemSnapPaknSave.data()?.list);
   }
 
   useEffect(() => {
     getExistingListItems();
   }, []);
-
-  useEffect(() => {
-    addToListItems.length > 0 && console.log("addToListItems", addToListItems);
-  }, [addToListItems]);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -176,14 +189,25 @@ export default function Sidebar() {
             <ListItem disablePadding>
               <ListItemButton onClick={toggleDrawer(false)}>
                 <ListItemIcon>
-                  <Badge badgeContent={addToListItems.length} color="primary">
+                  <Badge
+                    badgeContent={
+                      addToListItemsNewWorld.length +
+                      addToListItemsCountdown.length +
+                      addToListItemsPaknSave.length
+                    }
+                    color="primary"
+                  >
                     <ReceiptLongSharpIcon />
                   </Badge>
                 </ListItemIcon>
                 <NavLink
                   to="/list"
                   onClick={handleLinkToList}
-                  state={addToListItems}
+                  state={[
+                    addToListItemsNewWorld,
+                    addToListItemsCountdown,
+                    addToListItemsPaknSave,
+                  ]}
                 >
                   List
                 </NavLink>
@@ -213,13 +237,21 @@ export default function Sidebar() {
         </Box>
         <SearchPage
           hideSearchComponent={hideSearchComponent}
-          addToListItems={addToListItems}
-          setAddToListItems={setAddToListItems}
+          addToListItemsNewWorld={addToListItemsNewWorld}
+          setAddToListItemsNewWorld={setAddToListItemsNewWorld}
+          addToListItemsCountdown={addToListItemsCountdown}
+          setAddToListItemsCountdown={setAddToListItemsCountdown}
+          addToListItemsPaknSave={addToListItemsPaknSave}
+          setAddToListItemsPaknSave={setAddToListItemsPaknSave}
         />
         <Outlet
           context={{
-            addToListItems,
-            setAddToListItems,
+            addToListItemsNewWorld,
+            setAddToListItemsNewWorld,
+            addToListItemsCountdown,
+            setAddToListItemsCountdown,
+            addToListItemsPaknSave,
+            setAddToListItemsPaknSave,
             setHideSearchComponent,
           }}
         />

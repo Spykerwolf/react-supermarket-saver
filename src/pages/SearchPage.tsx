@@ -18,7 +18,15 @@ export default function SearchPage(props: EnhancedTableProps) {
 
   const [favProduct, setFavProduct] = useState(false);
   const [mycoolrows, setMycoolrows] = useState([] as any);
-  const { hideSearchComponent, setAddToListItems, addToListItems } = props;
+  const {
+    hideSearchComponent,
+    addToListItemsNewWorld,
+    addToListItemsCountdown,
+    addToListItemsPaknSave,
+    setAddToListItemsCountdown,
+    setAddToListItemsNewWorld,
+    setAddToListItemsPaknSave,
+  } = props;
   const [listArray, setListArray] = useState<string[]>([]);
   const [searchedItem, setSearchedItem] = useState("");
 
@@ -47,6 +55,12 @@ export default function SearchPage(props: EnhancedTableProps) {
           />
           <Filter setTags={setTags} tags={tags} searchedItem={searchedItem} />
           <EnhancedTable
+            addToListItemsNewWorld={addToListItemsNewWorld}
+            setAddToListItemsNewWorld={setAddToListItemsNewWorld}
+            addToListItemsCountdown={addToListItemsCountdown}
+            setAddToListItemsCountdown={setAddToListItemsCountdown}
+            addToListItemsPaknSave={addToListItemsPaknSave}
+            setAddToListItemsPaknSave={setAddToListItemsPaknSave}
             selected={selected}
             setSelected={setSelected}
             favProduct={favProduct}
@@ -55,8 +69,6 @@ export default function SearchPage(props: EnhancedTableProps) {
             setMycoolrows={setMycoolrows}
             setTags={setTags}
             tags={tags}
-            addToListItems={addToListItems}
-            setAddToListItems={setAddToListItems}
             listArray={listArray}
             setListArray={setListArray}
           />

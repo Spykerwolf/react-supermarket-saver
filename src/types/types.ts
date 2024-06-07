@@ -59,15 +59,23 @@ export interface EnhancedTableProps {
   setMycoolrows: Dispatch<any>;
   setTags: CallableFunction;
   tags: string[];
-  addToListItems: string[];
-  setAddToListItems: CallableFunction;
+  addToListItemsCountdown: string[];
+  addToListItemsPaknSave: string[];
+  addToListItemsNewWorld: string[];
+  setAddToListItemsCountdown: CallableFunction;
+  setAddToListItemsPaknSave: CallableFunction;
+  setAddToListItemsNewWorld: CallableFunction;
   numSelected: number;
   hideSearchComponent?: boolean;
 }
 
 export interface CheckboxListProps {
-  addToListItems: string[];
-  setAddToListItems: CallableFunction;
+  addToListItemsCountdown: string[];
+  addToListItemsPaknSave: string[];
+  addToListItemsNewWorld: string[];
+  setAddToListItemsCountdown: CallableFunction;
+  setAddToListItemsPaknSave: CallableFunction;
+  setAddToListItemsNewWorld: CallableFunction;
   setHideSearchComponent: React.Dispatch<SetStateAction<boolean>>;
 }
 export interface EnhancedTableHeadProps {
