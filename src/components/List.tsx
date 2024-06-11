@@ -42,22 +42,22 @@ export default function CheckboxList() {
   );
 
   useEffect(() => {
+    console.log(itemsChecked);
+  }, [itemsChecked]);
+  useEffect(() => {
     setHideSearchComponent(true);
   }, []);
 
   useEffect(() => {
-    addToListItemsNewWorld.length > 0 &&
-      handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
+    handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
   }, [addToListItemsNewWorld]);
 
   useEffect(() => {
-    addToListItemsCountdown.length > 0 &&
-      handleAddListToFirebaseCountdown(addToListItemsCountdown);
+    handleAddListToFirebaseCountdown(addToListItemsCountdown);
   }, [addToListItemsCountdown]);
 
   useEffect(() => {
-    addToListItemsPaknSave.length > 0 &&
-      handleAddListToFirebasePaknSave(addToListItemsPaknSave);
+    handleAddListToFirebasePaknSave(addToListItemsPaknSave);
   }, [addToListItemsPaknSave]);
 
   const handleToggle = (name: string) => () => {

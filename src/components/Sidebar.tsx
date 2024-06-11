@@ -80,6 +80,7 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
+
   const [addToListItemsNewWorld, setAddToListItemsNewWorld] = useState<any[]>(
     []
   );
@@ -91,20 +92,17 @@ export default function Sidebar() {
   );
 
   async function getExistingListItems() {
-    const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
-    const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
-    (await docListItemSnapNewWorld.data()?.list) &&
-      setAddToListItemsNewWorld(await docListItemSnapNewWorld.data()?.list);
-
-    const docListItemsRefCountdown = doc(db, "List items", "Countdown");
-    const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
-    (await docListItemSnapCountdown.data()?.list) &&
-      setAddToListItemsCountdown(await docListItemSnapCountdown.data()?.list);
-
+    console.log("Fetching existing items");
     const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
     const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
-    (await docListItemSnapPaknSave.data()?.list) &&
-      setAddToListItemsPaknSave(await docListItemSnapPaknSave.data()?.list);
+    const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
+    const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
+    const docListItemsRefCountdown = doc(db, "List items", "Countdown");
+    const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
+
+    setAddToListItemsPaknSave(await docListItemSnapPaknSave.data()?.list);
+    setAddToListItemsNewWorld(await docListItemSnapNewWorld.data()?.list);
+    setAddToListItemsCountdown(await docListItemSnapCountdown.data()?.list);
   }
 
   useEffect(() => {
@@ -191,9 +189,13 @@ export default function Sidebar() {
                 <ListItemIcon>
                   <Badge
                     badgeContent={
-                      addToListItemsNewWorld.length +
-                      addToListItemsCountdown.length +
-                      addToListItemsPaknSave.length
+                      addToListItemsPaknSave &&
+                      addToListItemsCountdown &&
+                      addToListItemsNewWorld
+                        ? addToListItemsNewWorld.length +
+                          addToListItemsCountdown.length +
+                          addToListItemsPaknSave.length
+                        : 0
                     }
                     color="primary"
                   >

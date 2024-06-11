@@ -23,7 +23,7 @@ import Tooltip from "@mui/material/Tooltip";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import { db } from "../auth/firebase";
-import { setDoc, doc } from "firebase/firestore";
+import { getDoc, setDoc, doc } from "firebase/firestore";
 
 import {
   TableRowProps,
@@ -132,7 +132,13 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
 }
 
 export async function handleAddListToFirebaseNewWorld(listArray: string[]) {
-  try {
+  const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
+  const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
+
+  if (
+    (await docListItemSnapNewWorld.data()?.list.length) >= 0 &&
+    listArray.length >= 0
+  ) {
     await setDoc(
       doc(db, "List items", "NewWorld"),
       {
@@ -140,13 +146,18 @@ export async function handleAddListToFirebaseNewWorld(listArray: string[]) {
       },
       { merge: true }
     );
-  } catch (e) {
-    console.error("Error adding document: ", e);
   }
 }
 
-export async function handleAddListToFirebaseCountdown(listArray: string[]) {
-  try {
+export async function handleAddListToFirebaseCountdown(
+  listArray: string[],
+  lengthy: number
+) {
+  const docListItemsRefCountdown = doc(db, "List items", "Countdown");
+  const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
+
+  if (lengthy > 1) {
+    console.log("listArray length is more than 0");
     await setDoc(
       doc(db, "List items", "Countdown"),
       {
@@ -154,13 +165,30 @@ export async function handleAddListToFirebaseCountdown(listArray: string[]) {
       },
       { merge: true }
     );
-  } catch (e) {
-    console.error("Error adding document: ", e);
+  }
+  if (listArray.length === 1) {
+    ("listArray.length is 1");
+    if (docListItemSnapCountdown.data().list.length < 1) {
+      console.log(docListItemSnapCountdown.data().list.length);
+      await setDoc(
+        doc(db, "List items", "Countdown"),
+        {
+          list: listArray,
+        },
+        { merge: true }
+      );
+    }
   }
 }
 
 export async function handleAddListToFirebasePaknSave(listArray: string[]) {
-  try {
+  const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
+  const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
+
+  if (
+    (await docListItemSnapPaknSave.data()?.list.length) >= 0 &&
+    listArray.length >= 0
+  ) {
     await setDoc(
       doc(db, "List items", "PaknSave"),
       {
@@ -168,8 +196,6 @@ export async function handleAddListToFirebasePaknSave(listArray: string[]) {
       },
       { merge: true }
     );
-  } catch (e) {
-    console.error("Error adding document: ", e);
   }
 }
 
@@ -193,24 +219,29 @@ export function EnhancedTable(props: EnhancedTableProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [rowCount, setRowCount] = useState(0);
-
-  useEffect(() => {
-    addToListItemsNewWorld.length > 0 &&
-      handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
-    console.log("addToListItemsNewWorld", addToListItemsNewWorld);
-  }, [addToListItemsNewWorld]);
+  const [prevLength, setPrevLength] = useState(
+    addToListItemsCountdown.length + 1
+  );
 
   // useEffect(() => {
-  //   addToListItemsCountdown.length > 0 &&
-  //     handleAddListToFirebaseCountdown(addToListItemsCountdown);
-  //   console.log("addToListItemsCountdown", addToListItemsCountdown);
-  // }, [addToListItemsCountdown]);
-
-  // useEffect(() => {
-  //   addToListItemsPaknSave.length > 0 &&
-  //     handleAddListToFirebasePaknSave(addToListItemsPaknSave);
+  //   handleAddListToFirebasePaknSave(addToListItemsPaknSave);
   //   console.log("addToListItemsPaknSave", addToListItemsPaknSave);
   // }, [addToListItemsPaknSave]);
+
+  // useEffect(() => {
+  //   handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
+  //   console.log("addToListItemsNewWorld", addToListItemsNewWorld);
+  // }, [addToListItemsNewWorld]);
+
+  useEffect(() => {
+    setPrevLength(addToListItemsCountdown.length + 1);
+    handleAddListToFirebaseCountdown(addToListItemsCountdown, prevLength);
+    console.log("addToListItemsCountdown", addToListItemsCountdown);
+  }, [addToListItemsCountdown]);
+
+  useEffect(() => {
+    console.log("prevLength is now set to " + prevLength);
+  }, [prevLength]);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
