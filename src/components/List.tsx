@@ -41,6 +41,15 @@ export default function CheckboxList() {
     []
   );
 
+  const [prevLengthCountdown, setPrevLengthCountdown] = useState(
+    addToListItemsCountdown.length + 1
+  );
+  const [prevLengthNewWorld, setPrevLengthNewWorld] = useState(
+    addToListItemsNewWorld.length + 1
+  );
+  const [prevLengthPaknSave, setPrevLengthPaknSave] = useState(
+    addToListItemsPaknSave.length + 1
+  );
   useEffect(() => {
     console.log(itemsChecked);
   }, [itemsChecked]);
@@ -49,15 +58,21 @@ export default function CheckboxList() {
   }, []);
 
   useEffect(() => {
-    handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
+    setPrevLengthNewWorld(addToListItemsNewWorld.length + 2);
+    handleAddListToFirebaseNewWorld(addToListItemsNewWorld, prevLengthNewWorld);
   }, [addToListItemsNewWorld]);
 
   useEffect(() => {
-    handleAddListToFirebaseCountdown(addToListItemsCountdown);
+    setPrevLengthCountdown(addToListItemsCountdown.length + 2);
+    handleAddListToFirebaseCountdown(
+      addToListItemsCountdown,
+      prevLengthCountdown
+    );
   }, [addToListItemsCountdown]);
 
   useEffect(() => {
-    handleAddListToFirebasePaknSave(addToListItemsPaknSave);
+    setPrevLengthPaknSave(addToListItemsPaknSave.length + 2);
+    handleAddListToFirebasePaknSave(addToListItemsPaknSave, prevLengthPaknSave);
   }, [addToListItemsPaknSave]);
 
   const handleToggle = (name: string) => () => {
