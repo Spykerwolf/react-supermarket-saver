@@ -48,6 +48,8 @@ export function Search(props: SearchProps) {
   const {
     searchTerm,
     setSearchTerm,
+    searchedItem,
+    setSearchedItem,
     searchPlaceholderText,
     setSearchPlaceholderText,
     searchHelperText,
@@ -568,7 +570,19 @@ export function Search(props: SearchProps) {
   }, [searchTerm]);
   let searchTermArray = searchTerm.split(" ");
 
-  // maybe problem
+  useEffect(() => {
+    handleGetTagsFromFirestore();
+  }, [searchedItem]);
+
+  async function handleGetTagsFromFirestore() {
+    if (searchedItem !== "") {
+      const filterdocRef = doc(db, "Filters", searchedItem);
+      const filterdocSnap = await getDoc(filterdocRef);
+      let existingTags = await filterdocSnap.data()?.tags;
+      existingTags !== undefined && setTags(existingTags);
+    }
+  }
+
   async function handleSearchEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -579,6 +593,7 @@ export function Search(props: SearchProps) {
         }, 1500);
       } else if ((e.target as HTMLInputElement).value.length > 0) {
         setSearchTerm((e.target as HTMLInputElement).value);
+        setSearchedItem((e.target as HTMLInputElement).value);
       }
     }
   }
@@ -647,7 +662,7 @@ export function Search(props: SearchProps) {
 
     async function countdown() {
       const fetchCountDownData = await fetch(
-        `http://localhost:8585/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
+        `http://localhost:8787/https://www.countdown.co.nz/api/v1/products?target=search&search=${searchTerm}&inStockProductsOnly=true`
       );
       const countdownResponse = await fetchCountDownData.json();
       setCountdownresults(countdownResponse.products.items);

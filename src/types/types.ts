@@ -3,6 +3,8 @@ import { Dispatch, SetStateAction } from "react";
 export interface SearchProps {
   searchTerm: string;
   setSearchTerm: CallableFunction;
+  searchedItem: string;
+  setSearchedItem: CallableFunction;
   searchPlaceholderText: string;
   setSearchPlaceholderText: CallableFunction;
   searchHelperText: string;
@@ -37,6 +39,7 @@ export interface TableRowProps {
 export interface FilterProps {
   setTags: CallableFunction;
   tags: string[];
+  searchedItem: string;
 }
 
 export interface HeadCell {
@@ -56,15 +59,23 @@ export interface EnhancedTableProps {
   setMycoolrows: Dispatch<any>;
   setTags: CallableFunction;
   tags: string[];
-  addToListItems: string[];
-  setAddToListItems: CallableFunction;
+  addToListItemsCountdown: string[];
+  addToListItemsPaknSave: string[];
+  addToListItemsNewWorld: string[];
+  setAddToListItemsCountdown: CallableFunction;
+  setAddToListItemsPaknSave: CallableFunction;
+  setAddToListItemsNewWorld: CallableFunction;
   numSelected: number;
   hideSearchComponent?: boolean;
 }
 
 export interface CheckboxListProps {
-  addToListItems: string[];
-  setAddToListItems: CallableFunction;
+  addToListItemsCountdown: string[];
+  addToListItemsPaknSave: string[];
+  addToListItemsNewWorld: string[];
+  setAddToListItemsCountdown: CallableFunction;
+  setAddToListItemsPaknSave: CallableFunction;
+  setAddToListItemsNewWorld: CallableFunction;
   setHideSearchComponent: React.Dispatch<SetStateAction<boolean>>;
 }
 export interface EnhancedTableHeadProps {

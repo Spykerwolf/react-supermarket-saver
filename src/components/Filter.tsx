@@ -7,15 +7,90 @@ import Tooltip from "@mui/material/Tooltip";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { styled } from "@mui/material/styles";
 import { FilterProps } from "../types/types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { IconButton } from "@mui/material";
+import { db } from "../auth/firebase";
+import { getDoc, setDoc, doc } from "firebase/firestore";
+import CircularProgress from "@mui/material/CircularProgress";
+import { blue, red } from "@mui/material/colors";
 
 export function Filter(props: FilterProps) {
-  const { tags, setTags } = props;
+  const { tags, setTags, searchedItem } = props;
   const [filterSearchText, setFilterSearchText] = useState("");
+  const [filterHelperText, setFilterHelperText] = useState("");
   const ListItem = styled("li")(({ theme }) => ({
     margin: theme.spacing(0.5),
   }));
-  const [filterHelperText, setFilterHelperText] = useState("");
+
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [successAdd, setSuccessAdd] = useState(false);
+  const [loadingRemove, setLoadingRemove] = useState(false);
+  const [successRemove, setSuccessRemove] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  async function handleAddFiltersToFirebase(tagsArray: string[]) {
+    if (!loadingAdd) {
+      setSuccessAdd(false);
+      setLoadingAdd(true);
+      timer.current = setTimeout(() => {
+        setSuccessAdd(true);
+        setLoadingAdd(false);
+      }, 2000);
+      timer.current = setTimeout(() => {
+        setSuccessAdd(false);
+      }, 4000);
+    }
+    try {
+      await setDoc(
+        doc(db, "Filters", searchedItem),
+        {
+          tags: tagsArray,
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("Error fetching filters from Firebase: ", e);
+    }
+  }
+
+  async function handleRemoveFiltersFromFirestore() {
+    const filterdocRef = doc(db, "Filters", searchedItem);
+    const filterdocSnap = await getDoc(filterdocRef);
+    let existingTags = await filterdocSnap.data()?.tags;
+    if (existingTags !== undefined) {
+      if (!loadingRemove) {
+        setSuccessRemove(false);
+        setLoadingRemove(true);
+        timer.current = setTimeout(() => {
+          setSuccessRemove(true);
+          setLoadingRemove(false);
+        }, 2000);
+        timer.current = setTimeout(() => {
+          setSuccessRemove(false);
+        }, 4000);
+      }
+      try {
+        await setDoc(
+          doc(db, "Filters", searchedItem),
+          {
+            tags: [],
+          },
+          { merge: true }
+        );
+      } catch (e) {
+        console.error("Error deleting filters from Firebase: ", e);
+      }
+    }
+  }
 
   function handleFilterCommaOrEnterKey(e: React.KeyboardEvent<HTMLDivElement>) {
     if (
@@ -75,7 +150,7 @@ export function Filter(props: FilterProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"} paddingBottom={"1%"}>
+      <Box justifyContent="center" display={"flex"} paddingBottom={"0.5%"}>
         <Box>
           <ButtonGroup>
             <TextField
@@ -87,59 +162,113 @@ export function Filter(props: FilterProps) {
               }}
               autoComplete="off"
               sx={{ width: "485px", flex: 1 }}
-              placeholder="Filter a product"
+              placeholder="Filter results with comma or enter"
               value={filterSearchText.replace(",", "")}
               onKeyDown={handleFilterCommaOrEnterKey}
               onChange={handleSetFilterSearchText}
               helperText={filterHelperText}
             />
-            <Tooltip title="Filter with comma or enter">
-              <Button
-                id="filterButton"
-                variant="contained"
-                size="small"
-                endIcon={<RemoveIcon />}
-                onClick={handleFilterButtonClick}
-                type="button"
-                sx={{
-                  marginBottom: "5px",
-                  paddingRight: "20px",
-                  height: "42px",
-                }}
-                aria-label="search"
-              >
-                Filter
-              </Button>
-            </Tooltip>
-          </ButtonGroup>
-
-          {tags.length > 0 && (
-            <Box
-              margin="auto"
-              id="tagsBox"
+            <Button
+              id="filterButton"
+              variant="contained"
+              size="small"
+              endIcon={<RemoveIcon />}
+              onClick={handleFilterButtonClick}
+              type="button"
               sx={{
-                padding: 0,
-                marginTop: 0,
-                marginBottom: 0,
-                listStyle: "none",
+                paddingRight: "20px",
+                height: "42px",
               }}
-              component="ul"
-              key={Math.random()}
             >
-              <Box display="flex" maxWidth={"0px"}>
-                {tags.map((data) => {
-                  return (
-                    <>
-                      <ListItem>
-                        <Chip label={data} onDelete={handleDelete(data)} />
-                      </ListItem>
-                    </>
-                  );
-                })}
-              </Box>
-            </Box>
-          )}
+              Filter
+            </Button>
+          </ButtonGroup>
         </Box>
+      </Box>
+      <Box display={"flex"} justifyContent={"center"} paddingBottom={"1%"}>
+        {tags.length > 0 && (
+          <Box
+            margin="auto"
+            id="tagsBox"
+            sx={{
+              padding: 0,
+              marginTop: 0,
+              marginBottom: 0,
+              listStyle: "none",
+            }}
+            component="ul"
+            key={Math.random()}
+          >
+            <Box display="inline-flex">
+              {tags.map((data) => {
+                return (
+                  <>
+                    <ListItem>
+                      <Chip label={data} onDelete={handleDelete(data)} />
+                    </ListItem>
+                  </>
+                );
+              })}
+
+              <Tooltip title="Save filters for this search">
+                <IconButton
+                  color="info"
+                  onClick={() => handleAddFiltersToFirebase(tags)}
+                >
+                  {successAdd ? <CheckCircleIcon /> : <SaveIcon />}
+                  {loadingAdd && (
+                    <CircularProgress
+                      size={34}
+                      sx={{
+                        color: blue[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                  {successAdd && (
+                    <CircularProgress
+                      variant="determinate"
+                      value={100}
+                      size={32}
+                      sx={{
+                        color: blue[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete saved filters for this search">
+                <IconButton
+                  color="warning"
+                  onClick={() => handleRemoveFiltersFromFirestore()}
+                >
+                  {successRemove ? <CheckCircleIcon /> : <CancelIcon />}
+                  {loadingRemove && (
+                    <CircularProgress
+                      size={34}
+                      sx={{
+                        color: red[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                  {successRemove && (
+                    <CircularProgress
+                      variant="determinate"
+                      value={100}
+                      size={32}
+                      sx={{
+                        color: red[500],
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        )}
       </Box>
     </>
   );

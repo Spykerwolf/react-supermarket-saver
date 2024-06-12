@@ -18,10 +18,12 @@ import SearchPage from "../pages/SearchPage";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useThemeContext } from "../theme/ThemeContextProvider";
 import SearchIcon from "@mui/icons-material/Search";
 import Badge from "@mui/material/Badge";
+import { db } from "../auth/firebase";
+import { getDoc, doc } from "firebase/firestore";
 
 const drawerWidth = 240;
 
@@ -78,7 +80,34 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
-  const [addToListItems, setAddToListItems] = useState<any[]>([]);
+
+  const [addToListItemsNewWorld, setAddToListItemsNewWorld] = useState<any[]>(
+    []
+  );
+  const [addToListItemsCountdown, setAddToListItemsCountdown] = useState<any[]>(
+    []
+  );
+  const [addToListItemsPaknSave, setAddToListItemsPaknSave] = useState<any[]>(
+    []
+  );
+
+  async function getExistingListItems() {
+    console.log("Fetching existing items");
+    const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
+    const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
+    const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
+    const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
+    const docListItemsRefCountdown = doc(db, "List items", "Countdown");
+    const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
+
+    setAddToListItemsPaknSave(await docListItemSnapPaknSave.data()?.list);
+    setAddToListItemsNewWorld(await docListItemSnapNewWorld.data()?.list);
+    setAddToListItemsCountdown(await docListItemSnapCountdown.data()?.list);
+  }
+
+  useEffect(() => {
+    getExistingListItems();
+  }, []);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -158,14 +187,29 @@ export default function Sidebar() {
             <ListItem disablePadding>
               <ListItemButton onClick={toggleDrawer(false)}>
                 <ListItemIcon>
-                  <Badge badgeContent={addToListItems.length} color="primary">
+                  <Badge
+                    badgeContent={
+                      addToListItemsPaknSave &&
+                      addToListItemsCountdown &&
+                      addToListItemsNewWorld
+                        ? addToListItemsNewWorld.length +
+                          addToListItemsCountdown.length +
+                          addToListItemsPaknSave.length
+                        : 0
+                    }
+                    color="primary"
+                  >
                     <ReceiptLongSharpIcon />
                   </Badge>
                 </ListItemIcon>
                 <NavLink
                   to="/list"
                   onClick={handleLinkToList}
-                  state={addToListItems}
+                  state={[
+                    addToListItemsNewWorld,
+                    addToListItemsCountdown,
+                    addToListItemsPaknSave,
+                  ]}
                 >
                   List
                 </NavLink>
@@ -195,13 +239,21 @@ export default function Sidebar() {
         </Box>
         <SearchPage
           hideSearchComponent={hideSearchComponent}
-          addToListItems={addToListItems}
-          setAddToListItems={setAddToListItems}
+          addToListItemsNewWorld={addToListItemsNewWorld}
+          setAddToListItemsNewWorld={setAddToListItemsNewWorld}
+          addToListItemsCountdown={addToListItemsCountdown}
+          setAddToListItemsCountdown={setAddToListItemsCountdown}
+          addToListItemsPaknSave={addToListItemsPaknSave}
+          setAddToListItemsPaknSave={setAddToListItemsPaknSave}
         />
         <Outlet
           context={{
-            addToListItems,
-            setAddToListItems,
+            addToListItemsNewWorld,
+            setAddToListItemsNewWorld,
+            addToListItemsCountdown,
+            setAddToListItemsCountdown,
+            addToListItemsPaknSave,
+            setAddToListItemsPaknSave,
             setHideSearchComponent,
           }}
         />

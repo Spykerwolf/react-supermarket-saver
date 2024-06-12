@@ -1,4 +1,4 @@
-import EnhancedTable from "../components/Table.tsx";
+import { EnhancedTable } from "../components/Table.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { useThemeContext } from "../theme/ThemeContextProvider.tsx";
 import { Search } from "../components/Search.tsx";
@@ -18,8 +18,17 @@ export default function SearchPage(props: EnhancedTableProps) {
 
   const [favProduct, setFavProduct] = useState(false);
   const [mycoolrows, setMycoolrows] = useState([] as any);
-  const { hideSearchComponent, setAddToListItems, addToListItems } = props;
+  const {
+    hideSearchComponent,
+    addToListItemsNewWorld,
+    addToListItemsCountdown,
+    addToListItemsPaknSave,
+    setAddToListItemsCountdown,
+    setAddToListItemsNewWorld,
+    setAddToListItemsPaknSave,
+  } = props;
   const [listArray, setListArray] = useState<string[]>([]);
+  const [searchedItem, setSearchedItem] = useState("");
 
   return (
     hideSearchComponent === false && (
@@ -29,6 +38,8 @@ export default function SearchPage(props: EnhancedTableProps) {
           <Search
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
+            searchedItem={searchedItem}
+            setSearchedItem={setSearchedItem}
             searchPlaceholderText={searchPlaceholderText}
             setSearchPlaceholderText={setSearchPlaceholderText}
             searchHelperText={searchHelperText}
@@ -42,8 +53,14 @@ export default function SearchPage(props: EnhancedTableProps) {
             mycoolrows={mycoolrows}
             setMycoolrows={setMycoolrows}
           />
-          <Filter setTags={setTags} tags={tags} />
+          <Filter setTags={setTags} tags={tags} searchedItem={searchedItem} />
           <EnhancedTable
+            addToListItemsNewWorld={addToListItemsNewWorld}
+            setAddToListItemsNewWorld={setAddToListItemsNewWorld}
+            addToListItemsCountdown={addToListItemsCountdown}
+            setAddToListItemsCountdown={setAddToListItemsCountdown}
+            addToListItemsPaknSave={addToListItemsPaknSave}
+            setAddToListItemsPaknSave={setAddToListItemsPaknSave}
             selected={selected}
             setSelected={setSelected}
             favProduct={favProduct}
@@ -52,8 +69,6 @@ export default function SearchPage(props: EnhancedTableProps) {
             setMycoolrows={setMycoolrows}
             setTags={setTags}
             tags={tags}
-            addToListItems={addToListItems}
-            setAddToListItems={setAddToListItems}
             listArray={listArray}
             setListArray={setListArray}
           />

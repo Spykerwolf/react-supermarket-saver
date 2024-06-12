@@ -10,7 +10,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import IconButton from "@mui/material/IconButton";
 import { visuallyHidden } from "@mui/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { rows } from "./Search";
 import { getComparator, stableSort } from "../functions/sortTable";
 import SellIcon from "@mui/icons-material/Sell";
@@ -22,6 +22,8 @@ import StarsIcon from "@mui/icons-material/Stars";
 import Tooltip from "@mui/material/Tooltip";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import { db } from "../auth/firebase";
+import { setDoc, doc } from "firebase/firestore";
 
 import {
   TableRowProps,
@@ -129,7 +131,52 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   );
 }
 
-export default function EnhancedTable(props: EnhancedTableProps) {
+export async function handleAddListToFirebaseNewWorld(
+  listArray: string[],
+  lengthy: number
+) {
+  if (lengthy > 1) {
+    await setDoc(
+      doc(db, "List items", "NewWorld"),
+      {
+        list: listArray,
+      },
+      { merge: true }
+    );
+  }
+}
+
+export async function handleAddListToFirebaseCountdown(
+  listArray: string[],
+  lengthy: number
+) {
+  if (lengthy > 1) {
+    await setDoc(
+      doc(db, "List items", "Countdown"),
+      {
+        list: listArray,
+      },
+      { merge: true }
+    );
+  }
+}
+
+export async function handleAddListToFirebasePaknSave(
+  listArray: string[],
+  lengthy: number
+) {
+  if (lengthy > 1) {
+    await setDoc(
+      doc(db, "List items", "PaknSave"),
+      {
+        list: listArray,
+      },
+      { merge: true }
+    );
+  }
+}
+
+export function EnhancedTable(props: EnhancedTableProps) {
   const {
     favProduct,
     setFavProduct,
@@ -137,14 +184,53 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setSelected,
     mycoolrows,
     tags,
-    setAddToListItems,
-    addToListItems,
+    addToListItemsCountdown,
+    addToListItemsPaknSave,
+    addToListItemsNewWorld,
+    setAddToListItemsCountdown,
+    setAddToListItemsPaknSave,
+    setAddToListItemsNewWorld,
   } = props;
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof TableRowProps>("ratio");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [rowCount, setRowCount] = useState(0);
+  const [prevLengthCountdown, setPrevLengthCountdown] = useState(
+    addToListItemsCountdown.length + 1
+  );
+  const [prevLengthNewWorld, setPrevLengthNewWorld] = useState(
+    addToListItemsNewWorld.length + 1
+  );
+  const [prevLengthPaknSave, setPrevLengthPaknSave] = useState(
+    addToListItemsPaknSave.length + 1
+  );
+
+  useEffect(() => {
+    setPrevLengthPaknSave(addToListItemsPaknSave.length + 2);
+    handleAddListToFirebasePaknSave(addToListItemsPaknSave, prevLengthPaknSave);
+    console.log("addToListItemsPaknSave", addToListItemsPaknSave);
+  }, [addToListItemsPaknSave]);
+
+  useEffect(() => {
+    setPrevLengthNewWorld(addToListItemsNewWorld.length + 2);
+    handleAddListToFirebaseNewWorld(addToListItemsNewWorld, prevLengthNewWorld);
+    console.log("addToListItemsNewWorld", addToListItemsNewWorld);
+  }, [addToListItemsNewWorld]);
+
+  useEffect(() => {
+    setPrevLengthCountdown(addToListItemsCountdown.length + 2);
+    handleAddListToFirebaseCountdown(
+      addToListItemsCountdown,
+      prevLengthCountdown
+    );
+    console.log("addToListItemsCountdown", addToListItemsCountdown);
+  }, [addToListItemsCountdown]);
+
+  useEffect(() => {
+    console.log("prevLengthCountdown", prevLengthCountdown);
+  }, [prevLengthCountdown]);
+
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof TableRowProps
@@ -197,7 +283,12 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"} width={"100%"}>
+      <Box
+        justifyContent="center"
+        display={"flex"}
+        width={"100%"}
+        paddingTop={"0.5%"}
+      >
         <TableContainer>
           <Table
             sx={{ minWidth: "250" }}
@@ -225,9 +316,15 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                 })
 
                 .map((row) => {
-                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
-                  const productExists = addToListItems.some((item) =>
-                    product.includes(item)
+                  const product = `${row.name} ${row.productPackage} - $${row.price}`;
+                  const productExistsNewWorld = addToListItemsNewWorld.some(
+                    (item) => product.includes(item)
+                  );
+                  const productExistsCountdown = addToListItemsCountdown.some(
+                    (item) => product.includes(item)
+                  );
+                  const productExistsPaknSave = addToListItemsPaknSave.some(
+                    (item) => product.includes(item)
                   );
 
                   function handleAddFavourite(sku: string, name: string) {
@@ -240,18 +337,52 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                   }
 
                   function handleAddToList() {
-                    setAddToListItems([...addToListItems, product]);
+                    if (row.store === "New World") {
+                      setAddToListItemsNewWorld([
+                        ...addToListItemsNewWorld,
+                        product,
+                      ]);
+                    }
+
+                    if (row.store === "Countdown") {
+                      setAddToListItemsCountdown([
+                        ...addToListItemsCountdown,
+                        product,
+                      ]);
+                    }
+
+                    if (row.store === "Pak n Save") {
+                      setAddToListItemsPaknSave([
+                        ...addToListItemsPaknSave,
+                        product,
+                      ]);
+                    }
                     setSelected([]);
                   }
 
                   function handleDeleteFromList() {
                     function handleProductDelete(productToDelete: string) {
-                      setAddToListItems((products: string[]) =>
-                        products.filter((prod) => prod !== productToDelete)
-                      );
+                      if (row.store === "New World") {
+                        setAddToListItemsNewWorld((products: string[]) =>
+                          products.filter((prod) => prod !== productToDelete)
+                        );
+                      }
+                      if (row.store === "Countdown") {
+                        setAddToListItemsCountdown((products: string[]) =>
+                          products.filter((prod) => prod !== productToDelete)
+                        );
+                      }
+                      if (row.store === "Pak n Save") {
+                        setAddToListItemsPaknSave((products: string[]) =>
+                          products.filter((prod) => prod !== productToDelete)
+                        );
+                      }
                     }
 
-                    productExists && handleProductDelete(product);
+                    (productExistsNewWorld ||
+                      productExistsCountdown ||
+                      productExistsPaknSave) &&
+                      handleProductDelete(product);
                   }
 
                   return (
@@ -271,20 +402,35 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                     >
                       <TableCell padding="none">
                         <Tooltip
-                          title={productExists && "Remove from list"}
+                          title={
+                            (productExistsNewWorld ||
+                              productExistsCountdown ||
+                              productExistsPaknSave) &&
+                            "Remove from list"
+                          }
                           placement="left"
                         >
                           <IconButton
                             id="addtolist"
-                            color={productExists ? "warning" : "default"}
+                            color={
+                              productExistsNewWorld ||
+                              productExistsCountdown ||
+                              productExistsPaknSave
+                                ? "warning"
+                                : "default"
+                            }
                             size="medium"
                             onClick={() =>
-                              productExists
+                              productExistsNewWorld ||
+                              productExistsCountdown ||
+                              productExistsPaknSave
                                 ? handleDeleteFromList()
                                 : handleAddToList()
                             }
                           >
-                            {productExists ? (
+                            {productExistsNewWorld ||
+                            productExistsCountdown ||
+                            productExistsPaknSave ? (
                               <ShoppingCartOutlinedIcon />
                             ) : (
                               <AddOutlinedIcon />
