@@ -23,7 +23,7 @@ import Tooltip from "@mui/material/Tooltip";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import { db } from "../auth/firebase";
-import { getDoc, setDoc, doc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 import {
   TableRowProps,
@@ -131,14 +131,11 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   );
 }
 
-export async function handleAddListToFirebaseNewWorld(listArray: string[]) {
-  const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
-  const docListItemSnapNewWorld = await getDoc(docListItemsRefNewWorld);
-
-  if (
-    (await docListItemSnapNewWorld.data()?.list.length) >= 0 &&
-    listArray.length >= 0
-  ) {
+export async function handleAddListToFirebaseNewWorld(
+  listArray: string[],
+  lengthy: number
+) {
+  if (lengthy > 1) {
     await setDoc(
       doc(db, "List items", "NewWorld"),
       {
@@ -153,11 +150,7 @@ export async function handleAddListToFirebaseCountdown(
   listArray: string[],
   lengthy: number
 ) {
-  const docListItemsRefCountdown = doc(db, "List items", "Countdown");
-  const docListItemSnapCountdown = await getDoc(docListItemsRefCountdown);
-
   if (lengthy > 1) {
-    console.log("listArray length is more than 0");
     await setDoc(
       doc(db, "List items", "Countdown"),
       {
@@ -166,29 +159,13 @@ export async function handleAddListToFirebaseCountdown(
       { merge: true }
     );
   }
-  if (listArray.length === 1) {
-    ("listArray.length is 1");
-    if (docListItemSnapCountdown.data().list.length < 1) {
-      console.log(docListItemSnapCountdown.data().list.length);
-      await setDoc(
-        doc(db, "List items", "Countdown"),
-        {
-          list: listArray,
-        },
-        { merge: true }
-      );
-    }
-  }
 }
 
-export async function handleAddListToFirebasePaknSave(listArray: string[]) {
-  const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
-  const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
-
-  if (
-    (await docListItemSnapPaknSave.data()?.list.length) >= 0 &&
-    listArray.length >= 0
-  ) {
+export async function handleAddListToFirebasePaknSave(
+  listArray: string[],
+  lengthy: number
+) {
+  if (lengthy > 1) {
     await setDoc(
       doc(db, "List items", "PaknSave"),
       {
@@ -219,29 +196,40 @@ export function EnhancedTable(props: EnhancedTableProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(-1);
   const [rowCount, setRowCount] = useState(0);
-  const [prevLength, setPrevLength] = useState(
+  const [prevLengthCountdown, setPrevLengthCountdown] = useState(
     addToListItemsCountdown.length + 1
   );
-
-  // useEffect(() => {
-  //   handleAddListToFirebasePaknSave(addToListItemsPaknSave);
-  //   console.log("addToListItemsPaknSave", addToListItemsPaknSave);
-  // }, [addToListItemsPaknSave]);
-
-  // useEffect(() => {
-  //   handleAddListToFirebaseNewWorld(addToListItemsNewWorld);
-  //   console.log("addToListItemsNewWorld", addToListItemsNewWorld);
-  // }, [addToListItemsNewWorld]);
+  const [prevLengthNewWorld, setPrevLengthNewWorld] = useState(
+    addToListItemsNewWorld.length + 1
+  );
+  const [prevLengthPaknSave, setPrevLengthPaknSave] = useState(
+    addToListItemsPaknSave.length + 1
+  );
 
   useEffect(() => {
-    setPrevLength(addToListItemsCountdown.length + 1);
-    handleAddListToFirebaseCountdown(addToListItemsCountdown, prevLength);
+    setPrevLengthPaknSave(addToListItemsPaknSave.length + 2);
+    handleAddListToFirebasePaknSave(addToListItemsPaknSave, prevLengthPaknSave);
+    console.log("addToListItemsPaknSave", addToListItemsPaknSave);
+  }, [addToListItemsPaknSave]);
+
+  useEffect(() => {
+    setPrevLengthNewWorld(addToListItemsNewWorld.length + 2);
+    handleAddListToFirebaseNewWorld(addToListItemsNewWorld, prevLengthNewWorld);
+    console.log("addToListItemsNewWorld", addToListItemsNewWorld);
+  }, [addToListItemsNewWorld]);
+
+  useEffect(() => {
+    setPrevLengthCountdown(addToListItemsCountdown.length + 2);
+    handleAddListToFirebaseCountdown(
+      addToListItemsCountdown,
+      prevLengthCountdown
+    );
     console.log("addToListItemsCountdown", addToListItemsCountdown);
   }, [addToListItemsCountdown]);
 
   useEffect(() => {
-    console.log("prevLength is now set to " + prevLength);
-  }, [prevLength]);
+    console.log("prevLengthCountdown", prevLengthCountdown);
+  }, [prevLengthCountdown]);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
@@ -328,7 +316,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
                 })
 
                 .map((row) => {
-                  const product = `${row.store} - ${row.name} ${row.productPackage} - $${row.price}`;
+                  const product = `${row.name} ${row.productPackage} - $${row.price}`;
                   const productExistsNewWorld = addToListItemsNewWorld.some(
                     (item) => product.includes(item)
                   );
