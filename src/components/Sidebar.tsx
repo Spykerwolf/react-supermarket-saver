@@ -124,7 +124,7 @@ export default function Sidebar() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box>
+      <Box id="MainBox">
         <AppBar
           position="static"
           open={open}
@@ -140,7 +140,15 @@ export default function Sidebar() {
               edge="start"
               sx={{ mr: 2, ...(open && { display: "none" }) }}
             >
-              <MenuIcon />
+              {addToListItemsPaknSave.length > 0 ||
+              addToListItemsCountdown.length > 0 ||
+              addToListItemsNewWorld.length > 0 ? (
+                <Badge color="warning" variant="dot">
+                  <MenuIcon />
+                </Badge>
+              ) : (
+                <MenuIcon />
+              )}
             </IconButton>
           </Toolbar>
         </AppBar>
@@ -220,7 +228,7 @@ export default function Sidebar() {
           <Divider />
         </Drawer>
         <Main open={open}></Main>
-        <Box justifyContent="center" display={"flex"}>
+        <Box justifyContent="center" display="flex" id="LogoBox">
           <Box display="inline-flex" justifyContent="center">
             <h1>Supermarket Savings </h1>
           </Box>

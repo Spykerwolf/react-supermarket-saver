@@ -150,7 +150,12 @@ export function Filter(props: FilterProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"} paddingBottom={"0.5%"}>
+      <Box
+        justifyContent="center"
+        display="flex"
+        paddingBottom="0.5%"
+        id="FilterBox"
+      >
         <Box>
           <ButtonGroup>
             <TextField
@@ -161,7 +166,7 @@ export function Filter(props: FilterProps) {
                 },
               }}
               autoComplete="off"
-              sx={{ width: "485px", flex: 1 }}
+              sx={{ width: "485px", flex: 1, bgcolor: "white" }}
               placeholder="Filter results with comma or enter"
               value={filterSearchText.replace(",", "")}
               onKeyDown={handleFilterCommaOrEnterKey}
@@ -178,6 +183,7 @@ export function Filter(props: FilterProps) {
               sx={{
                 paddingRight: "20px",
                 height: "42px",
+                paddingBottom: "1px",
               }}
             >
               Filter
@@ -185,7 +191,12 @@ export function Filter(props: FilterProps) {
           </ButtonGroup>
         </Box>
       </Box>
-      <Box display={"flex"} justifyContent={"center"} paddingBottom={"1%"}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        paddingBottom="1%"
+        id="TagsBox"
+      >
         {tags.length > 0 && (
           <Box
             margin="auto"
@@ -204,7 +215,11 @@ export function Filter(props: FilterProps) {
                 return (
                   <>
                     <ListItem>
-                      <Chip label={data} onDelete={handleDelete(data)} />
+                      <Chip
+                        label={data}
+                        color="info"
+                        onDelete={handleDelete(data)}
+                      />
                     </ListItem>
                   </>
                 );

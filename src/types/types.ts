@@ -67,6 +67,8 @@ export interface EnhancedTableProps {
   setAddToListItemsNewWorld: CallableFunction;
   numSelected: number;
   hideSearchComponent?: boolean;
+  mainLogoBackground: string;
+  setMainLogoBackground: CallableFunction;
 }
 
 export interface CheckboxListProps {
@@ -77,6 +79,8 @@ export interface CheckboxListProps {
   setAddToListItemsPaknSave: CallableFunction;
   setAddToListItemsNewWorld: CallableFunction;
   setHideSearchComponent: React.Dispatch<SetStateAction<boolean>>;
+  mainLogoBackground: string;
+  setMainLogoBackground: CallableFunction;
 }
 export interface EnhancedTableHeadProps {
   onRequestSort: (
