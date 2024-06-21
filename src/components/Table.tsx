@@ -100,13 +100,13 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   return (
     <>
       <TableHead sx={{ margin: 1 }}>
-        <TableRow sx={{ bgcolor: "lightgrey" }}>
+        <TableRow sx={{ bgcolor: "#ffc65d" }}>
           <TableCell padding="checkbox"></TableCell>
           {headCells.map((headCell) => (
             <TableCell
               key={Math.random()}
               align={headCell.numeric ? "right" : "left"}
-              padding={"normal"}
+              padding="normal"
               sortDirection={orderBy === headCell.id ? order : false}
             >
               <TableSortLabel
@@ -285,16 +285,14 @@ export function EnhancedTable(props: EnhancedTableProps) {
     <>
       <Box
         justifyContent="center"
-        display={"flex"}
-        width={"100%"}
-        paddingTop={"0.5%"}
+        display="flex"
+        width="100%"
+        marginTop="0.5%"
+        id="TableBox"
+        sx={{ bgcolor: "white" }}
       >
         <TableContainer>
-          <Table
-            sx={{ minWidth: "250" }}
-            aria-labelledby="tableTitle"
-            size={"small"}
-          >
+          <Table sx={{ minWidth: "250" }} size="small">
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -396,7 +394,6 @@ export function EnhancedTable(props: EnhancedTableProps) {
                       tabIndex={-1}
                       sx={{
                         cursor: "pointer",
-                        backgroundColor: "#00000008",
                         paddingBottom: 0,
                       }}
                     >
@@ -530,7 +527,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
           </Table>
         </TableContainer>
       </Box>
-      <Box paddingLeft={"5%"} paddingRight={"5%"}>
+      <Box paddingLeft="5%" paddingRight="5%" id="TableFooterBox">
         <TablePagination
           rowsPerPageOptions={[5, 25, 50, 75, { value: -1, label: "All" }]}
           component="div"

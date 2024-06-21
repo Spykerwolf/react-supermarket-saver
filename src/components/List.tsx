@@ -12,6 +12,8 @@ import { CheckboxListProps } from "../types/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Divider from "@mui/material/Divider";
+
 import {
   handleAddListToFirebaseNewWorld,
   handleAddListToFirebaseCountdown,
@@ -170,7 +172,13 @@ export default function CheckboxList() {
 
   function showAnimation() {
     return (
-      <div style={{ justifyContent: "center", display: "flex" }}>
+      <div
+        style={{
+          justifyContent: "center",
+          display: "flex",
+          backgroundColor: "#e3dfdf",
+        }}
+      >
         <DotLottieReact
           style={{
             width: "40%",
@@ -191,21 +199,29 @@ export default function CheckboxList() {
       addToListItemsPaknSave.length === 0 ? (
         showAnimation()
       ) : (
-        <Box justifyContent={"center"} display={"flex"}>
-          <Paper elevation={3} sx={{ width: "80%", height: "50%" }}>
+        <Box
+          justifyContent="center"
+          display="flex"
+          id="MainItemsBox"
+          paddingTop="1%"
+          paddingBottom="1%"
+        >
+          <Paper elevation={3} sx={{ width: "40%" }}>
             {addToListItemsNewWorld.length > 0 && (
               <Box
-                id={"NewWorldListItems"}
-                justifyContent={"center"}
-                display={"flex-inline"}
+                id="NewWorldListItems"
+                justifyContent="center"
+                display="flex-inline"
                 sx={{
                   width: "100%",
                   maxWidth: "100%",
-                  bgcolor: "background.paper",
                   paddingBottom: "0px",
                 }}
               >
-                <h2>New World</h2>
+                <Box marginLeft="1%">
+                  <h2>New World</h2>
+                </Box>
+
                 <List
                   sx={{
                     width: "100%",
@@ -255,6 +271,7 @@ export default function CheckboxList() {
                                 onClick={() => handleClickNewWorld(index)}
                               />
                             </ListItemIcon>
+
                             <ListItemText
                               primary={item}
                               style={{
@@ -269,13 +286,14 @@ export default function CheckboxList() {
                     );
                   })}
                 </List>
+                <Divider />
               </Box>
             )}
             {addToListItemsCountdown.length > 0 && (
               <Box
-                id={"CountdownListItems"}
-                justifyContent={"center"}
-                display={"flex-inline"}
+                id="CountdownListItems"
+                justifyContent="center"
+                display="flex-inline"
                 sx={{
                   width: "100%",
                   maxWidth: "100%",
@@ -283,7 +301,9 @@ export default function CheckboxList() {
                   paddingBottom: "0px",
                 }}
               >
-                <h2>Countdown</h2>
+                <Box marginLeft="1%">
+                  <h2>Countdown</h2>
+                </Box>{" "}
                 <List
                   sx={{
                     width: "100%",
@@ -347,13 +367,14 @@ export default function CheckboxList() {
                     );
                   })}
                 </List>
+                <Divider />
               </Box>
             )}
             {addToListItemsPaknSave.length > 0 && (
               <Box
-                id={"PaknSaveListItems"}
-                justifyContent={"center"}
-                display={"flex-inline"}
+                id="PaknSaveListItems"
+                justifyContent="center"
+                display="flex-inline"
                 sx={{
                   width: "100%",
                   maxWidth: "100%",
@@ -361,7 +382,9 @@ export default function CheckboxList() {
                   paddingBottom: "0px",
                 }}
               >
-                <h2>Pak n Save</h2>
+                <Box marginLeft="1%">
+                  <h2>Pak n Save</h2>
+                </Box>
                 <List
                   sx={{
                     width: "100%",
@@ -425,6 +448,7 @@ export default function CheckboxList() {
                     );
                   })}
                 </List>
+                <Divider />
               </Box>
             )}
           </Paper>

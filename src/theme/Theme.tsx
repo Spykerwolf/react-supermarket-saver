@@ -4,6 +4,10 @@ import { amber, grey, orange } from "@mui/material/colors";
 const theme = {
   palette: {
     primary: grey,
+    background: {
+      default: "#e3dfdf",
+      orange: "#ffd17d",
+    },
   },
 };
 

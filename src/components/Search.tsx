@@ -702,8 +702,8 @@ export function Search(props: SearchProps) {
 
   return (
     <>
-      <Box justifyContent="center" display={"flex"}>
-        <ButtonGroup>
+      <Box justifyContent="center" display="flex" id="SearchBox">
+        <ButtonGroup sx={{ marginBottom: "5px" }}>
           <TextField
             inputProps={{
               style: {
@@ -714,7 +714,7 @@ export function Search(props: SearchProps) {
             autoComplete="off"
             sx={{
               width: "485px",
-              flex: 1,
+              bgcolor: "white",
             }}
             variant="outlined"
             value={searchvalue}
@@ -730,11 +730,7 @@ export function Search(props: SearchProps) {
             size="small"
             endIcon={<SearchIcon />}
             onClick={handleSearchButton}
-            type="button"
-            sx={{
-              marginBottom: "5px",
-              height: "42px",
-            }}
+            sx={{ height: "42px" }}
           >
             Search
           </Button>
