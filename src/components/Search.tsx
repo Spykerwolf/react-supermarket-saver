@@ -714,7 +714,7 @@ export function Search(props: SearchProps) {
             autoComplete="off"
             sx={{
               width: "485px",
-              bgcolor: "white",
+              bgcolor: "background.inputfields",
             }}
             variant="outlined"
             value={searchvalue}
@@ -726,7 +726,7 @@ export function Search(props: SearchProps) {
           />
           <Button
             variant="contained"
-            color="warning"
+            color="searchbutton"
             size="small"
             endIcon={<SearchIcon />}
             onClick={handleSearchButton}

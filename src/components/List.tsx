@@ -176,7 +176,7 @@ export default function CheckboxList() {
         style={{
           justifyContent: "center",
           display: "flex",
-          backgroundColor: "#e3dfdf",
+          backgroundColor: "background.default",
         }}
       >
         <DotLottieReact
@@ -206,7 +206,10 @@ export default function CheckboxList() {
           paddingTop="1%"
           paddingBottom="1%"
         >
-          <Paper elevation={3} sx={{ width: "40%" }}>
+          <Paper
+            elevation={3}
+            sx={{ width: "40%", backgroundColor: "background.listitems" }}
+          >
             {addToListItemsNewWorld.length > 0 && (
               <Box
                 id="NewWorldListItems"
@@ -226,7 +229,6 @@ export default function CheckboxList() {
                   sx={{
                     width: "100%",
                     maxWidth: "100%",
-                    bgcolor: "background.paper",
                   }}
                 >
                   {addToListItemsNewWorld.map((item, index) => {
@@ -253,13 +255,18 @@ export default function CheckboxList() {
                           }
                         >
                           <ListItemButton
-                            style={{
-                              backgroundColor: isItemSelected
-                                ? "#c1c1c1"
-                                : "white",
-                            }}
                             dense={true}
                             disableRipple={true}
+                            sx={{
+                              bgcolor: isItemSelected
+                                ? "background.listitemschecked"
+                                : "background.listitems",
+                              "&.MuiButtonBase-root:hover": {
+                                bgcolor:
+                                  isItemSelected &&
+                                  "background.listitemschecked",
+                              },
+                            }}
                           >
                             <ListItemIcon onClick={handleToggle(item)}>
                               <Checkbox
@@ -297,18 +304,15 @@ export default function CheckboxList() {
                 sx={{
                   width: "100%",
                   maxWidth: "100%",
-                  bgcolor: "background.paper",
-                  paddingBottom: "0px",
                 }}
               >
                 <Box marginLeft="1%">
                   <h2>Countdown</h2>
-                </Box>{" "}
+                </Box>
                 <List
                   sx={{
                     width: "100%",
                     maxWidth: "100%",
-                    bgcolor: "background.paper",
                   }}
                 >
                   {addToListItemsCountdown.map((item, index) => {
@@ -335,10 +339,15 @@ export default function CheckboxList() {
                           }
                         >
                           <ListItemButton
-                            style={{
-                              backgroundColor: isItemSelected
-                                ? "#c1c1c1"
-                                : "white",
+                            sx={{
+                              bgcolor: isItemSelected
+                                ? "background.listitemschecked"
+                                : "background.listitems",
+                              "&.MuiButtonBase-root:hover": {
+                                bgcolor:
+                                  isItemSelected &&
+                                  "background.listitemschecked",
+                              },
                             }}
                             dense={true}
                             disableRipple={true}
@@ -378,7 +387,6 @@ export default function CheckboxList() {
                 sx={{
                   width: "100%",
                   maxWidth: "100%",
-                  bgcolor: "background.paper",
                   paddingBottom: "0px",
                 }}
               >
@@ -389,7 +397,6 @@ export default function CheckboxList() {
                   sx={{
                     width: "100%",
                     maxWidth: "100%",
-                    bgcolor: "background.paper",
                   }}
                 >
                   {addToListItemsPaknSave.map((item, index) => {
@@ -416,10 +423,15 @@ export default function CheckboxList() {
                           }
                         >
                           <ListItemButton
-                            style={{
-                              backgroundColor: isItemSelected
-                                ? "#c1c1c1"
-                                : "white",
+                            sx={{
+                              bgcolor: isItemSelected
+                                ? "background.listitemschecked"
+                                : "background.listitems",
+                              "&.MuiButtonBase-root:hover": {
+                                bgcolor:
+                                  isItemSelected &&
+                                  "background.listitemschecked",
+                              },
                             }}
                             dense={true}
                             disableRipple={true}

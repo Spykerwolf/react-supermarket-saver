@@ -4,6 +4,7 @@ import ListPage from "./pages/ListPage.tsx";
 import PageNotFound from "./pages/PageNotFound.tsx";
 import { ThemeContextProvider } from "./theme/ThemeContextProvider.tsx";
 import Sidebar from "./components/Sidebar.tsx";
+import { CssBaseline } from "@mui/material";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <ThemeContextProvider>
+    <CssBaseline />
     <RouterProvider router={router} />
   </ThemeContextProvider>
 );
