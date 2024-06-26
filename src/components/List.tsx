@@ -19,6 +19,7 @@ import {
   handleAddListToFirebaseCountdown,
   handleAddListToFirebasePaknSave,
 } from "./Table";
+import Snackbar from "@mui/material/Snackbar";
 
 export default function CheckboxList() {
   const {
@@ -52,9 +53,9 @@ export default function CheckboxList() {
   const [prevLengthPaknSave, setPrevLengthPaknSave] = useState(
     addToListItemsPaknSave.length + 1
   );
-  useEffect(() => {
-    console.log(itemsChecked);
-  }, [itemsChecked]);
+
+  const [openSnack, setOpenSnack] = useState(false);
+
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
@@ -236,8 +237,25 @@ export default function CheckboxList() {
                       selectedNewWorld.indexOf(id) !== -1;
                     const isItemSelected = isSelected(index);
 
+                    const handleCloseSnack = (
+                      event: React.SyntheticEvent | Event,
+                      reason?: string
+                    ) => {
+                      if (reason === "clickaway") {
+                        return;
+                      }
+
+                      setOpenSnack(false);
+                    };
+
                     return (
                       <>
+                        <Snackbar
+                          open={openSnack}
+                          autoHideDuration={1000}
+                          onClose={handleCloseSnack}
+                          message="Copied to clipboard"
+                        />
                         <ListItem
                           disablePadding
                           sx={{ p: 0 }}
@@ -286,6 +304,7 @@ export default function CheckboxList() {
                                   ? "line-through"
                                   : "none",
                               }}
+                              onClick={() => setOpenSnack(true)}
                             />
                           </ListItemButton>
                         </ListItem>
@@ -351,6 +370,7 @@ export default function CheckboxList() {
                             }}
                             dense={true}
                             disableRipple={true}
+                            // onClick={() => handleCopyItemToClipboard(item)}
                           >
                             <ListItemIcon onClick={handleToggle(item)}>
                               <Checkbox
@@ -435,6 +455,7 @@ export default function CheckboxList() {
                             }}
                             dense={true}
                             disableRipple={true}
+                            // onClick={() => handleCopyItemToClipboard(item)}
                           >
                             <ListItemIcon onClick={handleToggle(item)}>
                               <Checkbox

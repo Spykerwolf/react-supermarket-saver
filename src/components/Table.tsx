@@ -209,13 +209,11 @@ export function EnhancedTable(props: EnhancedTableProps) {
   useEffect(() => {
     setPrevLengthPaknSave(addToListItemsPaknSave.length + 2);
     handleAddListToFirebasePaknSave(addToListItemsPaknSave, prevLengthPaknSave);
-    console.log("addToListItemsPaknSave", addToListItemsPaknSave);
   }, [addToListItemsPaknSave]);
 
   useEffect(() => {
     setPrevLengthNewWorld(addToListItemsNewWorld.length + 2);
     handleAddListToFirebaseNewWorld(addToListItemsNewWorld, prevLengthNewWorld);
-    console.log("addToListItemsNewWorld", addToListItemsNewWorld);
   }, [addToListItemsNewWorld]);
 
   useEffect(() => {
@@ -224,12 +222,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
       addToListItemsCountdown,
       prevLengthCountdown
     );
-    console.log("addToListItemsCountdown", addToListItemsCountdown);
   }, [addToListItemsCountdown]);
-
-  useEffect(() => {
-    console.log("prevLengthCountdown", prevLengthCountdown);
-  }, [prevLengthCountdown]);
 
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,

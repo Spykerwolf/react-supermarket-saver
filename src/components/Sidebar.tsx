@@ -91,7 +91,6 @@ export default function Sidebar() {
   );
 
   async function getExistingListItems() {
-    console.log("Fetching existing items");
     const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
     const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
     const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
