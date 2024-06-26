@@ -1,10 +1,9 @@
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -15,9 +14,9 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ReceiptLongSharpIcon from "@mui/icons-material/ReceiptLongSharp";
 import { NavLink, Outlet } from "react-router-dom";
 import SearchPage from "../pages/SearchPage";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
+import LightModeIcon from "@mui/icons-material/LightMode";
 import { useEffect, useState } from "react";
 import { useThemeContext } from "../theme/ThemeContextProvider";
 import SearchIcon from "@mui/icons-material/Search";
@@ -76,7 +75,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 export default function Sidebar() {
-  const theme = useTheme();
+  const { theme } = useThemeContext();
   const [open, setOpen] = useState(false);
   const [hideSearchComponent, setHideSearchComponent] = useState(false);
   const { mode, toggleColorMode } = useThemeContext();
@@ -115,22 +114,23 @@ export default function Sidebar() {
 
   function handleLinkToSearch() {
     setHideSearchComponent(false);
+    toggleDrawer(false);
   }
 
   function handleLinkToList() {
     setHideSearchComponent(true);
+    toggleDrawer(false);
   }
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <Box id="MainBox">
         <AppBar
           position="static"
           open={open}
           variant="outlined"
-          color="info"
           elevation={0}
+          sx={{ bgcolor: "background.appbar" }}
         >
           <Toolbar>
             <IconButton
@@ -143,7 +143,7 @@ export default function Sidebar() {
               {addToListItemsPaknSave.length > 0 ||
               addToListItemsCountdown.length > 0 ||
               addToListItemsNewWorld.length > 0 ? (
-                <Badge color="warning" variant="dot">
+                <Badge color="badgedot" variant="dot">
                   <MenuIcon />
                 </Badge>
               ) : (
@@ -153,10 +153,11 @@ export default function Sidebar() {
           </Toolbar>
         </AppBar>
         <Drawer
+          id="SideBarDrawer"
           onClose={toggleDrawer(false)}
           PaperProps={{
             sx: {
-              backgroundColor: "#fdd8d8",
+              bgcolor: "background.drawer",
             },
           }}
           sx={{
@@ -180,52 +181,61 @@ export default function Sidebar() {
               )}
             </IconButton>
           </DrawerHeader>
-          <Divider />
           <List>
-            <ListItem disablePadding>
-              <ListItemButton onClick={toggleDrawer(false)}>
-                <ListItemIcon>
-                  <SearchIcon />
-                </ListItemIcon>
-                <NavLink to="/" onClick={handleLinkToSearch}>
-                  Search
-                </NavLink>
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton onClick={toggleDrawer(false)}>
-                <ListItemIcon>
-                  <Badge
-                    badgeContent={
-                      addToListItemsPaknSave &&
-                      addToListItemsCountdown &&
-                      addToListItemsNewWorld
-                        ? addToListItemsNewWorld.length +
-                          addToListItemsCountdown.length +
-                          addToListItemsPaknSave.length
-                        : 0
-                    }
-                    color="primary"
-                  >
-                    <ReceiptLongSharpIcon />
-                  </Badge>
-                </ListItemIcon>
-                <NavLink
-                  to="/list"
-                  onClick={handleLinkToList}
-                  state={[
-                    addToListItemsNewWorld,
-                    addToListItemsCountdown,
-                    addToListItemsPaknSave,
-                  ]}
-                >
-                  List
-                </NavLink>
-              </ListItemButton>
-            </ListItem>
+            <NavLink
+              to="/"
+              onClick={handleLinkToSearch}
+              color="inherit"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <ListItem disablePadding>
+                <ListItemButton onClick={toggleDrawer(false)}>
+                  <ListItemIcon>
+                    <SearchIcon />
+                  </ListItemIcon>
+                  Search Groceries
+                </ListItemButton>
+              </ListItem>
+            </NavLink>
+            <NavLink
+              to="/list"
+              onClick={handleLinkToList}
+              color="inherit"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
+              state={[
+                addToListItemsNewWorld,
+                addToListItemsCountdown,
+                addToListItemsPaknSave,
+              ]}
+            >
+              <ListItem disablePadding>
+                <ListItemButton onClick={toggleDrawer(false)}>
+                  <ListItemIcon>
+                    <Badge
+                      badgeContent={
+                        addToListItemsPaknSave &&
+                        addToListItemsCountdown &&
+                        addToListItemsNewWorld
+                          ? addToListItemsNewWorld.length +
+                            addToListItemsCountdown.length +
+                            addToListItemsPaknSave.length
+                          : 0
+                      }
+                      color="primary"
+                    >
+                      <ReceiptLongSharpIcon />
+                    </Badge>
+                  </ListItemIcon>
+                  Shopping List
+                </ListItemButton>
+              </ListItem>
+            </NavLink>
           </List>
 
-          <Divider />
+          {/* <Divider /> */}
         </Drawer>
         <Main open={open}></Main>
         <Box justifyContent="center" display="flex" id="LogoBox">
@@ -239,9 +249,9 @@ export default function Sidebar() {
                 margin: "auto",
               }}
               onClick={toggleColorMode}
-              color="inherit"
+              color="darkmodetoggle"
             >
-              {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+              {mode === "dark" ? <LightModeIcon /> : <Brightness4Icon />}
             </IconButton>
           </Box>
         </Box>

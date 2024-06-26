@@ -166,7 +166,11 @@ export function Filter(props: FilterProps) {
                 },
               }}
               autoComplete="off"
-              sx={{ width: "485px", flex: 1, bgcolor: "white" }}
+              sx={{
+                width: "485px",
+                flex: 1,
+                bgcolor: "background.inputfields",
+              }}
               placeholder="Filter results with comma or enter"
               value={filterSearchText.replace(",", "")}
               onKeyDown={handleFilterCommaOrEnterKey}
@@ -174,6 +178,7 @@ export function Filter(props: FilterProps) {
               helperText={filterHelperText}
             />
             <Button
+              color="filterbutton"
               id="filterButton"
               variant="contained"
               size="small"

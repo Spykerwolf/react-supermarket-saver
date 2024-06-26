@@ -100,7 +100,7 @@ export function EnhancedTableHead(props: EnhancedTableHeadProps) {
   return (
     <>
       <TableHead sx={{ margin: 1 }}>
-        <TableRow sx={{ bgcolor: "#ffc65d" }}>
+        <TableRow sx={{ bgcolor: "secondary.main" }}>
           <TableCell padding="checkbox"></TableCell>
           {headCells.map((headCell) => (
             <TableCell
@@ -289,7 +289,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
         width="100%"
         marginTop="0.5%"
         id="TableBox"
-        sx={{ bgcolor: "white" }}
+        sx={{ bgcolor: "background.rowitems" }}
       >
         <TableContainer>
           <Table sx={{ minWidth: "250" }} size="small">
@@ -447,7 +447,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
                             id="favouriteCheckbox"
                             icon={<StarBorderIcon />}
                             checkedIcon={<StarIcon />}
-                            color="secondary"
+                            color="favicon"
                             checked={
                               localStorage.getItem(row.sku) ? true : false
                             }
