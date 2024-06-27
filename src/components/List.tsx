@@ -24,6 +24,7 @@ import {
   handleAddListToFirebasePaknSave,
 } from "./Table";
 import { OpenInNew } from "@mui/icons-material";
+import { Tooltip } from "@mui/material";
 
 export default function CheckboxList() {
   const {
@@ -336,27 +337,20 @@ export default function CheckboxList() {
                     paddingBottom: "0px",
                   }}
                 >
-                  <Box
-                    marginLeft="1%"
-                    display="flex"
-                    justifyContent={"space-between"}
-                  >
+                  <Box marginLeft="1%" display="flex">
                     <h2>New World</h2>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="filterbutton"
-                      onClick={() => handleCopyNewWorldItemsToClipboard()}
-                      sx={{
-                        height: "40px",
-                        marginTop: "auto",
-                        marginBottom: "auto",
-                        marginRight: "1%",
-                      }}
-                      endIcon={<ContentCopyIcon />}
-                    >
-                      Copy
-                    </Button>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
 
                   <List
@@ -462,27 +456,20 @@ export default function CheckboxList() {
                     maxWidth: "100%",
                   }}
                 >
-                  <Box
-                    marginLeft="1%"
-                    display="flex"
-                    justifyContent={"space-between"}
-                  >
+                  <Box marginLeft="1%" display="flex">
                     <h2>Countdown</h2>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="filterbutton"
-                      onClick={() => handleCopyCountdownItemsToClipboard()}
-                      sx={{
-                        height: "40px",
-                        marginTop: "auto",
-                        marginBottom: "auto",
-                        marginRight: "1%",
-                      }}
-                      endIcon={<ContentCopyIcon />}
-                    >
-                      Copy
-                    </Button>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <List
                     sx={{
@@ -581,27 +568,20 @@ export default function CheckboxList() {
                     paddingBottom: "0px",
                   }}
                 >
-                  <Box
-                    marginLeft="1%"
-                    display="flex"
-                    justifyContent={"space-between"}
-                  >
+                  <Box marginLeft="1%" display="flex">
                     <h2>Pak n Save</h2>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="filterbutton"
-                      onClick={() => handleCopyPaknSaveItemsToClipboard()}
-                      sx={{
-                        height: "40px",
-                        marginTop: "auto",
-                        marginBottom: "auto",
-                        marginRight: "1%",
-                      }}
-                      endIcon={<ContentCopyIcon />}
-                    >
-                      Copy
-                    </Button>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <List
                     sx={{
