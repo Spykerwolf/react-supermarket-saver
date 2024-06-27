@@ -307,7 +307,7 @@ export function EnhancedTable(props: EnhancedTableProps) {
                 })
 
                 .map((row) => {
-                  const product = `${row.name} ${row.productPackage} - $${row.price}`;
+                  const product = `${row.productURL} /// ${row.name} ${row.productPackage} - $${row.price}`;
                   const productExistsNewWorld = addToListItemsNewWorld.some(
                     (item) => product.includes(item)
                   );

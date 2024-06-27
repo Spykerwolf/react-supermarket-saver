@@ -192,7 +192,7 @@ export default function Sidebar() {
                   <ListItemIcon>
                     <SearchIcon />
                   </ListItemIcon>
-                  Search Groceries
+                  Search
                 </ListItemButton>
               </ListItem>
             </NavLink>
@@ -228,7 +228,7 @@ export default function Sidebar() {
                       <ReceiptLongSharpIcon />
                     </Badge>
                   </ListItemIcon>
-                  Shopping List
+                  List
                 </ListItemButton>
               </ListItem>
             </NavLink>
