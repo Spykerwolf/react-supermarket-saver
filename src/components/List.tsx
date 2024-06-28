@@ -13,12 +13,18 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Divider from "@mui/material/Divider";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import Snackbar from "@mui/material/Snackbar";
+import Button from "@mui/material/Button";
+import CopyAllIcon from "@mui/icons-material/CopyAll";
 
 import {
   handleAddListToFirebaseNewWorld,
   handleAddListToFirebaseCountdown,
   handleAddListToFirebasePaknSave,
 } from "./Table";
+import { OpenInNew } from "@mui/icons-material";
+import { Tooltip } from "@mui/material";
 
 export default function CheckboxList() {
   const {
@@ -52,9 +58,9 @@ export default function CheckboxList() {
   const [prevLengthPaknSave, setPrevLengthPaknSave] = useState(
     addToListItemsPaknSave.length + 1
   );
-  useEffect(() => {
-    console.log(itemsChecked);
-  }, [itemsChecked]);
+
+  const [openSnack, setOpenSnack] = useState(false);
+
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
@@ -88,6 +94,10 @@ export default function CheckboxList() {
       ? handleProductDelete(name)
       : setItemsChecked([...itemsChecked, name]);
   };
+
+  function handleOpenURL(URL: string) {
+    open(URL, "_blank", "noopener,noreferrer");
+  }
 
   function handleProductDelete() {
     setAddToListItemsNewWorld((products: string[]) =>
@@ -192,6 +202,88 @@ export default function CheckboxList() {
     );
   }
 
+  function handleCopyItemToClipboard(item: string) {
+    setOpenSnack(true);
+    navigator.clipboard.writeText(item);
+  }
+
+  const handleCloseSnack = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenSnack(false);
+  };
+
+  let newworldArray: string[] = [];
+  let countdownArray: string[] = [];
+  let paknsaveArray: string[] = [];
+
+  function handleCopyNewWorldItemsToClipboard() {
+    setOpenSnack(true);
+
+    addToListItemsNewWorld.forEach((e) =>
+      newworldArray.push(e.split(" /// ").pop())
+    );
+    navigator.clipboard.writeText(
+      "New World\n" + newworldArray.toString().replaceAll(",", "\n")
+    );
+  }
+
+  function handleCopyCountdownItemsToClipboard() {
+    setOpenSnack(true);
+
+    addToListItemsCountdown.forEach((e) =>
+      countdownArray.push(e.split(" /// ").pop())
+    );
+
+    navigator.clipboard.writeText(
+      "Countdown\n" + countdownArray.toString().replaceAll(",", "\n")
+    );
+  }
+
+  function handleCopyPaknSaveItemsToClipboard() {
+    setOpenSnack(true);
+
+    addToListItemsPaknSave.forEach((e) =>
+      paknsaveArray.push(e.split(" /// ").pop())
+    );
+    navigator.clipboard.writeText(
+      "Pak n Save\n" + paknsaveArray.toString().replaceAll(",", "\n")
+    );
+  }
+
+  function handleCopyAllGroceryItemsToClipboard() {
+    let newworldArray: string[] = [];
+    let countdownArray: string[] = [];
+    let paknsaveArray: string[] = [];
+
+    addToListItemsNewWorld.forEach((e) =>
+      newworldArray.push(e.split(" /// ").pop())
+    );
+
+    addToListItemsCountdown.forEach((e) =>
+      countdownArray.push(e.split(" /// ").pop())
+    );
+
+    addToListItemsPaknSave.forEach((e) =>
+      paknsaveArray.push(e.split(" /// ").pop())
+    );
+    setOpenSnack(true);
+    navigator.clipboard.writeText(
+      "New World\n" +
+        newworldArray.toString().replaceAll(",", "\n") +
+        "\n" +
+        "\nCountdown\n" +
+        countdownArray.toString().replaceAll(",", "\n") +
+        "\n" +
+        "\nPak n Save\n" +
+        paknsaveArray.toString().replaceAll(",", "\n")
+    );
+  }
   return (
     <>
       {addToListItemsNewWorld.length === 0 &&
@@ -199,272 +291,378 @@ export default function CheckboxList() {
       addToListItemsPaknSave.length === 0 ? (
         showAnimation()
       ) : (
-        <Box
-          justifyContent="center"
-          display="flex"
-          id="MainItemsBox"
-          paddingTop="1%"
-          paddingBottom="1%"
-        >
-          <Paper
-            elevation={3}
-            sx={{ width: "40%", backgroundColor: "background.listitems" }}
+        <>
+          <Box display="flex" justifyContent="center">
+            <Button
+              variant="contained"
+              size="small"
+              color="filterbutton"
+              onClick={() => handleCopyAllGroceryItemsToClipboard()}
+              sx={{
+                height: "40px",
+                marginTop: "auto",
+                marginBottom: "auto",
+                marginRight: "1%",
+              }}
+              endIcon={<CopyAllIcon />}
+            >
+              Copy Grocery List
+            </Button>
+          </Box>
+          <Box
+            justifyContent="center"
+            display="flex"
+            id="MainItemsBox"
+            paddingTop="1%"
+            paddingBottom="1%"
           >
-            {addToListItemsNewWorld.length > 0 && (
-              <Box
-                id="NewWorldListItems"
-                justifyContent="center"
-                display="flex-inline"
-                sx={{
-                  width: "100%",
-                  maxWidth: "100%",
-                  paddingBottom: "0px",
-                }}
-              >
-                <Box marginLeft="1%">
-                  <h2>New World</h2>
-                </Box>
+            <Paper
+              elevation={3}
+              sx={{ width: "40%", backgroundColor: "background.listitems" }}
+            >
+              {addToListItemsNewWorld.length > 0 && (
+                <Box
+                  id="NewWorldListItems"
+                  sx={{
+                    width: "100%",
+                    maxWidth: "100%",
+                    paddingBottom: "0px",
+                  }}
+                >
+                  <Box marginLeft="1%" display="flex">
+                    <h2>New World</h2>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
 
-                <List
+                  <List
+                    sx={{
+                      width: "100%",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {addToListItemsNewWorld.map((item, index) => {
+                      const itemWithURL = item.split(" /// ");
+                      const productURL = itemWithURL[0];
+                      const productName = itemWithURL[1];
+                      const isSelected = (id: number) =>
+                        selectedNewWorld.indexOf(id) !== -1;
+                      const isItemSelected = isSelected(index);
+
+                      return (
+                        <>
+                          <ListItem
+                            disablePadding
+                            sx={{
+                              p: 0,
+                              "&:hover": {
+                                bgcolor: "background.listitemshover",
+                              },
+                            }}
+                            key={index}
+                            secondaryAction={
+                              isItemSelected ? (
+                                <IconButton
+                                  edge="end"
+                                  aria-label="delete"
+                                  onClick={() => handleProductDelete()}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              ) : (
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleOpenURL(productURL)}
+                                >
+                                  <OpenInNew />
+                                </IconButton>
+                              )
+                            }
+                          >
+                            <ListItemButton
+                              dense={true}
+                              disableRipple={true}
+                              sx={{
+                                bgcolor: isItemSelected
+                                  ? "background.listitemschecked"
+                                  : "background.listitems",
+                                "&.MuiButtonBase-root:hover": {
+                                  bgcolor:
+                                    isItemSelected &&
+                                    "background.listitemschecked",
+                                },
+                              }}
+                            >
+                              <ListItemIcon onClick={handleToggle(productName)}>
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  edge="start"
+                                  tabIndex={-1}
+                                  disableRipple
+                                  color="info"
+                                  onClick={() => handleClickNewWorld(index)}
+                                />
+                              </ListItemIcon>
+
+                              <ListItemText
+                                primary={productName}
+                                style={{
+                                  textDecoration: isItemSelected
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                                onClick={() =>
+                                  handleCopyItemToClipboard(productName)
+                                }
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                          <Snackbar
+                            open={openSnack}
+                            autoHideDuration={1200}
+                            onClose={handleCloseSnack}
+                            message="Copied to clipboard"
+                          />
+                        </>
+                      );
+                    })}
+                  </List>
+                  <Divider />
+                </Box>
+              )}
+              {addToListItemsCountdown.length > 0 && (
+                <Box
+                  id="CountdownListItems"
                   sx={{
                     width: "100%",
                     maxWidth: "100%",
                   }}
                 >
-                  {addToListItemsNewWorld.map((item, index) => {
-                    const isSelected = (id: number) =>
-                      selectedNewWorld.indexOf(id) !== -1;
-                    const isItemSelected = isSelected(index);
+                  <Box marginLeft="1%" display="flex">
+                    <h2>Countdown</h2>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        onClick={() => handleCopyCountdownItemsToClipboard()}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <List
+                    sx={{
+                      width: "100%",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {addToListItemsCountdown.map((item, index) => {
+                      const itemWithURL = item.split(" /// ");
+                      const productURL = itemWithURL[0];
+                      const productName = itemWithURL[1];
+                      const isSelected = (id: number) =>
+                        selectedCountdown.indexOf(id) !== -1;
+                      const isItemSelected = isSelected(index);
 
-                    return (
-                      <>
-                        <ListItem
-                          disablePadding
-                          sx={{ p: 0 }}
-                          key={index}
-                          secondaryAction={
-                            isItemSelected && (
-                              <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={() => handleProductDelete()}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )
-                          }
-                        >
-                          <ListItemButton
-                            dense={true}
-                            disableRipple={true}
+                      return (
+                        <>
+                          <ListItem
+                            disablePadding
                             sx={{
-                              bgcolor: isItemSelected
-                                ? "background.listitemschecked"
-                                : "background.listitems",
-                              "&.MuiButtonBase-root:hover": {
-                                bgcolor:
-                                  isItemSelected &&
-                                  "background.listitemschecked",
+                              p: 0,
+                              "&:hover": {
+                                bgcolor: "background.listitemshover",
                               },
                             }}
+                            key={index}
+                            secondaryAction={
+                              isItemSelected ? (
+                                <IconButton
+                                  edge="end"
+                                  aria-label="delete"
+                                  onClick={() => handleProductDelete()}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              ) : (
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleOpenURL(productURL)}
+                                >
+                                  <OpenInNew />
+                                </IconButton>
+                              )
+                            }
                           >
-                            <ListItemIcon onClick={handleToggle(item)}>
-                              <Checkbox
-                                checked={isItemSelected}
-                                edge="start"
-                                tabIndex={-1}
-                                disableRipple
-                                color="info"
-                                onClick={() => handleClickNewWorld(index)}
-                              />
-                            </ListItemIcon>
-
-                            <ListItemText
-                              primary={item}
-                              style={{
-                                textDecoration: isItemSelected
-                                  ? "line-through"
-                                  : "none",
+                            <ListItemButton
+                              sx={{
+                                bgcolor: isItemSelected
+                                  ? "background.listitemschecked"
+                                  : "background.listitems",
+                                "&.MuiButtonBase-root:hover": {
+                                  bgcolor:
+                                    isItemSelected &&
+                                    "background.listitemschecked",
+                                },
                               }}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      </>
-                    );
-                  })}
-                </List>
-                <Divider />
-              </Box>
-            )}
-            {addToListItemsCountdown.length > 0 && (
-              <Box
-                id="CountdownListItems"
-                justifyContent="center"
-                display="flex-inline"
-                sx={{
-                  width: "100%",
-                  maxWidth: "100%",
-                }}
-              >
-                <Box marginLeft="1%">
-                  <h2>Countdown</h2>
+                              dense={true}
+                              disableRipple={true}
+                              onClick={() =>
+                                handleCopyItemToClipboard(productName)
+                              }
+                            >
+                              <ListItemIcon onClick={handleToggle(productName)}>
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  edge="start"
+                                  tabIndex={-1}
+                                  disableRipple
+                                  color="info"
+                                  onClick={() => handleClickCountdown(index)}
+                                />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={productName}
+                                style={{
+                                  textDecoration: isItemSelected
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        </>
+                      );
+                    })}
+                  </List>
+                  <Divider />
                 </Box>
-                <List
+              )}
+              {addToListItemsPaknSave.length > 0 && (
+                <Box
+                  id="PaknSaveListItems"
                   sx={{
                     width: "100%",
                     maxWidth: "100%",
+                    paddingBottom: "0px",
                   }}
                 >
-                  {addToListItemsCountdown.map((item, index) => {
-                    const isSelected = (id: number) =>
-                      selectedCountdown.indexOf(id) !== -1;
-                    const isItemSelected = isSelected(index);
+                  <Box marginLeft="1%" display="flex">
+                    <h2>Pak n Save</h2>
+                    <Tooltip title="Copy items to clipboard" placement="right">
+                      <IconButton
+                        onClick={() => handleCopyPaknSaveItemsToClipboard()}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "transparent",
+                          },
+                        }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <List
+                    sx={{
+                      width: "100%",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {addToListItemsPaknSave.map((item, index) => {
+                      const itemWithURL = item.split(" /// ");
+                      const productURL = itemWithURL[0];
+                      const productName = itemWithURL[1];
+                      const isSelected = (id: number) =>
+                        selectedPaknSave.indexOf(id) !== -1;
+                      const isItemSelected = isSelected(index);
 
-                    return (
-                      <>
-                        <ListItem
-                          disablePadding
-                          sx={{ p: 0 }}
-                          key={index}
-                          secondaryAction={
-                            isItemSelected && (
-                              <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={() => handleProductDelete()}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )
-                          }
-                        >
-                          <ListItemButton
+                      return (
+                        <>
+                          <ListItem
+                            disablePadding
                             sx={{
-                              bgcolor: isItemSelected
-                                ? "background.listitemschecked"
-                                : "background.listitems",
-                              "&.MuiButtonBase-root:hover": {
-                                bgcolor:
-                                  isItemSelected &&
-                                  "background.listitemschecked",
+                              p: 0,
+                              "&:hover": {
+                                bgcolor: "background.listitemshover",
                               },
                             }}
-                            dense={true}
-                            disableRipple={true}
+                            key={index}
+                            secondaryAction={
+                              isItemSelected ? (
+                                <IconButton
+                                  edge="end"
+                                  aria-label="delete"
+                                  onClick={() => handleProductDelete()}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              ) : (
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleOpenURL(productURL)}
+                                >
+                                  <OpenInNew />
+                                </IconButton>
+                              )
+                            }
                           >
-                            <ListItemIcon onClick={handleToggle(item)}>
-                              <Checkbox
-                                checked={isItemSelected}
-                                edge="start"
-                                tabIndex={-1}
-                                disableRipple
-                                color="info"
-                                onClick={() => handleClickCountdown(index)}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={item}
-                              style={{
-                                textDecoration: isItemSelected
-                                  ? "line-through"
-                                  : "none",
+                            <ListItemButton
+                              sx={{
+                                bgcolor: isItemSelected
+                                  ? "background.listitemschecked"
+                                  : "background.listitems",
+                                "&.MuiButtonBase-root:hover": {
+                                  bgcolor:
+                                    isItemSelected &&
+                                    "background.listitemschecked",
+                                },
                               }}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      </>
-                    );
-                  })}
-                </List>
-                <Divider />
-              </Box>
-            )}
-            {addToListItemsPaknSave.length > 0 && (
-              <Box
-                id="PaknSaveListItems"
-                justifyContent="center"
-                display="flex-inline"
-                sx={{
-                  width: "100%",
-                  maxWidth: "100%",
-                  paddingBottom: "0px",
-                }}
-              >
-                <Box marginLeft="1%">
-                  <h2>Pak n Save</h2>
+                              dense={true}
+                              disableRipple={true}
+                            >
+                              <ListItemIcon onClick={handleToggle(productName)}>
+                                <Checkbox
+                                  checked={isItemSelected}
+                                  edge="start"
+                                  tabIndex={-1}
+                                  disableRipple
+                                  color="info"
+                                  onClick={() => handleClickPaknSave(index)}
+                                />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={productName}
+                                style={{
+                                  textDecoration: isItemSelected
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        </>
+                      );
+                    })}
+                  </List>
+                  <Divider />
                 </Box>
-                <List
-                  sx={{
-                    width: "100%",
-                    maxWidth: "100%",
-                  }}
-                >
-                  {addToListItemsPaknSave.map((item, index) => {
-                    const isSelected = (id: number) =>
-                      selectedPaknSave.indexOf(id) !== -1;
-                    const isItemSelected = isSelected(index);
-
-                    return (
-                      <>
-                        <ListItem
-                          disablePadding
-                          sx={{ p: 0 }}
-                          key={index}
-                          secondaryAction={
-                            isItemSelected && (
-                              <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={() => handleProductDelete()}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )
-                          }
-                        >
-                          <ListItemButton
-                            sx={{
-                              bgcolor: isItemSelected
-                                ? "background.listitemschecked"
-                                : "background.listitems",
-                              "&.MuiButtonBase-root:hover": {
-                                bgcolor:
-                                  isItemSelected &&
-                                  "background.listitemschecked",
-                              },
-                            }}
-                            dense={true}
-                            disableRipple={true}
-                          >
-                            <ListItemIcon onClick={handleToggle(item)}>
-                              <Checkbox
-                                checked={isItemSelected}
-                                edge="start"
-                                tabIndex={-1}
-                                disableRipple
-                                color="info"
-                                onClick={() => handleClickPaknSave(index)}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={item}
-                              style={{
-                                textDecoration: isItemSelected
-                                  ? "line-through"
-                                  : "none",
-                              }}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      </>
-                    );
-                  })}
-                </List>
-                <Divider />
-              </Box>
-            )}
-          </Paper>
-        </Box>
+              )}
+            </Paper>
+          </Box>
+        </>
       )}
     </>
   );

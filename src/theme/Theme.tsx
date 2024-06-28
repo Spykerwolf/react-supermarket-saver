@@ -1,5 +1,5 @@
 import { PaletteMode } from "@mui/material";
-import { blue, grey, orange } from "@mui/material/colors";
+import { blue, grey, lightGreen, orange } from "@mui/material/colors";
 
 export const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -14,6 +14,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             appbar: blue[500],
             drawer: "#e3c6c6",
             listitems: "#FFFFFF",
+            listitemshover: grey[200],
             listitemschecked: "#b5b5b5",
           },
 
@@ -53,6 +54,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             appbar: "#2D3250",
             drawer: "#3d5858",
             listitems: "#2c7e6b",
+            listitemshover: grey[200],
             listitemschecked: "#165445",
           },
 

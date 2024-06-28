@@ -91,7 +91,6 @@ export default function Sidebar() {
   );
 
   async function getExistingListItems() {
-    console.log("Fetching existing items");
     const docListItemsRefPaknSave = doc(db, "List items", "PaknSave");
     const docListItemSnapPaknSave = await getDoc(docListItemsRefPaknSave);
     const docListItemsRefNewWorld = doc(db, "List items", "NewWorld");
@@ -193,7 +192,7 @@ export default function Sidebar() {
                   <ListItemIcon>
                     <SearchIcon />
                   </ListItemIcon>
-                  Search Groceries
+                  Search
                 </ListItemButton>
               </ListItem>
             </NavLink>
@@ -229,7 +228,7 @@ export default function Sidebar() {
                       <ReceiptLongSharpIcon />
                     </Badge>
                   </ListItemIcon>
-                  Shopping List
+                  List
                 </ListItemButton>
               </ListItem>
             </NavLink>
