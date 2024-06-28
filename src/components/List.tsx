@@ -49,10 +49,6 @@ export default function CheckboxList() {
     []
   );
 
-  const [newworldItemsNameOnly, setNewworldItemsNameOnly] = useState([]);
-  const [countdownItemsNameOnly, setCountdownItemsNameOnly] = useState([]);
-  const [paknsaveItemsNameOnly, setPaknsaveItemsNameOnly] = useState([]);
-
   const [prevLengthCountdown, setPrevLengthCountdown] = useState(
     addToListItemsCountdown.length + 1
   );
@@ -68,10 +64,6 @@ export default function CheckboxList() {
   useEffect(() => {
     setHideSearchComponent(true);
   }, []);
-
-  useEffect(() => {
-    console.log(newworldItemsNameOnly);
-  }, [setNewworldItemsNameOnly]);
 
   useEffect(() => {
     setPrevLengthNewWorld(addToListItemsNewWorld.length + 2);
@@ -460,7 +452,7 @@ export default function CheckboxList() {
                     <h2>Countdown</h2>
                     <Tooltip title="Copy items to clipboard" placement="right">
                       <IconButton
-                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                        onClick={() => handleCopyCountdownItemsToClipboard()}
                         sx={{
                           "&:hover": {
                             bgcolor: "transparent",
@@ -572,7 +564,7 @@ export default function CheckboxList() {
                     <h2>Pak n Save</h2>
                     <Tooltip title="Copy items to clipboard" placement="right">
                       <IconButton
-                        onClick={() => handleCopyNewWorldItemsToClipboard()}
+                        onClick={() => handleCopyPaknSaveItemsToClipboard()}
                         sx={{
                           "&:hover": {
                             bgcolor: "transparent",
