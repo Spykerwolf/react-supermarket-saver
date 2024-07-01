@@ -520,9 +520,6 @@ export default function CheckboxList() {
                               }}
                               dense={true}
                               disableRipple={true}
-                              onClick={() =>
-                                handleCopyItemToClipboard(productName)
-                              }
                             >
                               <ListItemIcon onClick={handleToggle(productName)}>
                                 <Checkbox
@@ -541,6 +538,9 @@ export default function CheckboxList() {
                                     ? "line-through"
                                     : "none",
                                 }}
+                                onClick={() =>
+                                  handleCopyItemToClipboard(productName)
+                                }
                               />
                             </ListItemButton>
                           </ListItem>
